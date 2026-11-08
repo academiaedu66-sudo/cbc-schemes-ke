@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Search, Loader2, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import CategoryGrid from '@/components/CategoryGrid';
+import ResourceCard from '@/components/ResourceCard';
 
 interface Resource {
   id: string;
@@ -135,6 +137,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
+      {/* Header Bar */}
       <header className="bg-emerald-800 text-white shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
@@ -159,8 +162,13 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm mb-8 space-y-4">
+        {/* 1. Category Cards Showcase (Schemes.co.ke layout) */}
+        <CategoryGrid />
+
+        {/* 2. Filter & Search Controls */}
+        <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm my-8 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -215,6 +223,17 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* 3. Section Divider & Header */}
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-200">
+          <h2 className="text-lg font-black tracking-tight text-slate-900 uppercase">
+            Available Curriculum Materials
+          </h2>
+          <span className="text-xs font-bold text-slate-500">
+            {filteredItems.length} resources found
+          </span>
+        </div>
+
+        {/* 4. Dynamic Resource Grid Using ResourceCard */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
@@ -225,46 +244,27 @@ export default function HomePage() {
             <p className="text-slate-500 text-sm">No resources match your selected filters.</p>
           </div>
         ) : (
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredItems.map((item) => (
-              <div
+              <ResourceCard
                 key={item.id}
-                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">
-                      Grade {item.grade} • Term {item.term}
-                    </span>
-                    <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                      {item.format}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-base leading-snug mb-1">{item.title}</h3>
-                  <p className="text-xs text-slate-500 mb-3">{item.level} • {item.subject}</p>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs text-slate-400 block">Copy Price</span>
-                    <span className="text-lg font-black text-slate-900">KES {item.price}</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      resetModal();
-                      setModalItem(item);
-                    }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
-                  >
-                    Buy via M-Pesa
-                  </button>
-                </div>
-              </div>
+                id={item.id}
+                title={item.title}
+                category={item.category}
+                grade={`Grade ${item.grade}`}
+                fileExt={item.format.toLowerCase()}
+                price={item.price}
+                onBuy={() => {
+                  resetModal();
+                  setModalItem(item);
+                }}
+              />
             ))}
           </section>
         )}
       </main>
 
+      {/* M-Pesa STK Checkout Modal */}
       {modalItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
