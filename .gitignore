@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local bulk-upload inbox binaries (keep README.md)
+/materials-inbox/*
+!/materials-inbox/README.md

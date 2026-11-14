@@ -1,143 +1,180 @@
-import Link from "next/link";
+"use client";
 
-interface Category {
+import type { ResourceItem } from "./ResourceCard";
+import { normalizeCategory } from "@/lib/material-utils";
+
+interface CategoryCardConfig {
   title: string;
-  href: string;
-  count: number;
+  filterCategory: string;
   color: string;
   bg: string;
   points: string[];
 }
 
-const CATEGORIES: Category[] = [
+const CATEGORIES: CategoryCardConfig[] = [
   {
     title: "SCHEMES OF WORK",
-    href: "#",
-    count: 764,
+    filterCategory: "Schemes of Work",
     color: "#10b981",
     bg: "#ecfdf5",
     points: [
-      "Grade 1 to 9 & Form 1 to 4",
+      "Grade 1 to 12 KICD rationalized",
       "Term 1, Term 2 & Term 3 schemes",
-      "Editable Word & PDF downloads",
+      "Editable 10-column Word downloads",
     ],
   },
   {
     title: "LESSON PLANS",
-    href: "#",
-    count: 534,
+    filterCategory: "Lesson Plans",
     color: "#14b8a6",
     bg: "#f0fdfa",
     points: [
-      "CBC-aligned 5E lesson designs",
-      "Detailed learning activities",
-      "Ready to print & customize",
+      "CBC-aligned daily & weekly plans",
+      "Term 1, Term 2 & Term 3 sub-strands",
+      "Editable Word ready to print",
     ],
   },
   {
-    title: "EXAMS & ASSESSMENTS",
-    href: "#",
-    count: 493,
-    color: "#e11d48",
-    bg: "#fff1f2",
-    points: [
-      "Top national school mocks",
-      "Question papers with answers",
-      "All education levels covered",
-    ],
-  },
-  {
-    title: "PRIMARY NOTES",
-    href: "#",
-    count: 104,
+    title: "LESSON NOTES & BOOKLETS",
+    filterCategory: "Teachers' Notes",
     color: "#2563eb",
     bg: "#eff6ff",
     points: [
-      "Grade 1 to 6 CBC syllabus",
-      "Clear summaries & illustrations",
-      "Topical revision questions",
+      "Grade 1–12 comprehensive notes",
+      "All 3 Terms strands & activities",
+      "Topical review questions included",
     ],
   },
   {
-    title: "JSS NOTES & BOOKLETS",
-    href: "#",
-    count: 68,
+    title: "EXAMS & MARKING SCHEMES",
+    filterCategory: "Revision Papers & Exams",
+    color: "#e11d48",
+    bg: "#fff1f2",
+    points: [
+      "KEYA, KPSEA, KJSEA & Senior School",
+      "Term 1, Term 2 & Term 3 exams",
+      "Complete rubric marking guides",
+    ],
+  },
+  {
+    title: "RECORDS OF WORK & RUBRICS",
+    filterCategory: "Records of Work",
     color: "#d97706",
     bg: "#fffbeb",
     points: [
-      "Grade 7, 8 & 9 learning areas",
-      "Comprehensive subject booklets",
-      "Key terms & quick summaries",
+      "TSC & KICD weekly trackers",
+      "EE / ME / AE / BE rubric columns",
+      "Term 1, Term 2 & Term 3 Word docs",
     ],
   },
   {
-    title: "KCSE REVISION EXAMS",
-    href: "#",
-    count: 482,
-    color: "#dc2626",
-    bg: "#fef2f2",
+    title: "HOLIDAY PACKS & DESIGNS",
+    filterCategory: "Holiday Assignments & Designs",
+    color: "#7c3aed",
+    bg: "#f5f3ff",
     points: [
-      "National schools joint mock trials",
-      "KCSE prediction papers with answers",
-      "Topic-by-topic revision booklets",
+      "April, August & December packages",
+      "Full-Year (Terms 1–3) KICD Designs",
+      "Parent-guided competency tasks",
     ],
   },
 ];
 
-export default function CategoryGrid() {
+interface CategoryGridProps {
+  resources: ResourceItem[];
+  selectedCategory: string;
+  onSelectCategory: (category: string) => void;
+}
+
+export default function CategoryGrid({
+  resources,
+  selectedCategory,
+  onSelectCategory,
+}: CategoryGridProps) {
+  function countMatching(cat: CategoryCardConfig): number {
+    return resources.filter(
+      (r) => normalizeCategory(r.category) === cat.filterCategory
+    ).length;
+  }
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8">
+    <section className="py-4">
       <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-200">
         <h2 className="text-lg font-black tracking-tight text-slate-900 uppercase">
-          Browse by Category
+          Browse by Category ({resources.length.toLocaleString()} Total Materials)
         </h2>
+        {selectedCategory !== "All" && (
+          <button
+            type="button"
+            onClick={() => onSelectCategory("All")}
+            className="text-xs font-bold text-emerald-700 hover:underline"
+          >
+            Show All Categories
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {CATEGORIES.map((cat) => (
-          <div
-            key={cat.title}
-            className="group relative flex flex-col justify-between p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-150"
-          >
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
-                  style={{ backgroundColor: cat.bg, color: cat.color }}
-                >
-                  ✓
+        {CATEGORIES.map((cat) => {
+          const count = countMatching(cat);
+          const isActive = selectedCategory === cat.filterCategory;
+
+          return (
+            <button
+              key={cat.title}
+              type="button"
+              onClick={() => {
+                onSelectCategory(isActive ? "All" : cat.filterCategory);
+                document
+                  .getElementById("materials-Catalog")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className={`text-left group relative flex flex-col justify-between p-5 bg-white border rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-150 ${
+                isActive
+                  ? "border-emerald-500 ring-2 ring-emerald-500/20"
+                  : "border-slate-200"
+              }`}
+            >
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base"
+                    style={{ backgroundColor: cat.bg, color: cat.color }}
+                  >
+                    ✓
+                  </div>
+                  <h3 className="font-extrabold text-sm uppercase text-slate-800 tracking-wide">
+                    {cat.title}
+                  </h3>
                 </div>
-                <h3 className="font-extrabold text-sm uppercase text-slate-800 tracking-wide">
-                  {cat.title}
-                </h3>
+
+                <ul className="space-y-1.5 mb-4 text-xs font-medium text-slate-600">
+                  {cat.points.map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span style={{ color: cat.color }}>•</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <ul className="space-y-1.5 mb-4 text-xs font-medium text-slate-600">
-                {cat.points.map((point, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span style={{ color: cat.color }}>•</span>
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded uppercase"
-                style={{ backgroundColor: cat.bg, color: cat.color }}
-              >
-                {cat.count} Resources
-              </span>
-              <span
-                className="text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
-                style={{ color: cat.color }}
-              >
-                Explore &rarr;
-              </span>
-            </div>
-          </div>
-        ))}
+              <div className="w-full flex items-center justify-between pt-3 border-t border-slate-100">
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded uppercase"
+                  style={{ backgroundColor: cat.bg, color: cat.color }}
+                >
+                  {count.toLocaleString()} Resources
+                </span>
+                <span
+                  className="text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                  style={{ color: cat.color }}
+                >
+                  {isActive ? "Selected ✓" : "Explore →"}
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
