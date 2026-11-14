@@ -14,6 +14,11 @@ import {
   Lock,
   Plus,
   FileText,
+  RefreshCw,
+  Check,
+  XCircle,
+  MessageCircle,
+  Wallet,
 } from 'lucide-react';
 import {
   MATERIAL_CATEGORIES,
@@ -47,11 +52,27 @@ interface AdminResource extends ResourceItem {
   created_at?: string;
 }
 
+interface OrderRow {
+  id: string;
+  checkout_request_id: string;
+  phone_number: string;
+  resource_id: string;
+  resource_title: string;
+  amount: number;
+  mpesa_receipt_number?: string | null;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED';
+  created_at?: string;
+}
+
 export default function AdminDashboardPage() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   const [inventory, setInventory] = useState<AdminResource[]>([]);
   const [storageCount, setStorageCount] = useState(0);
@@ -64,33 +85,54 @@ export default function AdminDashboardPage() {
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
 
-  const fetchInventory = useCallback(async (pw: string) => {
-    setIsLoadingInv(true);
-    setAuthError('');
+  const fetchOrders = useCallback(async (pw: string) => {
+    setIsLoadingOrders(true);
     try {
-      const res = await fetch('/api/admin/resources', {
+      const res = await fetch('/api/admin/orders', {
         headers: { 'x-admin-password': pw },
       });
       const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 401) {
-          setAuthenticated(false);
-          sessionStorage.removeItem('cbc_admin_pw');
-        }
-        throw new Error(data.error || 'Failed to authenticate');
+      if (res.ok && Array.isArray(data.orders)) {
+        setOrders(data.orders);
       }
-      setAuthenticated(true);
-      sessionStorage.setItem('cbc_admin_pw', pw);
-      setInventory(data.resources || []);
-      setStorageCount(data.storageFilesCount || 0);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setAuthError(message);
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
     } finally {
-      setIsLoadingInv(false);
-      setIsCheckingAuth(false);
+      setIsLoadingOrders(false);
     }
   }, []);
+
+  const fetchInventory = useCallback(
+    async (pw: string) => {
+      setIsLoadingInv(true);
+      setAuthError('');
+      try {
+        const res = await fetch('/api/admin/resources', {
+          headers: { 'x-admin-password': pw },
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 401) {
+            setAuthenticated(false);
+            sessionStorage.removeItem('cbc_admin_pw');
+          }
+          throw new Error(data.error || 'Failed to authenticate');
+        }
+        setAuthenticated(true);
+        sessionStorage.setItem('cbc_admin_pw', pw);
+        setInventory(data.resources || []);
+        setStorageCount(data.storageFilesCount || 0);
+        await fetchOrders(pw);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Login failed';
+        setAuthError(message);
+      } finally {
+        setIsLoadingInv(false);
+        setIsCheckingAuth(false);
+      }
+    },
+    [fetchOrders]
+  );
 
   useEffect(() => {
     const saved = sessionStorage.getItem('cbc_admin_pw');
@@ -101,10 +143,64 @@ export default function AdminDashboardPage() {
     }
   }, [fetchInventory]);
 
+  // Auto-refresh M-Pesa orders every 10 seconds while logged in
+  useEffect(() => {
+    if (!authenticated || !password) return;
+    const timer = setInterval(() => {
+      fetchOrders(password);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [authenticated, password, fetchOrders]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCheckingAuth(true);
     await fetchInventory(password);
+  };
+
+  const handleOrderStatus = async (
+    order: OrderRow,
+    newStatus: 'COMPLETED' | 'FAILED'
+  ) => {
+    setUpdatingOrderId(order.id);
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({ id: order.id, status: newStatus }),
+      });
+      if (res.ok) {
+        await fetchOrders(password);
+      }
+    } catch (err) {
+      console.error('Order status update error:', err);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleSendWhatsAppDownload = async (order: OrderRow) => {
+    try {
+      const res = await fetch(
+        `/api/admin/orders?signedResourceId=${encodeURIComponent(order.resource_id)}`,
+        { headers: { 'x-admin-password': password } }
+      );
+      const data = await res.json();
+      if (!res.ok || !data.downloadUrl) return;
+
+      const digits = (order.phone_number || '').replace(/[^0-9]/g, '');
+      const waTarget = /^254[17]\d{8}$/.test(digits) ? digits : '';
+      const msg = `Thank you for your M-Pesa payment (KES ${order.amount})! Download "${order.resource_title}" here:\n${data.downloadUrl}`;
+      const url = waTarget
+        ? `https://wa.me/${waTarget}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error('WhatsApp link error:', err);
+    }
   };
 
   const handleFilesSelected = (filesList: FileList | null) => {
@@ -242,10 +338,10 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <h1 className="font-black text-slate-900 text-lg">
-                  Materials Admin
+                  Materials &amp; M-Pesa Admin
                 </h1>
                 <p className="text-xs text-slate-500">
-                  Upload &amp; manage CBC documents
+                  Approve 0728595160 payments &amp; manage CBC documents
                 </p>
               </div>
             </div>
@@ -302,6 +398,13 @@ export default function AdminDashboardPage() {
     (q) => q.status === 'READY' || q.status === 'ERROR'
   ).length;
 
+  const pendingOrdersCount = orders.filter((o) => o.status === 'PENDING').length;
+  const completedOrders = orders.filter((o) => o.status === 'COMPLETED');
+  const totalRevenueKes = completedOrders.reduce(
+    (sum, o) => sum + (Number(o.amount) || 0),
+    0
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <header className="bg-slate-900 text-white shadow">
@@ -309,11 +412,12 @@ export default function AdminDashboardPage() {
           <div>
             <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
               <UploadCloud className="w-6 h-6 text-emerald-400" />
-              CBC Materials Studio &amp; Inventory
+              CBC Materials Studio &amp; M-Pesa Orders
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
+              Payout M-Pesa: <strong className="text-emerald-300">254728595160 (0728595160)</strong> •{' '}
               {inventory.length} published listings • {storageCount} files in{' '}
-              <code>cbc-materials</code> bucket
+              <code>cbc-materials</code>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -340,6 +444,169 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* 0. M-Pesa Orders & Instant Payment Approvals (254728595160) */}
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-900 uppercase flex items-center gap-2">
+                  M-Pesa Payments &amp; Order Approvals (0728595160)
+                  {pendingOrdersCount > 0 && (
+                    <span className="bg-amber-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full animate-pulse">
+                      {pendingOrdersCount} Pending
+                    </span>
+                  )}
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Verify M-Pesa SMS receipts received on <strong>254728595160</strong> and click{' '}
+                  <strong>Approve</strong> to unlock the buyer&apos;s download immediately.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <div className="text-[10px] font-bold uppercase text-slate-400">
+                  Recent Verified Sales
+                </div>
+                <div className="text-sm font-black text-emerald-700">
+                  KES {totalRevenueKes.toLocaleString()} ({completedOrders.length} orders)
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchOrders(password)}
+                disabled={isLoadingOrders}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${isLoadingOrders ? 'animate-spin text-emerald-600' : ''}`}
+                />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {orders.length === 0 ? (
+            <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500">
+              No M-Pesa orders recorded yet. New direct or STK purchases will appear here automatically.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px]">
+                    <th className="py-2 pr-3">Status</th>
+                    <th className="py-2 px-3">M-Pesa Code / Method</th>
+                    <th className="py-2 px-3">Buyer Phone</th>
+                    <th className="py-2 px-3">Material</th>
+                    <th className="py-2 px-3">Amount</th>
+                    <th className="py-2 pl-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {orders.slice(0, 20).map((o) => {
+                    const isDirect = (o.checkout_request_id || '').startsWith('MANUAL_');
+                    const isBusy = updatingOrderId === o.id;
+                    return (
+                      <tr
+                        key={o.id}
+                        className={
+                          o.status === 'PENDING' ? 'bg-amber-50/50 hover:bg-amber-50' : 'hover:bg-slate-50'
+                        }
+                      >
+                        <td className="py-2.5 pr-3 whitespace-nowrap">
+                          {o.status === 'COMPLETED' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                              <CheckCircle2 className="w-3 h-3" />
+                              COMPLETED
+                            </span>
+                          )}
+                          {o.status === 'PENDING' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              PENDING
+                            </span>
+                          )}
+                          {o.status === 'FAILED' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">
+                              <XCircle className="w-3 h-3" />
+                              FAILED
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          <div className="font-mono font-black text-slate-900">
+                            {o.mpesa_receipt_number || 'Awaiting PIN'}
+                          </div>
+                          <div className="text-[10px] text-slate-500">
+                            {isDirect ? 'Direct -> 0728595160' : 'STK Express'}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono text-slate-700 whitespace-nowrap">
+                          {o.phone_number}
+                        </td>
+                        <td className="py-2.5 px-3 max-w-xs">
+                          <div className="font-semibold text-slate-900 line-clamp-1">
+                            {o.resource_title}
+                          </div>
+                          {o.created_at && (
+                            <div className="text-[10px] text-slate-400">
+                              {new Date(o.created_at).toLocaleString()}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 font-black text-emerald-800 whitespace-nowrap">
+                          KES {o.amount}
+                        </td>
+                        <td className="py-2.5 pl-3 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5">
+                            {o.status !== 'COMPLETED' && (
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => handleOrderStatus(o, 'COMPLETED')}
+                                className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg transition"
+                              >
+                                <Check className="w-3 h-3" />
+                                Approve
+                              </button>
+                            )}
+                            {o.status === 'PENDING' && (
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => handleOrderStatus(o, 'FAILED')}
+                                className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] px-2 py-1 rounded-lg transition"
+                              >
+                                Reject
+                              </button>
+                            )}
+                            {o.resource_id && (
+                              <button
+                                type="button"
+                                onClick={() => handleSendWhatsAppDownload(o)}
+                                title="Send 24h Signed Download Link via WhatsApp"
+                                className="inline-flex items-center gap-1 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-semibold text-[11px] px-2 py-1 rounded-lg transition"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                WhatsApp Link
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
         {/* 1. Drag & Drop Single / Bulk Uploader */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between">

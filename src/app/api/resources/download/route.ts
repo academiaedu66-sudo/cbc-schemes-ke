@@ -10,6 +10,94 @@ import {
 
 const BUCKET_NAME = 'cbc-materials';
 
+async function verifyPaystackOrder(checkoutRequestId: string): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
+  if (shouldThrottleQuery(checkoutRequestId, 4500)) {
+    return 'PENDING';
+  }
+  const secret = (process.env.PAYSTACK_SECRET_KEY || '').trim();
+  if (!secret) return 'PENDING';
+
+  const reference = checkoutRequestId.replace(/^PAYSTACK_/, '');
+  try {
+    const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+      cache: 'no-store',
+    });
+    const json = await res.json();
+    const txStatus = json?.data?.status;
+    if (txStatus === 'success') {
+      const receipt = json?.data?.receipt_number || reference;
+      await supabaseAdmin
+        .from('orders')
+        .update({
+          status: 'COMPLETED',
+          mpesa_receipt_number: String(receipt).slice(0, 40),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('checkout_request_id', checkoutRequestId);
+      return 'COMPLETED';
+    }
+    if (txStatus === 'failed' || txStatus === 'abandoned') {
+      await supabaseAdmin
+        .from('orders')
+        .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+        .eq('checkout_request_id', checkoutRequestId);
+      return 'FAILED';
+    }
+    return 'PENDING';
+  } catch {
+    return 'PENDING';
+  }
+}
+
+async function verifyIntaSendOrder(checkoutRequestId: string): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
+  if (shouldThrottleQuery(checkoutRequestId, 5000)) {
+    return 'PENDING';
+  }
+  const secret = (process.env.INTASEND_SECRET_KEY || '').trim();
+  if (!secret) return 'PENDING';
+
+  const invoiceId = checkoutRequestId.replace(/^INTASEND_/, '');
+  const base = secret.includes('_test_')
+    ? 'https://sandbox.intasend.com'
+    : 'https://payment.intasend.com';
+
+  try {
+    const res = await fetch(`${base}/api/v1/payment/status/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ invoice_id: invoiceId }),
+      cache: 'no-store',
+    });
+    const json = await res.json();
+    const state = json?.invoice?.state;
+    if (state === 'COMPLETE') {
+      await supabaseAdmin
+        .from('orders')
+        .update({
+          status: 'COMPLETED',
+          mpesa_receipt_number: json?.invoice?.mpesa_reference || invoiceId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('checkout_request_id', checkoutRequestId);
+      return 'COMPLETED';
+    }
+    if (state === 'FAILED' || state === 'CANCELED') {
+      await supabaseAdmin
+        .from('orders')
+        .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+        .eq('checkout_request_id', checkoutRequestId);
+      return 'FAILED';
+    }
+    return 'PENDING';
+  } catch {
+    return 'PENDING';
+  }
+}
+
 async function queryDarajaStkStatus(checkoutRequestId: string): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
   // Throttle Daraja stkpushquery to at most once every 12s per order so Safaricom WAF never rate-limits
   if (shouldThrottleQuery(checkoutRequestId, 12000)) {
@@ -101,11 +189,22 @@ export async function POST(req: Request) {
     }
 
     let currentStatus = order.status as string;
+    const idStr = String(checkoutRequestId);
 
-    // Give webhook 8 seconds head start, then poll Daraja directly every 12s as fallback
-    const ageMs = order.created_at ? Date.now() - new Date(order.created_at).getTime() : 10000;
-    if (currentStatus === 'PENDING' && ageMs >= 8000) {
-      currentStatus = await queryDarajaStkStatus(checkoutRequestId);
+    if (currentStatus === 'PENDING') {
+      if (idStr.startsWith('MANUAL_')) {
+        // Direct M-Pesa payments to 254728595160 unlock automatically as soon as approved in /admin
+      } else if (idStr.startsWith('PAYSTACK_')) {
+        currentStatus = await verifyPaystackOrder(idStr);
+      } else if (idStr.startsWith('INTASEND_')) {
+        currentStatus = await verifyIntaSendOrder(idStr);
+      } else {
+        // Safaricom Daraja STK Push fallback query after 8s head start
+        const ageMs = order.created_at ? Date.now() - new Date(order.created_at).getTime() : 10000;
+        if (ageMs >= 8000) {
+          currentStatus = await queryDarajaStkStatus(idStr);
+        }
+      }
     }
 
     if (currentStatus !== 'COMPLETED') {

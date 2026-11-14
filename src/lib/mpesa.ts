@@ -1,4 +1,57 @@
-// Shared Safaricom Daraja M-Pesa Helper with OAuth Token Caching & WAF-Safe Throttling
+// Shared M-Pesa & Multi-Gateway Helper (Direct 254728595160 + Paystack + IntaSend + Safaricom Daraja)
+
+export const DEFAULT_MERCHANT_PHONE = '254728595160';
+
+export function getMerchantPhone(): string {
+  const raw = (process.env.NEXT_PUBLIC_MERCHANT_PHONE || DEFAULT_MERCHANT_PHONE).trim();
+  return normalizeKenyanPhone(raw) || DEFAULT_MERCHANT_PHONE;
+}
+
+export function toLocalKenyanFormat(intlPhone: string): string {
+  const normalized = normalizeKenyanPhone(intlPhone) || DEFAULT_MERCHANT_PHONE;
+  return `0${normalized.slice(3)}`;
+}
+
+export type PaymentProvider = 'paystack' | 'intasend' | 'daraja_live' | 'daraja_sandbox';
+
+export function getActivePaymentProvider(): PaymentProvider {
+  if ((process.env.PAYSTACK_SECRET_KEY || '').trim()) {
+    return 'paystack';
+  }
+  if ((process.env.INTASEND_SECRET_KEY || '').trim()) {
+    return 'intasend';
+  }
+  const isProd = isMpesaProduction();
+  const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
+  if (isProd && shortCode && shortCode !== '174379') {
+    return 'daraja_live';
+  }
+  return 'daraja_sandbox';
+}
+
+export function extractMpesaReceiptCode(rawInput: string): string | null {
+  const upper = String(rawInput || '').trim().toUpperCase();
+  if (!upper) return null;
+
+  // Match standard 10-character M-Pesa receipt at start of pasted SMS (e.g. "SJK84M2P9Q Confirmed. Ksh50.00...")
+  const smsMatch = upper.match(/\b([A-Z0-9]{10})\s+CONFIRMED\b/);
+  if (smsMatch) {
+    return smsMatch[1];
+  }
+
+  // Match standalone 10-character alphanumeric M-Pesa transaction code (starts with letter)
+  const tokenMatch = upper.match(/\b([A-Z][A-Z0-9]{9})\b/);
+  if (tokenMatch) {
+    return tokenMatch[1];
+  }
+
+  const cleaned = upper.replace(/[^A-Z0-9]/g, '');
+  if (cleaned.length >= 8 && cleaned.length <= 12) {
+    return cleaned;
+  }
+
+  return null;
+}
 
 interface CachedToken {
   token: string;

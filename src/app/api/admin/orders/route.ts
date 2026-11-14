@@ -1,0 +1,98 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
+
+const BUCKET_NAME = 'cbc-materials';
+
+function isAuthorized(req: NextRequest): boolean {
+  const provided = (req.headers.get('x-admin-password') || '').trim();
+  const expected = (process.env.ADMIN_PASSWORD || '').trim();
+  return Boolean(provided && expected && provided === expected);
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
+  }
+
+  try {
+    const signedForResourceId = req.nextUrl.searchParams.get('signedResourceId');
+    if (signedForResourceId) {
+      const { data: resource } = await supabaseAdmin
+        .from('resources')
+        .select('id, title, file_path')
+        .eq('id', signedForResourceId)
+        .single();
+
+      if (!resource?.file_path) {
+        return NextResponse.json({ error: 'Resource file not found' }, { status: 404 });
+      }
+
+      const { data: signed, error: signErr } = await supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .createSignedUrl(resource.file_path, 24 * 3600, { download: true });
+
+      if (signErr || !signed?.signedUrl) {
+        return NextResponse.json({ error: signErr?.message || 'Could not sign link' }, { status: 500 });
+      }
+
+      return NextResponse.json({ downloadUrl: signed.signedUrl, title: resource.title });
+    }
+
+    const { data: orders, error } = await supabaseAdmin
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(60);
+
+    if (error) throw error;
+
+    const resourceIds = Array.from(
+      new Set((orders || []).map((o) => o.resource_id).filter(Boolean))
+    );
+
+    const titleById = new Map<string, string>();
+    if (resourceIds.length > 0) {
+      const { data: resRows } = await supabaseAdmin
+        .from('resources')
+        .select('id, title')
+        .in('id', resourceIds);
+      for (const r of resRows || []) {
+        titleById.set(r.id, r.title);
+      }
+    }
+
+    const enriched = (orders || []).map((o) => ({
+      ...o,
+      resource_title: o.resource_id ? titleById.get(o.resource_id) || 'CBC Material' : 'CBC Material',
+    }));
+
+    return NextResponse.json({ orders: enriched });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to load orders';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
+  }
+
+  try {
+    const { id, status } = await req.json();
+    if (!id || !['COMPLETED', 'FAILED'].includes(status)) {
+      return NextResponse.json({ error: 'Valid order id and status required' }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('orders')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) throw error;
+    return NextResponse.json({ message: `Order marked ${status}` });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to update order';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
