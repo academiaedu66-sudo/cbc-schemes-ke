@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAdminAuthorized } from '@/lib/admin-auth';
 
 const BUCKET_NAME = 'cbc-materials';
 
-function isAuthorized(req: NextRequest): boolean {
-  const provided = (req.headers.get('x-admin-password') || '').trim();
-  const expected = (process.env.ADMIN_PASSWORD || '').trim();
-  return Boolean(provided && expected && provided === expected);
-}
-
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isAdminAuthorized(req)) {
     return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
   }
 
@@ -74,7 +69,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isAdminAuthorized(req)) {
     return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
   }
 

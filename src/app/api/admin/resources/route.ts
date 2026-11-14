@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getLevelForGrade, normalizeCategory } from '@/lib/material-utils';
+import { isAdminAuthorized } from '@/lib/admin-auth';
 
 const BUCKET_NAME = 'cbc-materials';
 
 function isAuthorized(req: NextRequest): boolean {
-  const provided = (req.headers.get('x-admin-password') || '').trim();
-  const expected = (process.env.ADMIN_PASSWORD || '').trim();
-  return Boolean(provided && expected && provided === expected);
+  return isAdminAuthorized(req);
 }
 
 function sanitizeStorageFilename(name: string): string {
