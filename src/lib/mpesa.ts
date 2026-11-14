@@ -4,6 +4,7 @@
 
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
 export const DEFAULT_WHATSAPP_PHONE = '254705759072';
+export const DEFAULT_PRODUCTION_ORIGIN = 'https://cbc-schemes-ke.vercel.app';
 
 export function getMerchantPhone(): string {
   const raw = (process.env.NEXT_PUBLIC_MERCHANT_PHONE || DEFAULT_MERCHANT_PHONE).trim();
@@ -27,24 +28,26 @@ export function toLocalKenyanFormat(intlPhone: string): string {
 /**
  * Sends a real-time server-side WhatsApp notification straight into 254705759072 (0705759072)
  * when CALLMEBOT_API_KEY, Meta WhatsApp Cloud API, or WHATSAPP_WEBHOOK_URL is configured.
- * Never throws so checkout never blocks if a notification provider is offline.
+ * Bounded by a 2.5s timeout and never throws so checkout/webhooks never hang.
  */
 export async function sendWhatsAppAdminNotification(message: string): Promise<boolean> {
   const targetPhone = getWhatsAppPhone(); // 254705759072
   let delivered = false;
 
   try {
-    // 1. CallMeBot Personal WhatsApp Inbox API (Free, sends straight to 254705759072)
     const callMeBotKey = (process.env.CALLMEBOT_API_KEY || '').trim();
     if (callMeBotKey) {
       const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(
         targetPhone
       )}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(callMeBotKey)}`;
-      const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+      const res = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(2500),
+      });
       if (res.ok) delivered = true;
     }
 
-    // 2. Meta Official WhatsApp Cloud API
     const waToken = (process.env.WHATSAPP_ACCESS_TOKEN || '').trim();
     const waPhoneId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
     if (waToken && waPhoneId) {
@@ -61,11 +64,11 @@ export async function sendWhatsAppAdminNotification(message: string): Promise<bo
           text: { preview_url: true, body: message },
         }),
         cache: 'no-store',
+        signal: AbortSignal.timeout(2500),
       });
       if (res.ok) delivered = true;
     }
 
-    // 3. Optional Custom WhatsApp Webhook (GreenAPI / Evolution / Make / Zapier)
     const webhookUrl = (process.env.WHATSAPP_WEBHOOK_URL || '').trim();
     if (webhookUrl) {
       const res = await fetch(webhookUrl, {
@@ -78,6 +81,7 @@ export async function sendWhatsAppAdminNotification(message: string): Promise<bo
           timestamp: new Date().toISOString(),
         }),
         cache: 'no-store',
+        signal: AbortSignal.timeout(2500),
       });
       if (res.ok) delivered = true;
     }
@@ -88,7 +92,7 @@ export async function sendWhatsAppAdminNotification(message: string): Promise<bo
   return delivered;
 }
 
-export type PaymentProvider = 'paystack' | 'intasend' | 'daraja_live' | 'daraja_sandbox';
+export type PaymentProvider = 'paystack' | 'intasend' | 'daraja';
 
 export function getActivePaymentProvider(): PaymentProvider {
   if ((process.env.PAYSTACK_SECRET_KEY || '').trim()) {
@@ -97,12 +101,7 @@ export function getActivePaymentProvider(): PaymentProvider {
   if ((process.env.INTASEND_SECRET_KEY || '').trim()) {
     return 'intasend';
   }
-  const isProd = isMpesaProduction();
-  const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
-  if (isProd && shortCode && shortCode !== '174379') {
-    return 'daraja_live';
-  }
-  return 'daraja_sandbox';
+  return 'daraja';
 }
 
 export function extractMpesaReceiptCode(rawInput: string): string | null {
@@ -127,13 +126,18 @@ export function extractMpesaReceiptCode(rawInput: string): string | null {
   return null;
 }
 
-interface CachedToken {
+export interface DarajaSession {
   token: string;
-  expiresAt: number;
-  envKey: string;
+  baseUrl: string;
+  isLiveCluster: boolean;
 }
 
-let cachedDarajaToken: CachedToken | null = null;
+interface CachedDarajaSession extends DarajaSession {
+  expiresAt: number;
+  cacheKey: string;
+}
+
+let cachedDarajaSession: CachedDarajaSession | null = null;
 const lastQueryAtByCheckoutId = new Map<string, number>();
 
 const DARAJA_HEADERS = {
@@ -144,7 +148,10 @@ const DARAJA_HEADERS = {
 };
 
 export function isMpesaProduction(): boolean {
-  return (process.env.MPESA_ENVIRONMENT || '').trim().toLowerCase() === 'production';
+  const env = (process.env.MPESA_ENVIRONMENT || '').trim().toLowerCase();
+  if (env === 'production' || env === 'live' || env === 'prod') return true;
+  const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
+  return Boolean(shortCode && shortCode !== '174379');
 }
 
 export function getEatTimestamp(): string {
@@ -172,7 +179,12 @@ export function normalizeKenyanPhone(rawPhone: string): string | null {
   return digits;
 }
 
-export async function getDarajaAccessToken(): Promise<string> {
+/**
+ * Authenticates against Safaricom Daraja and automatically resolves the matching
+ * cluster (https://api.safaricom.co.ke vs https://sandbox.safaricom.co.ke) so OAuth
+ * and STK Push always hit the exact cluster that issued the consumer keys.
+ */
+export async function getDarajaSession(): Promise<DarajaSession> {
   const consumerKey = (process.env.MPESA_CONSUMER_KEY || '').trim();
   const consumerSecret = (process.env.MPESA_CONSUMER_SECRET || '').trim();
 
@@ -180,21 +192,31 @@ export async function getDarajaAccessToken(): Promise<string> {
     throw new Error('M-Pesa API keys (MPESA_CONSUMER_KEY / MPESA_CONSUMER_SECRET) are not configured.');
   }
 
-  const isProd = isMpesaProduction();
-  const envKey = `${isProd ? 'prod' : 'sandbox'}:${consumerKey.slice(0, 8)}`;
+  const preferLive = isMpesaProduction();
+  const cacheKey = `${preferLive ? 'prod' : 'auto'}:${consumerKey.slice(0, 10)}`;
 
-  if (cachedDarajaToken && cachedDarajaToken.envKey === envKey && Date.now() < cachedDarajaToken.expiresAt) {
-    return cachedDarajaToken.token;
+  if (
+    cachedDarajaSession &&
+    cachedDarajaSession.cacheKey === cacheKey &&
+    Date.now() < cachedDarajaSession.expiresAt
+  ) {
+    return {
+      token: cachedDarajaSession.token,
+      baseUrl: cachedDarajaSession.baseUrl,
+      isLiveCluster: cachedDarajaSession.isLiveCluster,
+    };
   }
 
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
-  const tokenUrl = isProd
-    ? 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-    : 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+  const PROD_BASE = 'https://api.safaricom.co.ke';
+  const SANDBOX_BASE = 'https://sandbox.safaricom.co.ke';
+
+  // Try preferred cluster first, then fallback cluster if credentials belong to the other
+  const candidates = preferLive ? [PROD_BASE, SANDBOX_BASE] : [SANDBOX_BASE, PROD_BASE];
 
   let lastErr = '';
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const res = await fetch(tokenUrl, {
+  for (const baseUrl of candidates) {
+    const res = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
       method: 'GET',
       headers: {
         ...DARAJA_HEADERS,
@@ -205,67 +227,110 @@ export async function getDarajaAccessToken(): Promise<string> {
 
     const text = await res.text();
     if (res.ok) {
-      const data = JSON.parse(text);
-      if (data?.access_token) {
-        cachedDarajaToken = {
-          token: data.access_token,
-          expiresAt: Date.now() + 50 * 60 * 1000,
-          envKey,
-        };
-        return data.access_token;
+      try {
+        const data = JSON.parse(text);
+        if (data?.access_token) {
+          const isLiveCluster = baseUrl === PROD_BASE;
+          cachedDarajaSession = {
+            token: data.access_token,
+            baseUrl,
+            isLiveCluster,
+            expiresAt: Date.now() + 50 * 60 * 1000,
+            cacheKey,
+          };
+          return {
+            token: data.access_token,
+            baseUrl,
+            isLiveCluster,
+          };
+        }
+      } catch {
+        // continue
       }
     }
 
     if (text.includes('Incapsula') || text.includes('<html')) {
-      lastErr = 'Safaricom gateway is momentarily busy. Please wait 10 seconds and click Pay & Download again.';
+      lastErr = 'Safaricom gateway is momentarily busy. Please wait 5 seconds and try again.';
     } else {
       lastErr = `M-Pesa authentication failed (${res.status}). Check MPESA_CONSUMER_KEY & MPESA_CONSUMER_SECRET.`;
-    }
-
-    if (attempt < 2) {
-      await new Promise((r) => setTimeout(r, 800));
     }
   }
 
   throw new Error(lastErr);
 }
 
-export function resolveCallbackUrl(req: Request): string {
-  const configured = (process.env.MPESA_CALLBACK_URL || '').trim();
+export async function getDarajaAccessToken(): Promise<string> {
+  const session = await getDarajaSession();
+  return session.token;
+}
 
+/**
+ * Guarantees a publicly reachable HTTPS callback URL that writes directly to our
+ * shared Supabase `orders` table (avoiding dead ngrok tunnels and protected Vercel preview URLs).
+ */
+export function resolveCallbackUrl(req: Request): string {
+  // 1. On Vercel, ALWAYS use the public production domain so callbacks never hit dead/old env placeholders or protected preview URLs
+  const vercelProdHost = (process.env.VERCEL_PROJECT_PRODUCTION_URL || '').trim();
+  if (vercelProdHost) {
+    return `https://${vercelProdHost}/api/mpesa/callback`;
+  }
+
+  // 2. Inspect incoming request host if public HTTPS
   try {
     const reqUrl = new URL(req.url);
-    const forwardedHost = req.headers.get('x-forwarded-host') || reqUrl.host;
-    const forwardedProto = req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', '');
+    const forwardedHost = (req.headers.get('x-forwarded-host') || reqUrl.host).split(',')[0].trim();
+    const forwardedProto = (req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', ''))
+      .split(',')[0]
+      .trim();
     const isLocalHost =
       forwardedHost.includes('localhost') ||
       forwardedHost.startsWith('127.') ||
       forwardedHost.startsWith('192.168.');
 
-    if (!isLocalHost && forwardedProto === 'https') {
-      if (!configured || configured.includes('ngrok') || configured.includes('localhost')) {
-        return `https://${forwardedHost}/api/mpesa/callback`;
-      }
+    if (!isLocalHost && forwardedProto === 'https' && !forwardedHost.includes('-git-')) {
+      return `https://${forwardedHost}/api/mpesa/callback`;
     }
   } catch {
     // ignore URL parse error
   }
 
-  return configured;
+  // 3. Honor custom live domain if explicitly set on non-Vercel host
+  const configured = (process.env.MPESA_CALLBACK_URL || '').trim();
+  if (
+    configured.startsWith('https://') &&
+    !configured.includes('ngrok') &&
+    !configured.includes('localhost') &&
+    !configured.includes('127.0.0.1') &&
+    !configured.includes('-git-')
+  ) {
+    return configured;
+  }
+
+  // 4. Safe live production fallback (shares the exact same Supabase `orders` table)
+  return `${DEFAULT_PRODUCTION_ORIGIN}/api/mpesa/callback`;
 }
 
 export function resolvePublicOrigin(req: Request): string {
+  const vercelProdHost = (process.env.VERCEL_PROJECT_PRODUCTION_URL || '').trim();
+  if (vercelProdHost) {
+    return `https://${vercelProdHost}`;
+  }
   try {
     const reqUrl = new URL(req.url);
-    const host = req.headers.get('x-forwarded-host') || reqUrl.host;
-    const proto = req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', '');
-    return `${proto}://${host}`;
+    const host = (req.headers.get('x-forwarded-host') || reqUrl.host).split(',')[0].trim();
+    const proto = (req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', ''))
+      .split(',')[0]
+      .trim();
+    if (!host.includes('localhost') && !host.startsWith('127.')) {
+      return `${proto}://${host}`;
+    }
   } catch {
-    return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // ignore
   }
+  return DEFAULT_PRODUCTION_ORIGIN;
 }
 
-export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 12000): boolean {
+export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 6000): boolean {
   const now = Date.now();
   const prev = lastQueryAtByCheckoutId.get(checkoutRequestId) || 0;
   if (now - prev < minIntervalMs) {

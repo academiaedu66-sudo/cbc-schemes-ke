@@ -3,11 +3,10 @@ import { supabaseAdmin } from '@/lib/supabase';
 import {
   DARAJA_HEADERS,
   getActivePaymentProvider,
-  getDarajaAccessToken,
+  getDarajaSession,
   getEatTimestamp,
   getMerchantPhone,
   getWhatsAppPhone,
-  isMpesaProduction,
   normalizeKenyanPhone,
   resolveCallbackUrl,
   resolvePublicOrigin,
@@ -15,13 +14,15 @@ import {
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
 
-export async function GET() {
+export async function GET(req: Request) {
   const provider = getActivePaymentProvider();
   const merchantPhone = getMerchantPhone(); // 254728595160 (M-Pesa collection)
   const whatsappPhone = getWhatsAppPhone(); // 254705759072 (WhatsApp inbox)
+  const callbackUrl = resolveCallbackUrl(req);
   return NextResponse.json({
     provider,
-    liveStkReady: provider !== 'daraja_sandbox',
+    liveStkReady: true,
+    callbackUrl,
     merchantPhone,
     merchantLocalPhone: toLocalKenyanFormat(merchantPhone),
     whatsappPhone,
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
         status: 'PENDING',
       });
 
-      void sendWhatsAppAdminNotification(
+      await sendWhatsAppAdminNotification(
         `📲 *STK PUSH INITIATED (KES ${actualAmountNum})*\n• Buyer: ${phone}\n• Material: ${resource.title}\n• Admin: ${origin}/admin`
       );
 
@@ -123,7 +124,6 @@ export async function POST(req: Request) {
         message: 'M-Pesa STK PIN prompt sent to your phone.',
         checkoutRequestId,
         provider,
-        isSandbox: false,
       });
     }
 
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
         status: 'PENDING',
       });
 
-      void sendWhatsAppAdminNotification(
+      await sendWhatsAppAdminNotification(
         `📲 *STK PUSH INITIATED (KES ${actualAmountNum})*\n• Buyer: ${phone}\n• Material: ${resource.title}\n• Admin: ${origin}/admin`
       );
 
@@ -178,21 +178,20 @@ export async function POST(req: Request) {
         message: 'M-Pesa STK PIN prompt sent to your phone.',
         checkoutRequestId,
         provider,
-        isSandbox: isTest,
       });
     }
 
     // =========================================================================
-    // PROVIDER 3: SAFARICOM DARAJA (Live Till/Paybill or Sandbox)
+    // PROVIDER 3: SAFARICOM DARAJA STK EXPRESS
     // =========================================================================
-    const isProduction = isMpesaProduction();
     const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
-    const partyB = (process.env.MPESA_PARTY_B || shortCode).trim();
+    const tillNumber = (process.env.MPESA_TILL_NUMBER || '').trim();
+    const partyB = (tillNumber || process.env.MPESA_PARTY_B || shortCode).trim();
 
     if (/^(254|0)[17]\d{8}$/.test(shortCode) || /^(254|0)[17]\d{8}$/.test(partyB)) {
       return NextResponse.json(
         {
-          error: `Safaricom Daraja STK Push does not allow a personal mobile number (${partyB}) as ShortCode/PartyB. Use the "Direct M-Pesa to ${toLocalKenyanFormat(merchantPhone)}" tab or configure PAYSTACK_SECRET_KEY / a Buy Goods Till.`,
+          error: `Safaricom Daraja STK Push requires a ShortCode/Till in MPESA_SHORTCODE (not a 10-digit phone number).`,
         },
         { status: 400 }
       );
@@ -205,21 +204,14 @@ export async function POST(req: Request) {
 
     const timestamp = getEatTimestamp();
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
-    const token = await getDarajaAccessToken();
+    const session = await getDarajaSession();
 
-    const stkUrl = isProduction
-      ? 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-      : 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
-
+    const stkUrl = `${session.baseUrl}/mpesa/stkpush/v1/processrequest`;
     const callbackUrl = resolveCallbackUrl(req);
-    if (!callbackUrl || !callbackUrl.startsWith('https://')) {
-      return NextResponse.json(
-        { error: 'MPESA_CALLBACK_URL must be a valid https:// URL.' },
-        { status: 500 }
-      );
-    }
 
-    const transactionType = process.env.MPESA_TRANSACTION_TYPE || 'CustomerPayBillOnline';
+    const defaultTxType =
+      tillNumber || partyB !== shortCode ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
+    const transactionType = (process.env.MPESA_TRANSACTION_TYPE || defaultTxType).trim();
     const actualAmount = actualAmountNum.toString();
 
     const cleanDesc =
@@ -243,7 +235,7 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: {
         ...DARAJA_HEADERS,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${session.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
@@ -264,7 +256,7 @@ export async function POST(req: Request) {
       responseData = { errorMessage: resText.slice(0, 160) };
     }
 
-    if (!darajaRes.ok || responseData.ResponseCode !== '0') {
+    if (!darajaRes.ok || String(responseData.ResponseCode) !== '0') {
       return NextResponse.json(
         {
           error:
@@ -286,11 +278,14 @@ export async function POST(req: Request) {
       status: 'PENDING',
     });
 
+    await sendWhatsAppAdminNotification(
+      `📲 *STK PUSH SENT (KES ${actualAmountNum})*\n• Buyer: ${phone}\n• Material: ${resource.title}\n• Admin: ${origin}/admin`
+    );
+
     return NextResponse.json({
-      message: 'STK PIN prompt sent to your phone.',
+      message: 'M-Pesa STK PIN prompt sent to your phone.',
       checkoutRequestId,
       provider,
-      isSandbox: !isProduction,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unexpected M-Pesa error';

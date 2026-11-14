@@ -52,7 +52,6 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Payment & WhatsApp Configuration
-  const [liveStkReady, setLiveStkReady] = useState(false);
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
   const [merchantLocalPhone, setMerchantLocalPhone] = useState(DEFAULT_MERCHANT_LOCAL);
   const [whatsappPhone, setWhatsappPhone] = useState(DEFAULT_WHATSAPP_INTL);
@@ -61,9 +60,9 @@ export default function HomePage() {
   // Preview Modal State
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
 
-  // Checkout Modal State
+  // Checkout Modal State (STK Express is ALWAYS primary & active)
   const [modalItem, setModalItem] = useState<ResourceItem | null>(null);
-  const [checkoutTab, setCheckoutTab] = useState<'DIRECT' | 'STK'>('DIRECT');
+  const [checkoutTab, setCheckoutTab] = useState<'STK' | 'DIRECT'>('STK');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mpesaCode, setMpesaCode] = useState('');
   const [submittedReceipt, setSubmittedReceipt] = useState('');
@@ -86,13 +85,9 @@ export default function HomePage() {
         if (cfg?.merchantLocalPhone) setMerchantLocalPhone(cfg.merchantLocalPhone);
         if (cfg?.whatsappPhone) setWhatsappPhone(cfg.whatsappPhone);
         if (cfg?.whatsappLocalPhone) setWhatsappLocalPhone(cfg.whatsappLocalPhone);
-        if (typeof cfg?.liveStkReady === 'boolean') {
-          setLiveStkReady(cfg.liveStkReady);
-          setCheckoutTab(cfg.liveStkReady ? 'STK' : 'DIRECT');
-        }
       })
       .catch(() => {
-        // Keep safe defaults: M-Pesa -> 254728595160, WhatsApp -> 254705759072
+        // Keep safe defaults
       });
   }, []);
 
@@ -184,7 +179,7 @@ export default function HomePage() {
           } else if (data.status === 'FAILED') {
             setPaymentStatus('FAILED');
             setCheckoutMessage(
-              'Payment could not be verified or was cancelled. Please check and try again.'
+              'Payment was cancelled or timed out. Click below to resend STK prompt or enter M-Pesa code.'
             );
             clearInterval(interval);
           }
@@ -234,7 +229,7 @@ export default function HomePage() {
     const msg =
       `🔔 *NEW CBC ORDER PAID*\n` +
       `• *M-Pesa Code:* ${receipt}\n` +
-      `• *Amount Sent (to ${merchantLocalPhone}):* KES ${modalItem.price}\n` +
+      `• *Amount:* KES ${modalItem.price}\n` +
       (phoneNumber.trim() ? `• *Buyer Phone:* ${phoneNumber.trim()}\n` : '') +
       `• *Material:* ${modalItem.title}\n` +
       (origin ? `• *Approve Unlock:* ${origin}/admin` : '');
@@ -246,7 +241,7 @@ export default function HomePage() {
     setIsProcessing(true);
     setPaymentStatus('PENDING');
     setCheckoutMessage(
-      'Sending STK Push prompt to your phone... Please enter your M-Pesa PIN.'
+      'Sending M-Pesa PIN prompt to your phone... Check your handset and enter your PIN.'
     );
 
     try {
@@ -265,7 +260,7 @@ export default function HomePage() {
 
       setCheckoutRequestId(data.checkoutRequestId);
       setCheckoutMessage(
-        'PIN prompt sent! Waiting for M-Pesa payment confirmation...'
+        'M-Pesa prompt sent! Enter your PIN on your phone — your download unlocks automatically.'
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Payment error';
@@ -282,12 +277,11 @@ export default function HomePage() {
     if (!parsedCode) {
       setPaymentStatus('FAILED');
       setCheckoutMessage(
-        'Please paste a valid 10-character M-Pesa code (e.g. SJK84M2P9Q) or paste the full M-Pesa SMS.'
+        'Please paste a valid 10-character M-Pesa code (e.g. UKFNHIONPV) or paste the full M-Pesa SMS.'
       );
       return;
     }
 
-    // Open WhatsApp notification to 0705759072 synchronously inside user click gesture so browsers don't block it
     if (notifyViaWhatsApp && typeof window !== 'undefined') {
       window.open(
         buildOrderWhatsAppHref(parsedCode),
@@ -320,7 +314,7 @@ export default function HomePage() {
       setSubmittedReceipt(data.receiptCode || parsedCode);
       setCheckoutMessage(
         data.message ||
-          `Code received! Waiting for confirmation of KES ${modalItem?.price} sent to ${merchantLocalPhone}...`
+          `M-Pesa code ${parsedCode} submitted! Waiting for instant unlock...`
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Verification error';
@@ -346,7 +340,7 @@ export default function HomePage() {
     setCheckoutRequestId(null);
     setDownloadUrl(null);
     setPaymentStatus('IDLE');
-    setCheckoutTab(liveStkReady ? 'STK' : 'DIRECT');
+    setCheckoutTab('STK');
   };
 
   const resetModal = () => {
@@ -670,7 +664,7 @@ export default function HomePage() {
         }}
       />
 
-      {/* M-Pesa Checkout Modal (M-Pesa -> 254728595160 | WhatsApp Alerts -> 254705759072) */}
+      {/* Live M-Pesa Express Checkout Modal */}
       {modalItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative my-6">
@@ -681,13 +675,13 @@ export default function HomePage() {
               ✕
             </button>
             <h2 className="text-lg font-black text-slate-900 mb-1">
-              M-Pesa Instant Checkout
+              M-Pesa Express Checkout
             </h2>
             <p className="text-xs text-slate-500 mb-4 pr-6">{modalItem.title}</p>
 
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center mb-4">
               <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">
-                Amount Payable via M-Pesa
+                Pay Safaricom M-Pesa
               </span>
               <p className="text-2xl font-black text-emerald-900">
                 KES {modalItem.price}
@@ -714,31 +708,13 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {/* Payment Method Switcher */}
+                {/* Payment Method Switcher (Always enabled so buyers are never stuck) */}
                 <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl mb-4">
                   <button
                     type="button"
-                    disabled={paymentStatus === 'PENDING'}
-                    onClick={() => {
-                      setCheckoutTab('DIRECT');
-                      setCheckoutMessage('');
-                      setPaymentStatus('IDLE');
-                    }}
-                    className={`py-2 px-2 rounded-lg text-xs font-bold transition ${
-                      checkoutTab === 'DIRECT'
-                        ? 'bg-white text-emerald-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Send to {merchantLocalPhone}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={paymentStatus === 'PENDING'}
                     onClick={() => {
                       setCheckoutTab('STK');
-                      setCheckoutMessage('');
-                      setPaymentStatus('IDLE');
+                      if (paymentStatus !== 'PENDING') setCheckoutMessage('');
                     }}
                     className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 ${
                       checkoutTab === 'STK'
@@ -747,27 +723,114 @@ export default function HomePage() {
                     }`}
                   >
                     <Smartphone className="w-3.5 h-3.5" />
-                    STK Prompt
+                    M-Pesa STK Prompt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCheckoutTab('DIRECT');
+                      setPaymentStatus('IDLE');
+                      setCheckoutMessage('');
+                    }}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold transition ${
+                      checkoutTab === 'DIRECT'
+                        ? 'bg-white text-emerald-800 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Enter M-Pesa Code
                   </button>
                 </div>
 
-                {checkoutTab === 'DIRECT' ? (
+                {checkoutTab === 'STK' ? (
+                  <form onSubmit={handleMpesaStkPay} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        Enter Your M-Pesa Number
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="07XXXXXXXX or 01XXXXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        required
+                        disabled={isProcessing}
+                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        An automatic M-Pesa PIN prompt for{' '}
+                        <strong>KES {modalItem.price}</strong> will pop up on
+                        your phone.
+                      </p>
+                    </div>
+
+                    {checkoutMessage && (
+                      <div
+                        className={`text-xs text-center p-3 rounded-lg flex items-center justify-center gap-2 ${
+                          paymentStatus === 'FAILED'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        }`}
+                      >
+                        {paymentStatus === 'PENDING' && (
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                        )}
+                        {paymentStatus === 'FAILED' && (
+                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                        )}
+                        <span>{checkoutMessage}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isProcessing || paymentStatus === 'PENDING'}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-700/70 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm"
+                    >
+                      {paymentStatus === 'PENDING'
+                        ? 'Waiting for M-Pesa PIN Entry...'
+                        : 'Pay & Download Now'}
+                    </button>
+
+                    {paymentStatus === 'PENDING' && (
+                      <div className="text-center space-y-1 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentStatus('IDLE');
+                            setCheckoutMessage('');
+                          }}
+                          className="text-[11px] text-slate-500 hover:text-slate-800 underline mr-3"
+                        >
+                          Resend STK Prompt
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCheckoutTab('DIRECT');
+                            setPaymentStatus('IDLE');
+                            setCheckoutMessage('');
+                          }}
+                          className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 underline"
+                        >
+                          Already received M-Pesa SMS? Paste code here
+                        </button>
+                      </div>
+                    )}
+                  </form>
+                ) : (
                   <form onSubmit={handleDirectMpesaSubmit} className="space-y-3.5">
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-2 text-slate-700">
                       <p className="font-bold text-slate-900">
-                        Pay Directly to M-Pesa ({merchantPhone}):
+                        Direct M-Pesa Payment ({merchantPhone}):
                       </p>
                       <ol className="list-decimal list-inside space-y-1.5">
                         <li>
-                          Go to <strong>M-Pesa</strong> &rarr;{' '}
-                          <strong>Send Money</strong> (or{' '}
-                          <strong>Pochi la Biashara</strong>)
-                        </li>
-                        <li className="flex flex-wrap items-center gap-1.5">
-                          <span>Enter M-Pesa Phone:</span>
+                          Send <strong>KES {modalItem.price}</strong> via{' '}
+                          <strong>M-Pesa</strong> to{' '}
                           <strong className="font-mono text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
                             {merchantLocalPhone}
-                          </strong>
+                          </strong>{' '}
                           <button
                             type="button"
                             onClick={copyMerchantNumber}
@@ -785,12 +848,8 @@ export default function HomePage() {
                           </button>
                         </li>
                         <li>
-                          Enter Amount: <strong>KES {modalItem.price}</strong> &amp;
-                          enter your M-Pesa PIN
-                        </li>
-                        <li>
-                          Paste the <strong>M-Pesa Code</strong> (or full M-Pesa
-                          SMS) below:
+                          Or if you already paid via STK Prompt, paste your{' '}
+                          <strong>M-Pesa Receipt Code</strong> (or SMS) below:
                         </li>
                       </ol>
                     </div>
@@ -801,7 +860,7 @@ export default function HomePage() {
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. SJK84M2P9Q (or paste full M-Pesa SMS)"
+                        placeholder="e.g. UKFNHIONPV (or paste full M-Pesa SMS)"
                         value={mpesaCode}
                         onChange={(e) => setMpesaCode(e.target.value)}
                         required
@@ -812,7 +871,7 @@ export default function HomePage() {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                        Your Phone Number (Optional, for WhatsApp delivery)
+                        Your Phone Number (Optional)
                       </label>
                       <input
                         type="tel"
@@ -833,8 +892,8 @@ export default function HomePage() {
                           className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                         />
                         <span>
-                          Send instant payment alert to WhatsApp inbox (
-                          <strong>{whatsappLocalPhone}</strong>)
+                          Notify WhatsApp inbox (<strong>{whatsappLocalPhone}</strong>)
+                          for instant unlock
                         </span>
                       </label>
                     )}
@@ -884,72 +943,6 @@ export default function HomePage() {
                           : 'Verify M-Pesa Code & Download'}
                       </button>
                     )}
-                  </form>
-                ) : (
-                  <form onSubmit={handleMpesaStkPay} className="space-y-4">
-                    {!liveStkReady && (
-                      <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-xs space-y-1.5">
-                        <p className="font-bold">
-                          STK Prompt is currently in Sandbox Test Mode
-                        </p>
-                        <p>
-                          Sandbox prompts do not transfer real money to{' '}
-                          <strong>{merchantLocalPhone}</strong>. To pay directly to{' '}
-                          <strong>{merchantLocalPhone}</strong>,{' '}
-                          <button
-                            type="button"
-                            onClick={() => setCheckoutTab('DIRECT')}
-                            className="font-bold underline text-emerald-800"
-                          >
-                            switch to Send to {merchantLocalPhone}
-                          </button>
-                          .
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                        Your M-Pesa Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        placeholder="07XXXXXXXX or 2547XXXXXXXX"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        required
-                        disabled={paymentStatus === 'PENDING'}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-
-                    {checkoutMessage && (
-                      <div
-                        className={`text-xs text-center p-3 rounded-lg flex items-center justify-center gap-2 ${
-                          paymentStatus === 'FAILED'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                        }`}
-                      >
-                        {paymentStatus === 'PENDING' && (
-                          <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
-                        )}
-                        {paymentStatus === 'FAILED' && (
-                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                        )}
-                        <span>{checkoutMessage}</span>
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={isProcessing || paymentStatus === 'PENDING'}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold py-3 rounded-xl text-sm transition"
-                    >
-                      {paymentStatus === 'PENDING'
-                        ? 'Waiting for M-Pesa PIN...'
-                        : 'Send STK Prompt & Download'}
-                    </button>
                   </form>
                 )}
               </>

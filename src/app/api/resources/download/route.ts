@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import {
   DARAJA_HEADERS,
-  getDarajaAccessToken,
+  getDarajaSession,
   getEatTimestamp,
-  isMpesaProduction,
+  sendWhatsAppAdminNotification,
   shouldThrottleQuery,
 } from '@/lib/mpesa';
 
@@ -99,14 +99,12 @@ async function verifyIntaSendOrder(checkoutRequestId: string): Promise<'COMPLETE
 }
 
 async function queryDarajaStkStatus(checkoutRequestId: string): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
-  // Throttle Daraja stkpushquery to at most once every 12s per order so Safaricom WAF never rate-limits
-  if (shouldThrottleQuery(checkoutRequestId, 12000)) {
+  if (shouldThrottleQuery(checkoutRequestId, 6000)) {
     return 'PENDING';
   }
 
   try {
-    const token = await getDarajaAccessToken();
-    const isProduction = isMpesaProduction();
+    const session = await getDarajaSession();
     const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
     const passkey = (
       process.env.MPESA_PASSKEY ||
@@ -115,15 +113,13 @@ async function queryDarajaStkStatus(checkoutRequestId: string): Promise<'COMPLET
 
     const timestamp = getEatTimestamp();
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
-    const queryUrl = isProduction
-      ? 'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query'
-      : 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query';
+    const queryUrl = `${session.baseUrl}/mpesa/stkpushquery/v1/query`;
 
     const queryRes = await fetch(queryUrl, {
       method: 'POST',
       headers: {
         ...DARAJA_HEADERS,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${session.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -143,17 +139,26 @@ async function queryDarajaStkStatus(checkoutRequestId: string): Promise<'COMPLET
       return 'PENDING';
     }
 
-    // 500.001.1001 or ResultCode 4999 = still waiting for user PIN entry on handset
-    if (data.errorCode === '500.001.1001' || String(data.ResultCode) === '4999') {
+    const errCode = String(data.errorCode || '');
+    const resCodeStr = data.ResultCode !== undefined ? String(data.ResultCode) : '';
+    if (
+      errCode === '500.001.1001' ||
+      errCode === '500.002.1001' ||
+      resCodeStr === '4999'
+    ) {
       return 'PENDING';
     }
 
     if (data.ResultCode !== undefined) {
-      if (String(data.ResultCode) === '0') {
+      if (resCodeStr === '0') {
         await supabaseAdmin
           .from('orders')
           .update({ status: 'COMPLETED', updated_at: new Date().toISOString() })
           .eq('checkout_request_id', checkoutRequestId);
+
+        void sendWhatsAppAdminNotification(
+          `✅ *M-PESA STK PAYMENT VERIFIED*\n• Order: ${checkoutRequestId}`
+        );
         return 'COMPLETED';
       } else {
         await supabaseAdmin
@@ -193,15 +198,14 @@ export async function POST(req: Request) {
 
     if (currentStatus === 'PENDING') {
       if (idStr.startsWith('MANUAL_')) {
-        // Direct M-Pesa payments to 254728595160 unlock automatically as soon as approved in /admin
+        // Direct M-Pesa receipt codes unlock as soon as approved in /admin
       } else if (idStr.startsWith('PAYSTACK_')) {
         currentStatus = await verifyPaystackOrder(idStr);
       } else if (idStr.startsWith('INTASEND_')) {
         currentStatus = await verifyIntaSendOrder(idStr);
       } else {
-        // Safaricom Daraja STK Push fallback query after 8s head start
         const ageMs = order.created_at ? Date.now() - new Date(order.created_at).getTime() : 10000;
-        if (ageMs >= 8000) {
+        if (ageMs >= 5000) {
           currentStatus = await queryDarajaStkStatus(idStr);
         }
       }
@@ -221,7 +225,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Resource missing' }, { status: 404 });
     }
 
-    // Generate 1-hour signed download URL from private Supabase Storage bucket
     if (resource.file_path && !resource.file_path.startsWith('http')) {
       const { data: signedData, error: signedErr } = await supabaseAdmin.storage
         .from(BUCKET_NAME)
