@@ -6,15 +6,78 @@ import {
   getEatTimestamp,
   sendWhatsAppAdminNotification,
   shouldThrottleQuery,
+  triggerInstantPayHeroPayout,
 } from '@/lib/mpesa';
+import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 
 const BUCKET_NAME = 'cbc-materials';
+
+async function verifyPayHeroOrder(
+  checkoutRequestId: string,
+  orderAmount: number
+): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
+  if (shouldThrottleQuery(checkoutRequestId, 4000)) {
+    return 'PENDING';
+  }
+  const stored = await getStoredPaymentConfig();
+  const rawToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
+  if (!rawToken) return 'PENDING';
+
+  const reference = checkoutRequestId.replace(/^PAYHERO_/, '');
+  try {
+    const res = await fetch(
+      `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
+        reference
+      )}`,
+      {
+        headers: { Authorization: formatPayHeroAuthHeader(rawToken) },
+        cache: 'no-store',
+      }
+    );
+    const json = await res.json();
+    const st = String(json?.status || '').toUpperCase();
+
+    if (st === 'SUCCESS' || st === 'COMPLETED') {
+      const receipt = json?.provider_reference || json?.third_party_reference || reference;
+      await supabaseAdmin
+        .from('orders')
+        .update({
+          status: 'COMPLETED',
+          mpesa_receipt_number: String(receipt).slice(0, 40),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('checkout_request_id', checkoutRequestId);
+
+      if (orderAmount > 0) {
+        await triggerInstantPayHeroPayout(orderAmount, String(receipt));
+      }
+
+      void sendWhatsAppAdminNotification(
+        `✅ *M-PESA RECEIVED IN 0728595160*\n• Receipt: ${receipt}\n• Amount: KES ${orderAmount}`
+      );
+      return 'COMPLETED';
+    }
+
+    if (st === 'FAILED' || st === 'CANCELLED' || st === 'CANCELED') {
+      await supabaseAdmin
+        .from('orders')
+        .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+        .eq('checkout_request_id', checkoutRequestId);
+      return 'FAILED';
+    }
+
+    return 'PENDING';
+  } catch {
+    return 'PENDING';
+  }
+}
 
 async function verifyPaystackOrder(checkoutRequestId: string): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
   if (shouldThrottleQuery(checkoutRequestId, 4500)) {
     return 'PENDING';
   }
-  const secret = (process.env.PAYSTACK_SECRET_KEY || '').trim();
+  const stored = await getStoredPaymentConfig();
+  const secret = (stored.paystackSecretKey || process.env.PAYSTACK_SECRET_KEY || '').trim();
   if (!secret) return 'PENDING';
 
   const reference = checkoutRequestId.replace(/^PAYSTACK_/, '');
@@ -54,7 +117,8 @@ async function verifyIntaSendOrder(checkoutRequestId: string): Promise<'COMPLETE
   if (shouldThrottleQuery(checkoutRequestId, 5000)) {
     return 'PENDING';
   }
-  const secret = (process.env.INTASEND_SECRET_KEY || '').trim();
+  const stored = await getStoredPaymentConfig();
+  const secret = (stored.intasendSecretKey || process.env.INTASEND_SECRET_KEY || '').trim();
   if (!secret) return 'PENDING';
 
   const invoiceId = checkoutRequestId.replace(/^INTASEND_/, '');
@@ -105,11 +169,7 @@ async function queryDarajaStkStatus(checkoutRequestId: string): Promise<'COMPLET
 
   try {
     const session = await getDarajaSession();
-    const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
-    const passkey = (
-      process.env.MPESA_PASSKEY ||
-      'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-    ).trim();
+    const { shortCode, passkey } = session;
 
     const timestamp = getEatTimestamp();
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
@@ -185,7 +245,7 @@ export async function POST(req: Request) {
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
-      .select('status, resource_id, created_at')
+      .select('status, resource_id, amount, created_at')
       .eq('checkout_request_id', checkoutRequestId)
       .single();
 
@@ -199,6 +259,8 @@ export async function POST(req: Request) {
     if (currentStatus === 'PENDING') {
       if (idStr.startsWith('MANUAL_')) {
         // Direct M-Pesa receipt codes unlock as soon as approved in /admin
+      } else if (idStr.startsWith('PAYHERO_')) {
+        currentStatus = await verifyPayHeroOrder(idStr, Number(order.amount) || 0);
       } else if (idStr.startsWith('PAYSTACK_')) {
         currentStatus = await verifyPaystackOrder(idStr);
       } else if (idStr.startsWith('INTASEND_')) {
@@ -213,6 +275,10 @@ export async function POST(req: Request) {
 
     if (currentStatus !== 'COMPLETED') {
       return NextResponse.json({ status: currentStatus, message: 'Processing' }, { status: 200 });
+    }
+
+    if (!order.resource_id) {
+      return NextResponse.json({ status: 'COMPLETED', downloadUrl: '#' });
     }
 
     const { data: resource, error: resourceError } = await supabaseAdmin

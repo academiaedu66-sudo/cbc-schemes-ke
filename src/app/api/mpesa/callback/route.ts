@@ -1,18 +1,94 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { sendWhatsAppAdminNotification } from '@/lib/mpesa';
+import {
+  sendWhatsAppAdminNotification,
+  triggerInstantPayHeroPayout,
+} from '@/lib/mpesa';
+import { getStoredPaymentConfig } from '@/lib/payment-config';
 
 export async function POST(req: Request) {
   try {
     const rawText = await req.text();
     const body = JSON.parse(rawText);
 
-    // 1. Paystack Webhook Support
+    // 1. PayHero Kenya Webhook Support (both top-level & nested response schemas)
+    if (
+      body?.paymentSuccess !== undefined ||
+      body?.response?.ExternalReference ||
+      body?.response?.Status
+    ) {
+      const isNested = Boolean(body?.response);
+      const success = isNested
+        ? Number(body.response?.ResultCode) === 0 ||
+          String(body.response?.Status || '').toUpperCase() === 'SUCCESS'
+        : Boolean(body.paymentSuccess);
+
+      const payheroRef = isNested ? body.response?.CheckoutRequestID : body.reference;
+      const externalRef = isNested
+        ? body.response?.ExternalReference
+        : body.user_reference;
+      const receipt =
+        (isNested
+          ? body.response?.MpesaReceiptNumber
+          : body.providerReference) ||
+        payheroRef ||
+        externalRef ||
+        'CONFIRMED';
+      const amountNum = Number(
+        (isNested ? body.response?.Amount : body.amount) || 0
+      );
+      const payerPhone = String(
+        (isNested ? body.response?.Phone : body.phone) || ''
+      );
+
+      const candidateIds = [
+        payheroRef ? `PAYHERO_${payheroRef}` : '',
+        externalRef ? `PAYHERO_${externalRef}` : '',
+      ].filter(Boolean);
+
+      if (candidateIds.length > 0) {
+        if (success) {
+          await supabaseAdmin
+            .from('orders')
+            .update({
+              status: 'COMPLETED',
+              mpesa_receipt_number: String(receipt).slice(0, 40),
+              updated_at: new Date().toISOString(),
+            })
+            .in('checkout_request_id', candidateIds);
+
+          // If using PayHero Service Wallet with Auto-Withdraw, disburse immediately to 0728595160
+          if (amountNum > 0) {
+            await triggerInstantPayHeroPayout(amountNum, String(receipt));
+          }
+
+          await sendWhatsAppAdminNotification(
+            `✅ *M-PESA RECEIVED IN 0728595160*\n• Receipt: ${receipt}\n• Amount: KES ${amountNum}\n• Buyer: ${payerPhone}`
+          );
+        } else {
+          await supabaseAdmin
+            .from('orders')
+            .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+            .in('checkout_request_id', candidateIds);
+        }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // 2. Paystack Webhook Support
     const paystackSig = req.headers.get('x-paystack-signature');
-    if (paystackSig && process.env.PAYSTACK_SECRET_KEY) {
+    const stored = await getStoredPaymentConfig();
+    const paystackSecret = (
+      stored.paystackSecretKey ||
+      process.env.PAYSTACK_SECRET_KEY ||
+      ''
+    ).trim();
+
+    if (paystackSig && paystackSecret) {
       const expected = crypto
-        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY.trim())
+        .createHmac('sha512', paystackSecret)
         .update(rawText)
         .digest('hex');
 
@@ -53,7 +129,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true });
     }
 
-    // 2. IntaSend Webhook Support
+    // 3. IntaSend Webhook Support
     if (body?.invoice_id && body?.state) {
       const checkoutId = `INTASEND_${body.invoice_id}`;
       if (body.state === 'COMPLETE') {
@@ -79,7 +155,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true });
     }
 
-    // 3. Safaricom Daraja STK Callback
+    // 4. Safaricom Daraja STK Callback
     const stkCallback = body?.Body?.stkCallback;
     if (!stkCallback) {
       return NextResponse.json({ message: 'Invalid payload' }, { status: 400 });

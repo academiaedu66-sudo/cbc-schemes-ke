@@ -19,6 +19,8 @@ import {
   XCircle,
   MessageCircle,
   Wallet,
+  Settings,
+  Zap,
 } from 'lucide-react';
 import {
   MATERIAL_CATEGORIES,
@@ -64,11 +66,39 @@ interface OrderRow {
   created_at?: string;
 }
 
+interface GatewaySummary {
+  provider: string;
+  settlesTo0728595160: boolean;
+  recipientMpesa: string;
+  recipientLocal: string;
+  description: string;
+}
+
 export default function AdminDashboardPage() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+
+  // Live Gateway Setup State
+  const [gatewaySummary, setGatewaySummary] = useState<GatewaySummary | null>(null);
+  const [showGatewayForm, setShowGatewayForm] = useState(false);
+  const [gatewayTab, setGatewayTab] = useState<'payhero' | 'daraja_live'>('payhero');
+  const [recipientMpesa, setRecipientMpesa] = useState('254728595160');
+  const [payheroChannelId, setPayheroChannelId] = useState('');
+  const [payheroAuthToken, setPayheroAuthToken] = useState('');
+  const [payheroAutoWithdraw, setPayheroAutoWithdraw] = useState(false);
+  const [hasPayheroToken, setHasPayheroToken] = useState(false);
+  const [mpesaShortcode, setMpesaShortcode] = useState('');
+  const [mpesaTillNumber, setMpesaTillNumber] = useState('');
+  const [mpesaPasskey, setMpesaPasskey] = useState('');
+  const [mpesaConsumerKey, setMpesaConsumerKey] = useState('');
+  const [mpesaConsumerSecret, setMpesaConsumerSecret] = useState('');
+  const [isSavingGateway, setIsSavingGateway] = useState(false);
+  const [gatewaySaveMsg, setGatewaySaveMsg] = useState('');
+  const [testPhone, setTestPhone] = useState('');
+  const [testStatusMsg, setTestStatusMsg] = useState('');
+  const [isSendingTest, setIsSendingTest] = useState(false);
 
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
@@ -84,6 +114,31 @@ export default function AdminDashboardPage() {
   const [isUploadingAll, setIsUploadingAll] = useState(false);
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
+
+  const fetchGatewayConfig = useCallback(async (pw: string) => {
+    try {
+      const res = await fetch('/api/admin/payment-config', {
+        headers: { 'x-admin-password': pw },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGatewaySummary(data.summary);
+        if (!data.summary?.settlesTo0728595160) {
+          setShowGatewayForm(true);
+        }
+        if (data.config) {
+          setRecipientMpesa(data.config.recipientMpesa || '254728595160');
+          setPayheroChannelId(data.config.payheroChannelId || '');
+          setHasPayheroToken(Boolean(data.config.hasPayheroToken));
+          setPayheroAutoWithdraw(Boolean(data.config.payheroAutoWithdraw));
+          setMpesaShortcode(data.config.mpesaShortcode || '');
+          setMpesaTillNumber(data.config.mpesaTillNumber || '');
+        }
+      }
+    } catch (err) {
+      console.error('Gateway config fetch error:', err);
+    }
+  }, []);
 
   const fetchOrders = useCallback(async (pw: string) => {
     setIsLoadingOrders(true);
@@ -122,7 +177,7 @@ export default function AdminDashboardPage() {
         sessionStorage.setItem('cbc_admin_pw', pw);
         setInventory(data.resources || []);
         setStorageCount(data.storageFilesCount || 0);
-        await fetchOrders(pw);
+        await Promise.all([fetchOrders(pw), fetchGatewayConfig(pw)]);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Login failed';
         setAuthError(message);
@@ -131,7 +186,7 @@ export default function AdminDashboardPage() {
         setIsCheckingAuth(false);
       }
     },
-    [fetchOrders]
+    [fetchOrders, fetchGatewayConfig]
   );
 
   useEffect(() => {
@@ -156,6 +211,69 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     setIsCheckingAuth(true);
     await fetchInventory(password);
+  };
+
+  const handleSaveGateway = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingGateway(true);
+    setGatewaySaveMsg('');
+    try {
+      const res = await fetch('/api/admin/payment-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({
+          activeGateway: gatewayTab,
+          recipientMpesa,
+          payheroChannelId,
+          payheroAuthToken,
+          payheroAutoWithdraw,
+          mpesaShortcode,
+          mpesaTillNumber,
+          mpesaPasskey,
+          mpesaConsumerKey,
+          mpesaConsumerSecret,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      setGatewaySummary(data.summary);
+      setPayheroAuthToken('');
+      setMpesaPasskey('');
+      setMpesaConsumerKey('');
+      setMpesaConsumerSecret('');
+      setGatewaySaveMsg(data.message || 'Saved & activated!');
+      await fetchGatewayConfig(password);
+    } catch (err: unknown) {
+      setGatewaySaveMsg(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSavingGateway(false);
+    }
+  };
+
+  const handleSendTestStk = async () => {
+    if (!testPhone.trim()) return;
+    setIsSendingTest(true);
+    setTestStatusMsg('Sending KES 10 live STK test prompt...');
+    try {
+      const res = await fetch('/api/mpesa/stkpush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: testPhone.trim(), testAmount: 10 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Test STK failed');
+      setTestStatusMsg(
+        `STK prompt sent (${data.provider})! Enter PIN on ${testPhone} to test live payout to 0728595160.`
+      );
+      await fetchOrders(password);
+    } catch (err: unknown) {
+      setTestStatusMsg(err instanceof Error ? err.message : 'Test failed');
+    } finally {
+      setIsSendingTest(false);
+    }
   };
 
   const handleOrderStatus = async (
@@ -341,7 +459,7 @@ export default function AdminDashboardPage() {
                   Materials &amp; M-Pesa Admin
                 </h1>
                 <p className="text-xs text-slate-500">
-                  Approve 0728595160 payments &amp; manage CBC documents
+                  Manage 0728595160 payouts &amp; CBC documents
                 </p>
               </div>
             </div>
@@ -417,7 +535,7 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-slate-400 mt-0.5">
               M-Pesa: <strong className="text-emerald-300">0728595160 (254728595160)</strong> •
               WhatsApp Inbox: <strong className="text-emerald-300">0705759072 (254705759072)</strong> •{' '}
-              {inventory.length} listings
+              {inventory.length} listings ({storageCount} storage files)
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -444,6 +562,277 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* LIVE STK -> 0728595160 INSTANT PAYOUT CONFIGURATION */}
+        <section
+          className={`border rounded-2xl p-6 shadow-sm space-y-4 ${
+            gatewaySummary?.settlesTo0728595160
+              ? 'bg-emerald-50/40 border-emerald-200'
+              : 'bg-amber-50/70 border-amber-300'
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  gatewaySummary?.settlesTo0728595160
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-amber-500 text-white'
+                }`}
+              >
+                <Zap className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-900 uppercase flex flex-wrap items-center gap-2">
+                  Instant STK Push &rarr; 0728595160 Payout Gateway
+                  {gatewaySummary?.settlesTo0728595160 ? (
+                    <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                      LIVE SETTLEMENT ACTIVE
+                    </span>
+                  ) : (
+                    <span className="bg-rose-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                      1-TIME LINK REQUIRED FOR 0728595160
+                    </span>
+                  )}
+                </h2>
+                <p className="text-xs text-slate-700 mt-0.5">
+                  {gatewaySummary?.description ||
+                    'Checking active M-Pesa settlement channel...'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowGatewayForm((v) => !v)}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 transition"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              {showGatewayForm ? 'Hide Gateway Settings' : 'Configure Live 0728595160 Payout'}
+            </button>
+          </div>
+
+          {showGatewayForm && (
+            <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-5">
+              <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setGatewayTab('payhero')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                    gatewayTab === 'payhero'
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Option 1: PayHero Kenya &rarr; 0728595160 (No Paybill Needed)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGatewayTab('daraja_live')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                    gatewayTab === 'daraja_live'
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Option 2: Live Safaricom Till / Paybill
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveGateway} className="space-y-4">
+                {gatewayTab === 'payhero' ? (
+                  <>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-700 space-y-1.5">
+                      <p className="font-bold text-slate-900">
+                        3-Minute Setup to Receive Instant STK Money into 0728595160:
+                      </p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>
+                          Sign up free at{' '}
+                          <a
+                            href="https://app.payhero.co.ke"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-emerald-700 font-bold underline"
+                          >
+                            app.payhero.co.ke
+                          </a>{' '}
+                          with your Kenyan ID &amp; phone <strong>0728595160</strong>.
+                        </li>
+                        <li>
+                          Add your <strong>0728595160 Pochi la Biashara / Till</strong> under{' '}
+                          <em>Payment Channels</em> (or use PayHero Service Wallet &amp; tick
+                          Auto-Withdraw below) and copy your <strong>Channel ID</strong>.
+                        </li>
+                        <li>
+                          Under <em>Settings &rarr; API Credentials</em>, copy your{' '}
+                          <strong>Basic Auth Token</strong> and paste both below — no redeploy needed!
+                        </li>
+                      </ol>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                          Recipient M-Pesa Number
+                        </label>
+                        <input
+                          type="text"
+                          value={recipientMpesa}
+                          onChange={(e) => setRecipientMpesa(e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                          PayHero Channel ID
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 133"
+                          value={payheroChannelId}
+                          onChange={(e) => setPayheroChannelId(e.target.value)}
+                          required
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                          PayHero Basic Auth Token {hasPayheroToken ? '(Saved ✓)' : ''}
+                        </label>
+                        <input
+                          type="password"
+                          placeholder={
+                            hasPayheroToken
+                              ? 'Leave blank to keep saved token'
+                              : 'Paste Basic Auth Token...'
+                          }
+                          value={payheroAuthToken}
+                          onChange={(e) => setPayheroAuthToken(e.target.value)}
+                          required={!hasPayheroToken}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={payheroAutoWithdraw}
+                        onChange={(e) => setPayheroAutoWithdraw(e.target.checked)}
+                        className="rounded border-slate-300 text-emerald-600"
+                      />
+                      <span>
+                        <strong>Instant B2C Auto-Transfer to 0728595160:</strong> Enable if using
+                        PayHero Service Wallet (leave unchecked if your Channel ID already points
+                        directly to your Pochi / Till).
+                      </span>
+                    </label>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Live Store / Paybill ShortCode
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 4123456"
+                        value={mpesaShortcode}
+                        onChange={(e) => setMpesaShortcode(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Buy Goods Till Number (If Till)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Leave blank if Paybill"
+                        value={mpesaTillNumber}
+                        onChange={(e) => setMpesaTillNumber(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Live Daraja Passkey
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Paste Live Lipa Na M-Pesa Passkey"
+                        value={mpesaPasskey}
+                        onChange={(e) => setMpesaPasskey(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Live Consumer Key
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Paste Live Consumer Key"
+                        value={mpesaConsumerKey}
+                        onChange={(e) => setMpesaConsumerKey(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                        Live Consumer Secret
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Paste Live Consumer Secret"
+                        value={mpesaConsumerSecret}
+                        onChange={(e) => setMpesaConsumerSecret(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                  <button
+                    type="submit"
+                    disabled={isSavingGateway}
+                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2"
+                  >
+                    {isSavingGateway && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    Save &amp; Activate Instant 0728595160 Payouts
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="tel"
+                      placeholder="Test phone (e.g. 0790687561)"
+                      value={testPhone}
+                      onChange={(e) => setTestPhone(e.target.value)}
+                      className="px-3 py-2 border border-slate-300 rounded-xl text-xs w-48"
+                    />
+                    <button
+                      type="button"
+                      disabled={isSendingTest || !testPhone.trim()}
+                      onClick={handleSendTestStk}
+                      className="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-400 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition"
+                    >
+                      {isSendingTest ? 'Sending...' : 'Test KES 10 STK'}
+                    </button>
+                  </div>
+                </div>
+
+                {(gatewaySaveMsg || testStatusMsg) && (
+                  <p className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+                    {gatewaySaveMsg || testStatusMsg}
+                  </p>
+                )}
+              </form>
+            </div>
+          )}
+        </section>
+
         {/* 0. M-Pesa Orders & Instant Payment Approvals (254728595160) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -461,8 +850,8 @@ export default function AdminDashboardPage() {
                   )}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Verify M-Pesa SMS receipts received on <strong>254728595160</strong> and click{' '}
-                  <strong>Approve</strong> to unlock the buyer&apos;s download immediately.
+                  Live STK payments unlock automatically; direct M-Pesa receipt codes unlock on 1-click{' '}
+                  <strong>Approve</strong>.
                 </p>
               </div>
             </div>
@@ -655,7 +1044,6 @@ export default function AdminDashboardPage() {
             />
           </label>
 
-          {/* Queued Files Editor */}
           {queue.length > 0 && (
             <div className="space-y-3">
               {queue.map((item) => {
@@ -728,7 +1116,6 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Quick Metadata Row */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase">
@@ -826,7 +1213,6 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Optional Rich Preview Metadata */}
                     {isExpanded && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
                         <div>

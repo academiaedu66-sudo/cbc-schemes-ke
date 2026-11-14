@@ -2,29 +2,29 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import {
   DARAJA_HEADERS,
-  getActivePaymentProvider,
   getDarajaSession,
   getEatTimestamp,
-  getMerchantPhone,
   getWhatsAppPhone,
   normalizeKenyanPhone,
+  resolveActiveGatewaySummary,
   resolveCallbackUrl,
   resolvePublicOrigin,
   sendWhatsAppAdminNotification,
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
+import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 
 export async function GET(req: Request) {
-  const provider = getActivePaymentProvider();
-  const merchantPhone = getMerchantPhone(); // 254728595160 (M-Pesa collection)
-  const whatsappPhone = getWhatsAppPhone(); // 254705759072 (WhatsApp inbox)
+  const summary = await resolveActiveGatewaySummary();
+  const whatsappPhone = getWhatsAppPhone();
   const callbackUrl = resolveCallbackUrl(req);
   return NextResponse.json({
-    provider,
+    provider: summary.provider,
+    settlesTo0728595160: summary.settlesTo0728595160,
     liveStkReady: true,
     callbackUrl,
-    merchantPhone,
-    merchantLocalPhone: toLocalKenyanFormat(merchantPhone),
+    merchantPhone: summary.recipientMpesa,
+    merchantLocalPhone: summary.recipientLocal,
     whatsappPhone,
     whatsappLocalPhone: toLocalKenyanFormat(whatsappPhone),
   });
@@ -32,9 +32,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, resourceId } = await req.json();
+    const { phoneNumber, resourceId, testAmount } = await req.json();
 
-    if (!phoneNumber || !resourceId) {
+    if (!phoneNumber || (!resourceId && !testAmount)) {
       return NextResponse.json(
         { error: 'Phone number and material selection are required.' },
         { status: 400 }
@@ -49,30 +49,108 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Fetch resource and actual price from Supabase
-    const { data: resource, error: resourceError } = await supabaseAdmin
-      .from('resources')
-      .select('id, price, title')
-      .eq('id', resourceId)
-      .single();
+    let resource: { id: string | null; price: number; title: string } = {
+      id: null,
+      price: Number(testAmount) || 10,
+      title: 'CBC Live M-Pesa Test',
+    };
 
-    if (resourceError || !resource) {
-      return NextResponse.json(
-        { error: 'Selected material was not found. Please refresh the page and try again.' },
-        { status: 404 }
-      );
+    if (resourceId) {
+      const { data: dbRes, error: resourceError } = await supabaseAdmin
+        .from('resources')
+        .select('id, price, title')
+        .eq('id', resourceId)
+        .single();
+
+      if (resourceError || !dbRes) {
+        return NextResponse.json(
+          { error: 'Selected material was not found. Please refresh the page and try again.' },
+          { status: 404 }
+        );
+      }
+      resource = dbRes;
     }
 
     const actualAmountNum = Math.max(1, Math.round(Number(resource.price) || 1));
-    const provider = getActivePaymentProvider();
-    const merchantPhone = getMerchantPhone();
+    const stored = await getStoredPaymentConfig();
+    const summary = await resolveActiveGatewaySummary();
+    const provider = summary.provider;
+    const merchantPhone = summary.recipientMpesa;
+    const callbackUrl = resolveCallbackUrl(req);
     const origin = resolvePublicOrigin(req);
 
     // =========================================================================
-    // PROVIDER 1: PAYSTACK KENYA (Live STK Push -> Settles directly to 254728595160)
+    // PROVIDER 1: PAYHERO KENYA (Instant STK Push -> Pochi / Till / M-Pesa 0728595160)
+    // =========================================================================
+    if (provider === 'payhero') {
+      const rawToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
+      const channelId = Number(
+        (stored.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim()
+      );
+      const externalRef = `CBCHUB_${Date.now()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
+      const phRes = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
+        method: 'POST',
+        headers: {
+          Authorization: formatPayHeroAuthHeader(rawToken),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: actualAmountNum,
+          phone_number: phone,
+          channel_id: channelId,
+          provider: 'm-pesa',
+          external_reference: externalRef,
+          customer_name: 'CBC Teacher',
+          callback_url: callbackUrl,
+        }),
+        cache: 'no-store',
+      });
+
+      const phData = await phRes.json();
+      if (!phRes.ok || phData?.success === false) {
+        return NextResponse.json(
+          {
+            error:
+              phData?.error_message ||
+              phData?.message ||
+              'PayHero M-Pesa STK Push could not be initiated. Verify your Channel ID & Auth Token in /admin.',
+          },
+          { status: 400 }
+        );
+      }
+
+      const trackingRef = phData?.reference || externalRef;
+      const checkoutRequestId = `PAYHERO_${trackingRef}`;
+
+      await supabaseAdmin.from('orders').insert({
+        checkout_request_id: checkoutRequestId,
+        phone_number: phone,
+        resource_id: resource.id,
+        amount: actualAmountNum,
+        status: 'PENDING',
+      });
+
+      await sendWhatsAppAdminNotification(
+        `📲 *STK PUSH SENT TO ${phone} (KES ${actualAmountNum})*\n• Destination: ${summary.recipientLocal}\n• Material: ${resource.title}`
+      );
+
+      return NextResponse.json({
+        message: 'M-Pesa STK PIN prompt sent to your phone.',
+        checkoutRequestId,
+        provider,
+      });
+    }
+
+    // =========================================================================
+    // PROVIDER 2: PAYSTACK KENYA (Live STK Push -> Settles to 0728595160)
     // =========================================================================
     if (provider === 'paystack') {
-      const paystackKey = (process.env.PAYSTACK_SECRET_KEY || '').trim();
+      const paystackKey = (
+        stored.paystackSecretKey ||
+        process.env.PAYSTACK_SECRET_KEY ||
+        ''
+      ).trim();
       const reference = `CBCHUB_${Date.now()}_${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
       const psRes = await fetch('https://api.paystack.co/charge', {
@@ -128,10 +206,14 @@ export async function POST(req: Request) {
     }
 
     // =========================================================================
-    // PROVIDER 2: INTASEND KENYA (Live STK Push -> Withdraws directly to 254728595160)
+    // PROVIDER 3: INTASEND KENYA
     // =========================================================================
     if (provider === 'intasend') {
-      const intasendSecret = (process.env.INTASEND_SECRET_KEY || '').trim();
+      const intasendSecret = (
+        stored.intasendSecretKey ||
+        process.env.INTASEND_SECRET_KEY ||
+        ''
+      ).trim();
       const isTest = intasendSecret.includes('_test_');
       const intasendBase = isTest
         ? 'https://sandbox.intasend.com'
@@ -182,35 +264,26 @@ export async function POST(req: Request) {
     }
 
     // =========================================================================
-    // PROVIDER 3: SAFARICOM DARAJA STK EXPRESS
+    // PROVIDER 4: SAFARICOM DARAJA STK EXPRESS
     // =========================================================================
-    const shortCode = (process.env.MPESA_SHORTCODE || '174379').trim();
-    const tillNumber = (process.env.MPESA_TILL_NUMBER || '').trim();
-    const partyB = (tillNumber || process.env.MPESA_PARTY_B || shortCode).trim();
+    const session = await getDarajaSession();
+    const { shortCode, partyB, passkey } = session;
 
     if (/^(254|0)[17]\d{8}$/.test(shortCode) || /^(254|0)[17]\d{8}$/.test(partyB)) {
       return NextResponse.json(
         {
-          error: `Safaricom Daraja STK Push requires a ShortCode/Till in MPESA_SHORTCODE (not a 10-digit phone number).`,
+          error: `Safaricom Daraja requires a Business ShortCode/Till (or PayHero Channel ID in /admin) rather than a 10-digit personal number.`,
         },
         { status: 400 }
       );
     }
 
-    const passkey = (
-      process.env.MPESA_PASSKEY ||
-      'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-    ).trim();
-
     const timestamp = getEatTimestamp();
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
-    const session = await getDarajaSession();
-
     const stkUrl = `${session.baseUrl}/mpesa/stkpush/v1/processrequest`;
-    const callbackUrl = resolveCallbackUrl(req);
 
     const defaultTxType =
-      tillNumber || partyB !== shortCode ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
+      partyB !== shortCode ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
     const transactionType = (process.env.MPESA_TRANSACTION_TYPE || defaultTxType).trim();
     const actualAmount = actualAmountNum.toString();
 
