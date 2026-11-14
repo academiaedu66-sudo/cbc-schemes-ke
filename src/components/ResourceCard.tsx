@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { formatTermLabel } from "@/lib/material-utils";
+import { formatTermLabel, getCbcLessonAllocation } from "@/lib/material-utils";
 
 export interface ResourceItem {
   id: string;
@@ -29,6 +29,10 @@ export default function ResourceCard({
 }: ResourceProps) {
   const isDocx = resource.format.toLowerCase().includes("doc");
   const termText = formatTermLabel(resource.term);
+  const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(
+    resource.grade,
+    resource.subject
+  );
 
   return (
     <div className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-300 hover:shadow-md transition">
@@ -62,6 +66,9 @@ export default function ResourceCard({
               {resource.subject}
             </span>
           )}
+          <span className="bg-teal-50 text-teal-800 border border-teal-200/70 px-2 py-0.5 rounded font-semibold">
+            {lessonsPerWeek} Lessons/Wk ({minutesPerLesson}m)
+          </span>
           <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
             {resource.category === "Teachers' Notes"
               ? "Lesson Notes"

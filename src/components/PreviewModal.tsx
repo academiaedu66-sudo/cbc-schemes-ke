@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, FileText, Lock, X } from "lucide-react";
-import { formatTermLabel } from "@/lib/material-utils";
+import { formatTermLabel, getCbcLessonAllocation } from "@/lib/material-utils";
 import type { ResourceItem } from "./ResourceCard";
 
 interface PreviewData {
@@ -67,6 +67,10 @@ export default function PreviewModal({
   if (!resource) return null;
 
   const isDocx = resource.format.toLowerCase().includes("doc");
+  const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(
+    resource.grade,
+    resource.subject
+  );
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -83,7 +87,7 @@ export default function PreviewModal({
                 {resource.format}
               </span>
               <span className="text-xs text-emerald-300 font-semibold">
-                Grade {resource.grade} ({resource.level}) • {formatTermLabel(resource.term)}
+                Grade {resource.grade} ({resource.level}) • {formatTermLabel(resource.term)} • {lessonsPerWeek} Lessons/Wk ({minutesPerLesson}m)
               </span>
               {preview?.fileSizeKb && (
                 <span className="text-xs text-slate-400">

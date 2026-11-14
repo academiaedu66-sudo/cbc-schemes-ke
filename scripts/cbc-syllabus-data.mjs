@@ -548,3 +548,121 @@ export const GRADES_CURRICULUM_PLAN = [
     ],
   })),
 ];
+
+/**
+ * Official KICD Rationalized CBC Weekly Lesson Allocation & Lesson Duration
+ *
+ * - Lower Primary (Grades 1–3, 30 mins/lesson):
+ *   English Activities (5), Mathematical Activities (5), Kiswahili Activities (4),
+ *   Environmental Activities (4), Creative Activities (7), CRE/IRE (3), Indigenous Language (2).
+ *
+ * - Upper Primary (Grades 4–6, 35 mins/lesson):
+ *   English (5), Mathematics (5), Kiswahili (4), Science and Technology (4),
+ *   Agriculture and Nutrition (4), Creative Arts (6), Social Studies (3), CRE/IRE (3).
+ *
+ * - Junior Secondary (Grades 7–9, 40 mins/lesson):
+ *   Mathematics (5), Integrated Science (5), English (5);
+ *   All other learning areas (Kiswahili, Agriculture & Nutrition, Social Studies,
+ *   Pre-Technical Studies, Creative Arts & Sports, CRE, IRE) = 4 lessons/week.
+ *
+ * - Senior School (Grades 10–12, 40 mins/lesson):
+ *   Mathematics (Core Mathematics = 5), Sciences (Biology, Chemistry, Physics = 5), English (5);
+ *   All other learning areas = 4 lessons/week.
+ */
+export function getCurriculumAllocation(grade, subject) {
+  const s = String(subject || '').toLowerCase();
+
+  // Lower Primary: Grades 1 - 3 (30 minutes per lesson)
+  if (grade <= 3) {
+    let lessonsPerWeek = 4;
+    if (s.includes('math') || s.includes('english')) {
+      lessonsPerWeek = 5;
+    } else if (s.includes('creative')) {
+      lessonsPerWeek = 7;
+    } else if (s.includes('kiswahili') || s.includes('environmental')) {
+      lessonsPerWeek = 4;
+    } else if (s.includes('religious') || s.includes('cre') || s.includes('ire')) {
+      lessonsPerWeek = 3;
+    } else if (s.includes('indigenous')) {
+      lessonsPerWeek = 2;
+    }
+    return {
+      lessonsPerWeek,
+      minutesPerLesson: 30,
+      stepTimings: { intro: 5, step1: 8, step2: 12, conclusion: 5 },
+    };
+  }
+
+  // Upper Primary: Grades 4 - 6 (35 minutes per lesson)
+  if (grade <= 6) {
+    let lessonsPerWeek = 4;
+    if (s.includes('math') || s.includes('english')) {
+      lessonsPerWeek = 5;
+    } else if (s.includes('creative')) {
+      lessonsPerWeek = 6;
+    } else if (s.includes('kiswahili') || s.includes('science') || s.includes('agriculture')) {
+      lessonsPerWeek = 4;
+    } else if (s.includes('social') || s.includes('religious') || s.includes('cre') || s.includes('ire')) {
+      lessonsPerWeek = 3;
+    }
+    return {
+      lessonsPerWeek,
+      minutesPerLesson: 35,
+      stepTimings: { intro: 5, step1: 10, step2: 14, conclusion: 6 },
+    };
+  }
+
+  // From Grade 7 onwards (Grades 7 - 12, 40 minutes per lesson):
+  // Maths, Science (Integrated Science, Biology, Chemistry, Physics) & English = 5 lessons/week;
+  // All other subjects = 4 lessons/week.
+  const isFiveLessonCore =
+    s.includes('math') ||
+    s.includes('english') ||
+    s.includes('integrated science') ||
+    s === 'science' ||
+    s.includes('biology') ||
+    s.includes('chemistry') ||
+    s.includes('physics');
+
+  const lessonsPerWeek = isFiveLessonCore ? 5 : 4;
+  return {
+    lessonsPerWeek,
+    minutesPerLesson: 40,
+    stepTimings: { intro: 5, step1: 12, step2: 16, conclusion: 7 },
+  };
+}
+
+/**
+ * Official MoE Kenya School Term Week Calendar
+ * - Term 1: 13 Weeks (Weeks 1–7 Teaching, Week 8 Mid-Term Assessment & Break, Weeks 9–12 Teaching, Week 13 End-Term Exams & Closing)
+ * - Term 2: 14 Weeks (Weeks 1–7 Teaching, Week 8 Mid-Term Assessment & Break, Weeks 9–13 Teaching, Week 14 End-Term Exams & Closing)
+ * - Term 3: 9 Weeks  (Weeks 1–7 Teaching, Week 8 Revision & Practical Assessment, Week 9 End-Year Summative Assessment & Closing)
+ */
+export function getTermWeeksConfig(term) {
+  if (term === 2) {
+    return {
+      totalWeeks: 14,
+      midTermWeek: 8,
+      revisionWeek: null,
+      endTermWeek: 14,
+      teachingWeeks: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13],
+    };
+  }
+  if (term === 3) {
+    return {
+      totalWeeks: 9,
+      midTermWeek: null,
+      revisionWeek: 8,
+      endTermWeek: 9,
+      teachingWeeks: [1, 2, 3, 4, 5, 6, 7],
+    };
+  }
+  return {
+    totalWeeks: 13,
+    midTermWeek: 8,
+    revisionWeek: null,
+    endTermWeek: 13,
+    teachingWeeks: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+  };
+}
+

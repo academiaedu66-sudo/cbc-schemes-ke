@@ -50,6 +50,52 @@ export function getLevelForGrade(grade: number): string {
   return 'Senior School';
 }
 
+export function getCbcLessonAllocation(grade: number, subject?: string | null): {
+  lessonsPerWeek: number;
+  minutesPerLesson: number;
+} {
+  const s = String(subject || '').toLowerCase();
+
+  if (grade <= 3) {
+    let lessonsPerWeek = 4;
+    if (s.includes('math') || s.includes('english')) lessonsPerWeek = 5;
+    else if (s.includes('creative')) lessonsPerWeek = 7;
+    else if (s.includes('kiswahili') || s.includes('environmental')) lessonsPerWeek = 4;
+    else if (s.includes('religious') || s.includes('cre') || s.includes('ire')) lessonsPerWeek = 3;
+    else if (s.includes('indigenous')) lessonsPerWeek = 2;
+    return { lessonsPerWeek, minutesPerLesson: 30 };
+  }
+
+  if (grade <= 6) {
+    let lessonsPerWeek = 4;
+    if (s.includes('math') || s.includes('english')) lessonsPerWeek = 5;
+    else if (s.includes('creative')) lessonsPerWeek = 6;
+    else if (s.includes('kiswahili') || s.includes('science') || s.includes('agriculture')) lessonsPerWeek = 4;
+    else if (s.includes('social') || s.includes('religious') || s.includes('cre') || s.includes('ire')) lessonsPerWeek = 3;
+    return { lessonsPerWeek, minutesPerLesson: 35 };
+  }
+
+  const isFiveLessonCore =
+    s.includes('math') ||
+    s.includes('english') ||
+    s.includes('integrated science') ||
+    s === 'science' ||
+    s.includes('biology') ||
+    s.includes('chemistry') ||
+    s.includes('physics');
+
+  return {
+    lessonsPerWeek: isFiveLessonCore ? 5 : 4,
+    minutesPerLesson: 40,
+  };
+}
+
+export function getTermTotalWeeks(term?: number | null): number {
+  if (term === 2) return 14;
+  if (term === 3) return 9;
+  return 13;
+}
+
 export function normalizeCategory(raw?: string | null): MaterialCategory {
   if (!raw) return 'Schemes of Work';
   const lower = raw.toLowerCase();

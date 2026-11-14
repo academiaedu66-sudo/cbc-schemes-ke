@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { formatTermLabel, normalizeCategory } from '@/lib/material-utils';
+import {
+  formatTermLabel,
+  getCbcLessonAllocation,
+  getTermTotalWeeks,
+  normalizeCategory,
+} from '@/lib/material-utils';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -24,65 +29,69 @@ function buildFallbackDetails(resource: {
 }) {
   const cat = normalizeCategory(resource.category);
   const termText = formatTermLabel(resource.term);
+  const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(resource.grade, resource.subject);
+  const totalWeeks = getTermTotalWeeks(resource.term);
+  const totalLessons = lessonsPerWeek * totalWeeks;
+
   let description = '';
   let strands: string[] = [];
 
   if (cat === 'Schemes of Work') {
-    description = `KICD-rationalized ${resource.subject} Schemes of Work for Grade ${resource.grade} (${resource.level}), ${termText}. Formatted in the standard 10-column Kenyan teacher layout (Wk, LSN, Strand, Sub-strand, Lesson Learning Outcomes, Learning Experiences, Key Inquiry Questions, Approved Resources, Assessment Methods, and Reflection).`;
+    description = `KICD-rationalized ${resource.subject} Schemes of Work for Grade ${resource.grade} (${resource.level}), ${termText} — structured with ${lessonsPerWeek} lessons per week (${minutesPerLesson} mins each, ${totalLessons} individual lessons across Weeks 1–${totalWeeks}). Every single lesson (LSN 1 to LSN ${lessonsPerWeek}) is clearly itemized in the 10-column Kenyan teacher layout.`;
     strands = [
-      '10-column schemes.co.ke layout (Weeks 1 to 13 including Half-Term & End-Term)',
-      'Numbered Cognitive, Psychomotor & Affective Lesson Learning Outcomes',
-      'KICD-approved textbook page references (KLB, Longhorn, Oxford, Moran, Mentor)',
-      `Editable ${resource.format} document ready for teacher name, TSC No. & school stamp`,
+      `Official CBC Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins each) — every lesson (LSN 1–${lessonsPerWeek}) on its own clear row`,
+      `10-column schemes.co.ke layout across Weeks 1 to ${totalWeeks} (${totalLessons} total lessons)`,
+      'Numbered Cognitive, Psychomotor & Affective Lesson Learning Outcomes per lesson',
+      `Editable ${resource.format} document with progressive KICD textbook page references`,
     ];
   } else if (cat === 'Lesson Plans') {
-    description = `Ready-to-teach CBC Lesson Plans for Grade ${resource.grade} ${resource.subject} (${termText}). Includes administrative roll table, Core Competencies, Pertinent & Contemporary Issues (PCIs), Values, step-by-step lesson development, and teacher self-evaluation.`;
+    description = `Complete ready-to-teach CBC Lesson Plans for Grade ${resource.grade} ${resource.subject} (${termText}) covering all ${lessonsPerWeek} lessons per week (${minutesPerLesson} mins per lesson, ${totalLessons} individual lesson plans across Weeks 1–${totalWeeks}). Includes administrative roll header, Core Competencies, PCIs, Values, timed lesson steps, and self-evaluation.`;
     strands = [
-      'Administrative header table (School, Learning Area, Grade, Term, Date, Time, Roll)',
-      'Introduction, Explore, Explain/Practice & Conclusion lesson steps',
-      'Core Competencies, Values & PCIs mapped to rationalized syllabus',
-      `Editable & printable ${resource.format} format`,
+      `Complete lesson-by-lesson plans: Lesson 1 to Lesson ${lessonsPerWeek} for every week (${totalLessons} plans total)`,
+      `Exact ${minutesPerLesson}-minute CBC step breakdown (Introduction, Explore, Practice & Conclusion)`,
+      'Administrative header table (School, Learning Area, Grade, Week & Lesson, Time, Roll)',
+      `Editable & printable ${resource.format} teacher booklet`,
     ];
   } else if (cat === 'Records of Work') {
-    description = `Official TSC & KICD compliant Weekly Record of Work Covered and CBC Assessment Rubric Tracker for Grade ${resource.grade} ${resource.subject} (${termText}). Pre-mapped across Weeks 1–13 with EE / ME / AE / BE learner achievement columns.`;
+    description = `Official TSC & KICD Weekly and Lesson-by-Lesson Record of Work Covered & Rubric Tracker for Grade ${resource.grade} ${resource.subject} (${termText}). Pre-mapped with ${lessonsPerWeek} lessons per week (LSN 1–${lessonsPerWeek} across Weeks 1–${totalWeeks}) and EE / ME / AE / BE learner achievement columns.`;
     strands = [
-      'Pre-populated Week 1 to Week 13 rationalized strands & sub-strands',
-      'Built-in CBC Rubric Tracker columns (EE, ME, AE, BE)',
-      'Dedicated Teacher Remarks & HOD / Headteacher Sign-off column',
-      `Landscape editable ${resource.format} template`,
+      `Individual lesson tracking rows: LSN 1 to LSN ${lessonsPerWeek} per week (${totalLessons} lessons across Weeks 1–${totalWeeks})`,
+      'Built-in CBC Rubric Tracker columns (EE, ME, AE, BE) for every lesson',
+      'Dedicated Date Taught, Work Covered Summary & HOD/Headteacher Sign-off columns',
+      `Landscape editable ${resource.format} professional document`,
     ];
   } else if (cat === 'Holiday Assignments & Designs') {
     description =
       resource.term === 0
-        ? `Complete KICD Rationalized Curriculum Design & Annual Syllabus Matrix for Grade ${resource.grade} ${resource.subject} covering Term 1, Term 2, and Term 3 strands, sub-strands, key inquiry questions, and suggested learning resources.`
-        : `Structured Grade ${resource.grade} ${resource.subject} (${termText}) Holiday Revision Workbook & Parent-Guided Home Competency Project designed to keep learners engaged over the school break.`;
+        ? `Complete KICD Rationalized Curriculum Design & Annual Lesson Allocation Matrix for Grade ${resource.grade} ${resource.subject} (${lessonsPerWeek} lessons/week, ${minutesPerLesson} mins each) covering Term 1, Term 2, and Term 3 strands, sub-strands, lesson counts, KIQs, and learning resources.`
+        : `Structured Grade ${resource.grade} ${resource.subject} (${termText}) Holiday Revision Workbook & Parent-Guided Home Competency Project aligned to the ${lessonsPerWeek}-lesson/week term syllabus.`;
     strands =
       resource.term === 0
         ? [
-            'Full-year syllabus overview across Term 1, Term 2 & Term 3',
-            'All rationalized KICD strands, sub-strands & Key Inquiry Questions',
-            'Suggested locally available teaching aids & resources per strand',
-            `Clean printable ${resource.format} reference guide`,
+            `Official KICD Lesson Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins/lesson, ${lessonsPerWeek * 36} annual lessons)`,
+            'Full-year syllabus overview across Term 1 (13 wks), Term 2 (14 wks) & Term 3 (9 wks)',
+            'Exact lesson distribution per strand & sub-strand + Key Inquiry Questions',
+            `Clean printable ${resource.format} curriculum reference guide`,
           ]
         : [
-            `Self-paced ${termText} topical revision questions`,
+            `Self-paced ${termText} topical revision mapped to weekly lessons`,
             'Parent/guardian sign-off & home-based practical CBC project',
             'Reinforces core term competencies before next term opens',
             `Ready-to-print ${resource.format} learner workbook`,
           ];
   } else if (cat === 'Revision Papers & Exams') {
-    description = `Competency-Based Grade ${resource.grade} ${resource.subject} (${termText}) Summative Assessment Paper modeled on KNEC / CBA assessment standards, complete with an official Marking Scheme and EE/ME/AE/BE scoring rubric.`;
+    description = `Competency-Based Grade ${resource.grade} ${resource.subject} (${termText}) Summative Assessment Paper weighted according to the KICD ${lessonsPerWeek}-lesson/week syllabus, complete with an official Marking Scheme and EE/ME/AE/BE scoring rubric.`;
     strands = [
-      `Covers ${termText} rationalized KICD strands & application tasks`,
+      `Weighted across ${termText} KICD strands (${lessonsPerWeek} lessons/week syllabus scope)`,
       'Includes official CBC Rubric Grid (EE, ME, AE, BE)',
       'Complete step-by-step Marking Scheme & Scoring Guide included',
       'Ready to print for Opener, Mid-Term, or End-of-Term exams',
     ];
   } else {
-    description = `Comprehensive CBC Lesson Notes & Study Booklet for Grade ${resource.grade} ${resource.subject} (${resource.level}, ${termText}). Features clear strand summaries, practical group activities, real-life Kenyan applications, and topical review exercises.`;
+    description = `Comprehensive CBC Lesson Notes & Teaching Guide for Grade ${resource.grade} ${resource.subject} (${resource.level}, ${termText}), structured around the official ${lessonsPerWeek} lessons per week (${minutesPerLesson} mins each) with clear lesson-by-lesson sub-strand notes, practical activities, and topical review exercises.`;
     strands = [
-      `Complete ${termText} rationalized strands & sub-strands notes`,
-      'Clear key concepts, definitions & practical learner activities',
+      `Aligned to ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins/lesson) across Weeks 1–${totalWeeks}`,
+      'Clear lesson-by-lesson concepts, definitions & practical learner activities',
       'End-of-unit self-check & revision questions',
       `Clean ${resource.format} booklet for classroom teaching or learner revision`,
     ];
