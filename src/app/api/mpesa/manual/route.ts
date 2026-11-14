@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { extractMpesaReceiptCode, normalizeKenyanPhone } from '@/lib/mpesa';
+import {
+  extractMpesaReceiptCode,
+  getMerchantPhone,
+  getWhatsAppPhone,
+  normalizeKenyanPhone,
+  resolvePublicOrigin,
+  sendWhatsAppAdminNotification,
+  toLocalKenyanFormat,
+} from '@/lib/mpesa';
 
 export async function POST(req: Request) {
   try {
@@ -38,6 +46,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Selected material not found.' }, { status: 404 });
     }
 
+    const amountKes = Math.round(Number(resource.price) || 50);
+    const merchantLocal = toLocalKenyanFormat(getMerchantPhone()); // 0728595160
+    const whatsappIntl = getWhatsAppPhone(); // 254705759072
+    const origin = resolvePublicOrigin(req);
+
+    const notificationText =
+      `🔔 *NEW CBC ORDER PAID*\n` +
+      `• *M-Pesa Code:* ${cleanCode}\n` +
+      `• *Amount Sent (to ${merchantLocal}):* KES ${amountKes}\n` +
+      `• *Buyer Phone:* ${phone}\n` +
+      `• *Material:* ${resource.title}\n` +
+      `• *Approve Unlock:* ${origin}/admin`;
+
+    const whatsappNotificationUrl = `https://wa.me/${whatsappIntl}?text=${encodeURIComponent(
+      notificationText
+    )}`;
+
     // Prevent reusing an already used M-Pesa receipt code across different materials
     const { data: existingReceipt } = await supabaseAdmin
       .from('orders')
@@ -50,6 +75,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           checkoutRequestId: existingReceipt.checkout_request_id,
           receiptCode: cleanCode,
+          whatsappNotificationUrl,
           message: 'M-Pesa code recognized — checking verification status...',
         });
       }
@@ -65,7 +91,7 @@ export async function POST(req: Request) {
       checkout_request_id: checkoutRequestId,
       phone_number: phone,
       resource_id: resource.id,
-      amount: Math.round(Number(resource.price) || 50),
+      amount: amountKes,
       mpesa_receipt_number: cleanCode,
       status: 'PENDING',
     });
@@ -74,10 +100,15 @@ export async function POST(req: Request) {
       throw new Error(insertErr.message);
     }
 
+    // Dispatch background server notification to WhatsApp inbox 254705759072 (0705759072)
+    const autoDelivered = await sendWhatsAppAdminNotification(notificationText);
+
     return NextResponse.json({
       checkoutRequestId,
       receiptCode: cleanCode,
-      message: `M-Pesa code ${cleanCode} received! Unlocking as soon as payment to 0728595160 is confirmed...`,
+      whatsappNotificationUrl,
+      autoDelivered,
+      message: `M-Pesa code ${cleanCode} submitted! Unlocking as soon as payment to ${merchantLocal} is confirmed...`,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to submit M-Pesa code';

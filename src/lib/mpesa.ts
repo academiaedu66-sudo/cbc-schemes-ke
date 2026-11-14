@@ -1,15 +1,91 @@
-// Shared M-Pesa & Multi-Gateway Helper (Direct 254728595160 + Paystack + IntaSend + Safaricom Daraja)
+// Shared M-Pesa & WhatsApp Notification Helper
+// M-Pesa Collection Number: 254728595160 (0728595160)
+// WhatsApp Notification Inbox: 254705759072 (0705759072)
 
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
+export const DEFAULT_WHATSAPP_PHONE = '254705759072';
 
 export function getMerchantPhone(): string {
   const raw = (process.env.NEXT_PUBLIC_MERCHANT_PHONE || DEFAULT_MERCHANT_PHONE).trim();
   return normalizeKenyanPhone(raw) || DEFAULT_MERCHANT_PHONE;
 }
 
+export function getWhatsAppPhone(): string {
+  const raw = (
+    process.env.WHATSAPP_NOTIFICATION_PHONE ||
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE ||
+    DEFAULT_WHATSAPP_PHONE
+  ).trim();
+  return normalizeKenyanPhone(raw) || DEFAULT_WHATSAPP_PHONE;
+}
+
 export function toLocalKenyanFormat(intlPhone: string): string {
   const normalized = normalizeKenyanPhone(intlPhone) || DEFAULT_MERCHANT_PHONE;
   return `0${normalized.slice(3)}`;
+}
+
+/**
+ * Sends a real-time server-side WhatsApp notification straight into 254705759072 (0705759072)
+ * when CALLMEBOT_API_KEY, Meta WhatsApp Cloud API, or WHATSAPP_WEBHOOK_URL is configured.
+ * Never throws so checkout never blocks if a notification provider is offline.
+ */
+export async function sendWhatsAppAdminNotification(message: string): Promise<boolean> {
+  const targetPhone = getWhatsAppPhone(); // 254705759072
+  let delivered = false;
+
+  try {
+    // 1. CallMeBot Personal WhatsApp Inbox API (Free, sends straight to 254705759072)
+    const callMeBotKey = (process.env.CALLMEBOT_API_KEY || '').trim();
+    if (callMeBotKey) {
+      const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(
+        targetPhone
+      )}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(callMeBotKey)}`;
+      const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+      if (res.ok) delivered = true;
+    }
+
+    // 2. Meta Official WhatsApp Cloud API
+    const waToken = (process.env.WHATSAPP_ACCESS_TOKEN || '').trim();
+    const waPhoneId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
+    if (waToken && waPhoneId) {
+      const res = await fetch(`https://graph.facebook.com/v21.0/${waPhoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${waToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: targetPhone,
+          type: 'text',
+          text: { preview_url: true, body: message },
+        }),
+        cache: 'no-store',
+      });
+      if (res.ok) delivered = true;
+    }
+
+    // 3. Optional Custom WhatsApp Webhook (GreenAPI / Evolution / Make / Zapier)
+    const webhookUrl = (process.env.WHATSAPP_WEBHOOK_URL || '').trim();
+    if (webhookUrl) {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: targetPhone,
+          localPhone: toLocalKenyanFormat(targetPhone),
+          message,
+          timestamp: new Date().toISOString(),
+        }),
+        cache: 'no-store',
+      });
+      if (res.ok) delivered = true;
+    }
+  } catch (err) {
+    console.warn('WhatsApp notification dispatch warning:', err);
+  }
+
+  return delivered;
 }
 
 export type PaymentProvider = 'paystack' | 'intasend' | 'daraja_live' | 'daraja_sandbox';
@@ -33,13 +109,11 @@ export function extractMpesaReceiptCode(rawInput: string): string | null {
   const upper = String(rawInput || '').trim().toUpperCase();
   if (!upper) return null;
 
-  // Match standard 10-character M-Pesa receipt at start of pasted SMS (e.g. "SJK84M2P9Q Confirmed. Ksh50.00...")
   const smsMatch = upper.match(/\b([A-Z0-9]{10})\s+CONFIRMED\b/);
   if (smsMatch) {
     return smsMatch[1];
   }
 
-  // Match standalone 10-character alphanumeric M-Pesa transaction code (starts with letter)
   const tokenMatch = upper.match(/\b([A-Z][A-Z0-9]{9})\b/);
   if (tokenMatch) {
     return tokenMatch[1];
@@ -109,7 +183,6 @@ export async function getDarajaAccessToken(): Promise<string> {
   const isProd = isMpesaProduction();
   const envKey = `${isProd ? 'prod' : 'sandbox'}:${consumerKey.slice(0, 8)}`;
 
-  // Reuse cached token if valid (cached for 50 minutes out of 60-minute lifetime)
   if (cachedDarajaToken && cachedDarajaToken.envKey === envKey && Date.now() < cachedDarajaToken.expiresAt) {
     return cachedDarajaToken.token;
   }
@@ -169,7 +242,6 @@ export function resolveCallbackUrl(req: Request): string {
       forwardedHost.startsWith('127.') ||
       forwardedHost.startsWith('192.168.');
 
-    // On deployed HTTPS domain (e.g. Vercel), automatically use live domain if env points to ngrok or is empty
     if (!isLocalHost && forwardedProto === 'https') {
       if (!configured || configured.includes('ngrok') || configured.includes('localhost')) {
         return `https://${forwardedHost}/api/mpesa/callback`;
@@ -182,6 +254,17 @@ export function resolveCallbackUrl(req: Request): string {
   return configured;
 }
 
+export function resolvePublicOrigin(req: Request): string {
+  try {
+    const reqUrl = new URL(req.url);
+    const host = req.headers.get('x-forwarded-host') || reqUrl.host;
+    const proto = req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', '');
+    return `${proto}://${host}`;
+  } catch {
+    return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  }
+}
+
 export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 12000): boolean {
   const now = Date.now();
   const prev = lastQueryAtByCheckoutId.get(checkoutRequestId) || 0;
@@ -190,7 +273,6 @@ export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 1
   }
   lastQueryAtByCheckoutId.set(checkoutRequestId, now);
 
-  // Prevent unbounded Map growth
   if (lastQueryAtByCheckoutId.size > 500) {
     const cutoff = now - 10 * 60 * 1000;
     for (const [k, ts] of lastQueryAtByCheckoutId.entries()) {

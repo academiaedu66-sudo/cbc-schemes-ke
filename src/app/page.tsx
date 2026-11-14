@@ -23,8 +23,23 @@ import PreviewModal from '@/components/PreviewModal';
 import { normalizeCategory } from '@/lib/material-utils';
 
 const PAGE_SIZE = 24;
+// M-Pesa Payment Recipient: 254728595160 (0728595160)
 const DEFAULT_MERCHANT_INTL = '254728595160';
 const DEFAULT_MERCHANT_LOCAL = '0728595160';
+// WhatsApp Notification Inbox: 254705759072 (0705759072)
+const DEFAULT_WHATSAPP_INTL = '254705759072';
+const DEFAULT_WHATSAPP_LOCAL = '0705759072';
+
+function extractCodeClient(raw: string): string | null {
+  const upper = raw.trim().toUpperCase();
+  if (!upper) return null;
+  const sms = upper.match(/\b([A-Z0-9]{10})\s+CONFIRMED\b/);
+  if (sms) return sms[1];
+  const tok = upper.match(/\b([A-Z][A-Z0-9]{9})\b/);
+  if (tok) return tok[1];
+  const cleaned = upper.replace(/[^A-Z0-9]/g, '');
+  return cleaned.length >= 8 && cleaned.length <= 12 ? cleaned : null;
+}
 
 export default function HomePage() {
   const [resources, setResources] = useState<ResourceItem[]>([]);
@@ -36,10 +51,12 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // Payment Gateway Configuration
+  // Payment & WhatsApp Configuration
   const [liveStkReady, setLiveStkReady] = useState(false);
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
   const [merchantLocalPhone, setMerchantLocalPhone] = useState(DEFAULT_MERCHANT_LOCAL);
+  const [whatsappPhone, setWhatsappPhone] = useState(DEFAULT_WHATSAPP_INTL);
+  const [whatsappLocalPhone, setWhatsappLocalPhone] = useState(DEFAULT_WHATSAPP_LOCAL);
 
   // Preview Modal State
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
@@ -50,6 +67,7 @@ export default function HomePage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mpesaCode, setMpesaCode] = useState('');
   const [submittedReceipt, setSubmittedReceipt] = useState('');
+  const [notifyViaWhatsApp, setNotifyViaWhatsApp] = useState(true);
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutMessage, setCheckoutMessage] = useState('');
@@ -59,20 +77,22 @@ export default function HomePage() {
     'IDLE' | 'PENDING' | 'COMPLETED' | 'FAILED'
   >('IDLE');
 
-  // Check active M-Pesa payout configuration
+  // Check active M-Pesa payout & WhatsApp inbox configuration
   useEffect(() => {
     fetch('/api/mpesa/stkpush')
       .then((r) => r.json())
       .then((cfg) => {
         if (cfg?.merchantPhone) setMerchantPhone(cfg.merchantPhone);
         if (cfg?.merchantLocalPhone) setMerchantLocalPhone(cfg.merchantLocalPhone);
+        if (cfg?.whatsappPhone) setWhatsappPhone(cfg.whatsappPhone);
+        if (cfg?.whatsappLocalPhone) setWhatsappLocalPhone(cfg.whatsappLocalPhone);
         if (typeof cfg?.liveStkReady === 'boolean') {
           setLiveStkReady(cfg.liveStkReady);
           setCheckoutTab(cfg.liveStkReady ? 'STK' : 'DIRECT');
         }
       })
       .catch(() => {
-        // Keep safe defaults pointing to 254728595160
+        // Keep safe defaults: M-Pesa -> 254728595160, WhatsApp -> 254705759072
       });
   }, []);
 
@@ -207,6 +227,20 @@ export default function HomePage() {
 
   const displayedItems = filteredItems.slice(0, visibleCount);
 
+  const buildOrderWhatsAppHref = (receipt: string) => {
+    if (!modalItem) return `https://wa.me/${whatsappPhone}`;
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : '';
+    const msg =
+      `🔔 *NEW CBC ORDER PAID*\n` +
+      `• *M-Pesa Code:* ${receipt}\n` +
+      `• *Amount Sent (to ${merchantLocalPhone}):* KES ${modalItem.price}\n` +
+      (phoneNumber.trim() ? `• *Buyer Phone:* ${phoneNumber.trim()}\n` : '') +
+      `• *Material:* ${modalItem.title}\n` +
+      (origin ? `• *Approve Unlock:* ${origin}/admin` : '');
+    return `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(msg)}`;
+  };
+
   const handleMpesaStkPay = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -244,6 +278,24 @@ export default function HomePage() {
 
   const handleDirectMpesaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const parsedCode = extractCodeClient(mpesaCode);
+    if (!parsedCode) {
+      setPaymentStatus('FAILED');
+      setCheckoutMessage(
+        'Please paste a valid 10-character M-Pesa code (e.g. SJK84M2P9Q) or paste the full M-Pesa SMS.'
+      );
+      return;
+    }
+
+    // Open WhatsApp notification to 0705759072 synchronously inside user click gesture so browsers don't block it
+    if (notifyViaWhatsApp && typeof window !== 'undefined') {
+      window.open(
+        buildOrderWhatsAppHref(parsedCode),
+        '_blank',
+        'noopener,noreferrer'
+      );
+    }
+
     setIsProcessing(true);
     setPaymentStatus('PENDING');
     setCheckoutMessage('Submitting your M-Pesa transaction code...');
@@ -265,7 +317,7 @@ export default function HomePage() {
       }
 
       setCheckoutRequestId(data.checkoutRequestId);
-      setSubmittedReceipt(data.receiptCode || mpesaCode.trim().toUpperCase());
+      setSubmittedReceipt(data.receiptCode || parsedCode);
       setCheckoutMessage(
         data.message ||
           `Code received! Waiting for confirmation of KES ${modalItem?.price} sent to ${merchantLocalPhone}...`
@@ -308,13 +360,9 @@ export default function HomePage() {
     setPaymentStatus('IDLE');
   };
 
-  const whatsappConfirmHref = modalItem
-    ? `https://wa.me/${merchantPhone}?text=${encodeURIComponent(
-        `Hello, I have paid KES ${modalItem.price} via M-Pesa to ${merchantLocalPhone}.\nM-Pesa Code: ${
-          submittedReceipt || mpesaCode.trim().toUpperCase()
-        }\nMaterial: ${modalItem.title}\nKindly approve my instant download.`
-      )}`
-    : `https://wa.me/${merchantPhone}`;
+  const whatsappConfirmHref = buildOrderWhatsAppHref(
+    submittedReceipt || extractCodeClient(mpesaCode) || mpesaCode.trim().toUpperCase()
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
@@ -340,7 +388,7 @@ export default function HomePage() {
               Admin Studio
             </Link>
             <a
-              href={`https://wa.me/${merchantPhone}?text=${encodeURIComponent(
+              href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
                 'Hello, I need CBC curriculum materials'
               )}`}
               target="_blank"
@@ -348,7 +396,7 @@ export default function HomePage() {
               className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5"
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp {merchantLocalPhone}
+              WhatsApp {whatsappLocalPhone}
             </a>
           </div>
         </div>
@@ -599,6 +647,19 @@ export default function HomePage() {
         )}
       </main>
 
+      {/* Floating WhatsApp Support Button -> 0705759072 (254705759072) */}
+      <a
+        href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+          'Hello, I need help with CBC curriculum materials'
+        )}`}
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3 rounded-full shadow-lg transition"
+      >
+        <MessageCircle className="w-4 h-4" />
+        <span>WhatsApp Help: {whatsappLocalPhone}</span>
+      </a>
+
       {/* Rich Material Preview Modal */}
       <PreviewModal
         resource={previewItem}
@@ -609,7 +670,7 @@ export default function HomePage() {
         }}
       />
 
-      {/* M-Pesa Checkout Modal (Direct to 254728595160 + STK Express) */}
+      {/* M-Pesa Checkout Modal (M-Pesa -> 254728595160 | WhatsApp Alerts -> 254705759072) */}
       {modalItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative my-6">
@@ -703,7 +764,7 @@ export default function HomePage() {
                           <strong>Pochi la Biashara</strong>)
                         </li>
                         <li className="flex flex-wrap items-center gap-1.5">
-                          <span>Enter Phone:</span>
+                          <span>Enter M-Pesa Phone:</span>
                           <strong className="font-mono text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
                             {merchantLocalPhone}
                           </strong>
@@ -763,6 +824,21 @@ export default function HomePage() {
                       />
                     </div>
 
+                    {paymentStatus !== 'PENDING' && (
+                      <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={notifyViaWhatsApp}
+                          onChange={(e) => setNotifyViaWhatsApp(e.target.checked)}
+                          className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span>
+                          Send instant payment alert to WhatsApp inbox (
+                          <strong>{whatsappLocalPhone}</strong>)
+                        </span>
+                      </label>
+                    )}
+
                     {checkoutMessage && (
                       <div
                         className={`text-xs text-center p-3 rounded-lg flex items-center justify-center gap-2 ${
@@ -790,7 +866,7 @@ export default function HomePage() {
                           className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm"
                         >
                           <MessageCircle className="w-4 h-4" />
-                          Alert {merchantLocalPhone} on WhatsApp for Instant Unlock
+                          Send Payment Alert to WhatsApp ({whatsappLocalPhone})
                         </a>
                         <p className="text-[11px] text-center text-slate-500">
                           Keep this window open — your download button unlocks

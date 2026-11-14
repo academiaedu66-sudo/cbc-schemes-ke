@@ -415,9 +415,9 @@ export default function AdminDashboardPage() {
               CBC Materials Studio &amp; M-Pesa Orders
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              Payout M-Pesa: <strong className="text-emerald-300">254728595160 (0728595160)</strong> •{' '}
-              {inventory.length} published listings • {storageCount} files in{' '}
-              <code>cbc-materials</code>
+              M-Pesa: <strong className="text-emerald-300">0728595160 (254728595160)</strong> •
+              WhatsApp Inbox: <strong className="text-emerald-300">0705759072 (254705759072)</strong> •{' '}
+              {inventory.length} listings
             </p>
           </div>
           <div className="flex items-center gap-3">

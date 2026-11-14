@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { sendWhatsAppAdminNotification } from '@/lib/mpesa';
 
 export async function POST(req: Request) {
   try {
@@ -36,6 +37,12 @@ export async function POST(req: Request) {
               updated_at: new Date().toISOString(),
             })
             .eq('checkout_request_id', checkoutId);
+
+          void sendWhatsAppAdminNotification(
+            `✅ *M-PESA PAYMENT COMPLETED*\n• Receipt: ${receipt}\n• Amount: KES ${Math.round(
+              (Number(body?.data?.amount) || 0) / 100
+            )}\n• Material: ${body?.data?.metadata?.resource_title || 'CBC Material'}`
+          );
         } else if (event === 'charge.failed') {
           await supabaseAdmin
             .from('orders')
@@ -50,14 +57,19 @@ export async function POST(req: Request) {
     if (body?.invoice_id && body?.state) {
       const checkoutId = `INTASEND_${body.invoice_id}`;
       if (body.state === 'COMPLETE') {
+        const receipt = body.mpesa_reference || body.invoice_id;
         await supabaseAdmin
           .from('orders')
           .update({
             status: 'COMPLETED',
-            mpesa_receipt_number: body.mpesa_reference || body.invoice_id,
+            mpesa_receipt_number: receipt,
             updated_at: new Date().toISOString(),
           })
           .eq('checkout_request_id', checkoutId);
+
+        void sendWhatsAppAdminNotification(
+          `✅ *M-PESA PAYMENT COMPLETED*\n• Receipt: ${receipt}\n• Amount: KES ${body.value || ''}`
+        );
       } else if (body.state === 'FAILED') {
         await supabaseAdmin
           .from('orders')
@@ -77,12 +89,17 @@ export async function POST(req: Request) {
 
     if (ResultCode === 0) {
       let receiptNumber = '';
+      let paidAmount = '';
 
       if (CallbackMetadata?.Item) {
         const receiptItem = CallbackMetadata.Item.find(
           (i: { Name?: string; Value?: string }) => i.Name === 'MpesaReceiptNumber'
         );
+        const amountItem = CallbackMetadata.Item.find(
+          (i: { Name?: string; Value?: string }) => i.Name === 'Amount'
+        );
         receiptNumber = receiptItem?.Value || '';
+        paidAmount = amountItem?.Value ? `KES ${amountItem.Value}` : '';
       }
 
       await supabaseAdmin
@@ -93,6 +110,10 @@ export async function POST(req: Request) {
           updated_at: new Date().toISOString(),
         })
         .eq('checkout_request_id', CheckoutRequestID);
+
+      void sendWhatsAppAdminNotification(
+        `✅ *M-PESA STK PAYMENT COMPLETED*\n• Receipt: ${receiptNumber}\n• Amount: ${paidAmount}`
+      );
     } else {
       await supabaseAdmin
         .from('orders')

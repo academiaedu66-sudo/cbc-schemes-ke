@@ -6,20 +6,26 @@ import {
   getDarajaAccessToken,
   getEatTimestamp,
   getMerchantPhone,
+  getWhatsAppPhone,
   isMpesaProduction,
   normalizeKenyanPhone,
   resolveCallbackUrl,
+  resolvePublicOrigin,
+  sendWhatsAppAdminNotification,
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
 
 export async function GET() {
   const provider = getActivePaymentProvider();
-  const merchantPhone = getMerchantPhone();
+  const merchantPhone = getMerchantPhone(); // 254728595160 (M-Pesa collection)
+  const whatsappPhone = getWhatsAppPhone(); // 254705759072 (WhatsApp inbox)
   return NextResponse.json({
     provider,
     liveStkReady: provider !== 'daraja_sandbox',
     merchantPhone,
     merchantLocalPhone: toLocalKenyanFormat(merchantPhone),
+    whatsappPhone,
+    whatsappLocalPhone: toLocalKenyanFormat(whatsappPhone),
   });
 }
 
@@ -59,6 +65,7 @@ export async function POST(req: Request) {
     const actualAmountNum = Math.max(1, Math.round(Number(resource.price) || 1));
     const provider = getActivePaymentProvider();
     const merchantPhone = getMerchantPhone();
+    const origin = resolvePublicOrigin(req);
 
     // =========================================================================
     // PROVIDER 1: PAYSTACK KENYA (Live STK Push -> Settles directly to 254728595160)
@@ -75,7 +82,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           email: `${phone}@cbchub.co.ke`,
-          amount: actualAmountNum * 100, // KES in cents/kobo
+          amount: actualAmountNum * 100,
           currency: 'KES',
           reference,
           mobile_money: {
@@ -107,6 +114,10 @@ export async function POST(req: Request) {
         amount: actualAmountNum,
         status: 'PENDING',
       });
+
+      void sendWhatsAppAdminNotification(
+        `📲 *STK PUSH INITIATED (KES ${actualAmountNum})*\n• Buyer: ${phone}\n• Material: ${resource.title}\n• Admin: ${origin}/admin`
+      );
 
       return NextResponse.json({
         message: 'M-Pesa STK PIN prompt sent to your phone.',
@@ -158,6 +169,10 @@ export async function POST(req: Request) {
         amount: actualAmountNum,
         status: 'PENDING',
       });
+
+      void sendWhatsAppAdminNotification(
+        `📲 *STK PUSH INITIATED (KES ${actualAmountNum})*\n• Buyer: ${phone}\n• Material: ${resource.title}\n• Admin: ${origin}/admin`
+      );
 
       return NextResponse.json({
         message: 'M-Pesa STK PIN prompt sent to your phone.',
