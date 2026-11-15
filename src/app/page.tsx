@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
 import ResourceCard, { type ResourceItem } from '@/components/ResourceCard';
 import PreviewModal from '@/components/PreviewModal';
+import WelcomeAnimation from '@/components/WelcomeAnimation';
 import { getLevelForGrade, normalizeCategory } from '@/lib/material-utils';
 
 const PAGE_SIZE = 36;
@@ -392,6 +393,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
+      {/* Entry Welcome Splash & Persistent Animated Welcome Ribbon */}
+      <WelcomeAnimation />
+
       {/* Header Bar */}
       <header className="bg-emerald-800 text-white shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
