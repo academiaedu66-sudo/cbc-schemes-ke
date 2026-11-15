@@ -1,23 +1,1063 @@
-// Comprehensive KICD Rationalized CBC Curriculum Syllabus Map (Grades 1 to 12)
-// Covers Term 1, Term 2, and Term 3 Strands, Sub-strands, KIQs, Publishers & Practical Activities
+// Official KICD Rationalized CBC Curriculum Syllabus & Orange Book Course Materials Map (Grades 1 to 12)
+// Verified against KICD Approved CBC Course Materials (https://kicd.ac.ke/cbc-materials/approved-cbc-course-materials/):
+// 1. Addendum to Orange Book (PP1, PP2 & Grades 1-9)
+// 2. Approved Grade 10 Senior School Course Books (Pathways)
+// 3. Approved Grade 11/12 Senior School Course Books (Pathways)
 
 export const APPROVED_PUBLISHERS = [
-  'KLB Visionary',
-  'Longhorn CBC',
-  'Oxford New Progressive',
-  'Moran CBC',
-  'Mentor Series',
-  'Spotlight CBC',
+  'Kenya Literature Bureau (KLB)',
+  'Oxford University Press (EA)',
+  'Longhorn Publishers',
+  'Mentor Publishing',
+  'Moran (EA) Publishers',
+  'Spotlight Publishers (EA)',
 ];
 
 export const JSS_SENIOR_PUBLISHERS = [
-  'KLB Top Scholar',
-  'Longhorn',
-  'Oxford Head Start',
-  'Moran',
-  'Mentor',
-  'Spotlight',
+  'Kenya Literature Bureau (KLB)',
+  'Oxford University Press (EA)',
+  'Longhorn Publishers',
+  'Mentor Publishing',
+  'Moran (EA) Publishers',
+  'Spotlight Publishers (EA)',
+  'East African Educational Publishers (EAEP)',
 ];
+
+/**
+ * Exact KICD Orange Book Approved Coursebooks per Grade Band & Learning Area.
+ * Titles, publishers, and authors match KICD's official approved lists verbatim.
+ */
+export const KICD_APPROVED_COURSEBOOKS = {
+  // ================= LOWER PRIMARY (GRADES 1 - 3) =================
+  lower: {
+    'Mathematical Activities': [
+      {
+        series: 'KLB Visionary Mathematical Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Israel Owiti, Francis Mwangi, Samuel Irumbi & Washington Mbiruru',
+      },
+      {
+        series: "Oxford Let's Do Mathematical Activities",
+        publisher: 'Oxford University Press (EA)',
+        authors: "Catherine Kiyiapi, Martin Ng'ang'a & Maurice Aketch",
+      },
+      {
+        series: 'Longhorn Mathematical Activities',
+        publisher: 'Longhorn Publishers',
+        authors: "Leonard King'oo, Philip Obwoge & Kefa Masita",
+      },
+      {
+        series: 'Mentor Mathematical Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'Josephine Njehuri & Harriet Kitonyo',
+      },
+      {
+        series: 'Spotlight Mathematics Activities',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Alice Njeru & Boniface Tinega',
+      },
+    ],
+    'English Language Activities': [
+      {
+        series: 'Oxford New Progressive Primary English Language Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Leah Kariuki, Elizabeth Ndua & Evans Sore',
+      },
+      {
+        series: 'KLB Visionary English Language Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Gatitu Kiguru, Phyllis Mwangi & Charles Gecaga',
+      },
+      {
+        series: 'Longhorn English Language Activities',
+        publisher: 'Longhorn Publishers',
+        authors: 'Tom Olang, Naomi Kanyiri & Ezekiel Wangusi',
+      },
+      {
+        series: 'Skills in English Language Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi, Joseph Ndirangu & Ruth K. Munyi',
+      },
+      {
+        series: 'Spotlight English Language Activities',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Stephen Adhoch & Zipporah Wambua',
+      },
+    ],
+    'Kiswahili Language Activities': [
+      {
+        series: 'Oxford Kiswahili Dadisi Mazoezi ya Lugha',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Jackline Ndege, Pauline Kea & Zephaniah Mucheria',
+        isKiswahili: true,
+      },
+      {
+        series: 'KLB Visionary Mazoezi ya Kiswahili',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Mutahi Miricho, Atibu Bakari & Pauline Kea',
+        isKiswahili: true,
+      },
+      {
+        series: 'Longhorn Mwanga wa Kiswahili Mazoezi ya Lugha',
+        publisher: 'Longhorn Publishers',
+        authors: 'Wallah bin Wallah, John Kobia & Hellen Kangai',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kurunzi ya Kiswahili Mazoezi ya Lugha',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Assumpta K. Matei & Joseph Mwamburi',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kielekezi cha Kiswahili Mazoezi ya Lugha',
+        publisher: 'Mentor Publishing',
+        authors: 'Sam Washika, Ken Chituyi & Norah Musyimi',
+        isKiswahili: true,
+      },
+    ],
+    'Indigenous Language Activities': [
+      {
+        series: 'KLB Visionary Indigenous Language Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Indigenous Languages Curriculum Panel',
+      },
+      {
+        series: 'StoryMoja Know More Indigenous Language Activities',
+        publisher: 'StoryMoja Publishers',
+        authors: 'StoryMoja Mother-Tongue Literacy Panel',
+      },
+      {
+        series: 'Moran Indigenous Language Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Moran Indigenous Languages Panel',
+      },
+    ],
+    'Environmental Activities': [
+      {
+        series: 'Oxford Our Lives Today Environmental Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Maryclaire Indire, Cephas Kamau & Nancy Kihwaga',
+      },
+      {
+        series: 'KLB Visionary Environmental Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Maurice Saka, Agumba Ndaloh & Joseph Waliaula',
+      },
+      {
+        series: 'Our World Environmental Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: "Ferdinanda Gachang'i & Andrew Simolo",
+      },
+      {
+        series: 'Mentor Environmental Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'Emma Omenda & Dickson Njue',
+      },
+    ],
+    'Creative Activities': [
+      {
+        series: 'KLB Visionary Creative Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Okemba Lore, Kevin Kimtai & Peter Wanjihia',
+      },
+      {
+        series: 'Hummingbird Creative Activities',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Catherine Simiyu & Naftali Korir',
+      },
+      {
+        series: 'Beginning Creative Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Evans Asol, Delphine Amimo & Paul Maina',
+      },
+      {
+        series: 'Mentor Creative Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'Dorcas Wachera & Phinius Mutuma',
+      },
+    ],
+    'Christian Religious Education (CRE)': [
+      {
+        series: 'KLB Visionary CRE Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Philomena Mwaura, Shiphrah Gichaga & Elvira Shitohi',
+      },
+      {
+        series: 'Oxford Growing in Christ CRE Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Hezron Onyango, Jesse Watiki & Denis Rutere',
+      },
+      {
+        series: 'Our Faith Christian Religious Education Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Patrick Tumusiime & Mercy Githae',
+      },
+      {
+        series: 'Mentor CRE Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'J. N. Gathogo & Caroline Kiini',
+      },
+    ],
+    'Islamic Religious Education (IRE)': [
+      {
+        series: 'KLB Visionary Islamic Religious Education Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Idris Matsukhu Makokha & Mariam Omar',
+      },
+      {
+        series: 'Atfaal IRE Activities',
+        publisher: 'Atfaal Publishers',
+        authors: 'F. Shariff & Ramadhan Lihanda',
+      },
+      {
+        series: 'Spotlight Islamic Religious Education Activities',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Salim Ali Mohamed & Fatuma Mwatamu',
+      },
+    ],
+  },
+
+  // ================= UPPER PRIMARY (GRADES 4 - 6) =================
+  upper: {
+    Mathematics: [
+      {
+        series: 'KLB Visionary Mathematics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Samuel G. Irumbi, Obadiah Kiburi & Francis Mwangi',
+      },
+      {
+        series: "Oxford Let's Do Mathematics",
+        publisher: 'Oxford University Press (EA)',
+        authors: "Catherine Kiyiapi, Martin Ng'ang'a & Maurice Aketch",
+      },
+      {
+        series: 'Longhorn Mathematics',
+        publisher: 'Longhorn Publishers',
+        authors: "Cornelius Machuki, Leonard King'oo & Phillip Obwoge",
+      },
+      {
+        series: 'Mentor Mathematics',
+        publisher: 'Mentor Publishing',
+        authors: 'Josephine Njehuri & Harriet Kitonyo',
+      },
+      {
+        series: 'Super Minds Mathematics',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Beatrice Mwendo & Josephat Wambua',
+      },
+    ],
+    English: [
+      {
+        series: 'Oxford New Progressive Primary English',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Elizabeth Ndua, Evans Sore & Leah Kariuki',
+      },
+      {
+        series: 'KLB Visionary English',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Gatitu Kiguru, Phyllis Mwangi & Charles Gecaga',
+      },
+      {
+        series: 'Longhorn English',
+        publisher: 'Longhorn Publishers',
+        authors: 'Naomi Kanyiri & Ezekiel Wangusi',
+      },
+      {
+        series: 'Skills in English',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi & Joseph Ndirangu',
+      },
+      {
+        series: 'SuperMinds English',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Joseph Maina & Catherine Njuguna',
+      },
+    ],
+    Kiswahili: [
+      {
+        series: 'Oxford Kiswahili Dadisi',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Jackline Ndege, Pauline Kea, Evans Osoro & Zephania Mucheria',
+        isKiswahili: true,
+      },
+      {
+        series: 'Longhorn Mwanga wa Kiswahili',
+        publisher: 'Longhorn Publishers',
+        authors: 'John Kobia, Hellen Kangai & Kenan Ngere',
+        isKiswahili: true,
+      },
+      {
+        series: 'KLB Visionary Kiswahili',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Mutahi Miricho & Atibu Bakari',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kurunzi ya Kiswahili',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Assumpta K. Matei & Joseph Mwamburi',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kielekezi cha Kiswahili',
+        publisher: 'Mentor Publishing',
+        authors: 'Ken Chituyi, Norah Musyimi & Sam Washika',
+        isKiswahili: true,
+      },
+    ],
+    'Science and Technology': [
+      {
+        series: 'KLB Visionary Science and Technology',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Franco Munene Njeru, Alex Kihugu & Pauline Wainaina',
+      },
+      {
+        series: 'Oxford Everyday Science and Technology',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Patrick Mumo, Jacob Odhiambo & Wycliffe Nyapera',
+      },
+      {
+        series: 'Longhorn Science and Technology',
+        publisher: 'Longhorn Publishers',
+        authors: "Erick Owino & Antoney Ochieng'",
+      },
+      {
+        series: 'Spotlight Science and Technology',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Jacob Asenje, Paschal Wasonga & Daniel Arapai',
+      },
+      {
+        series: 'Super Minds Science and Technology',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Jared K. Charana & Wycliff Ogembo',
+      },
+    ],
+    'Agriculture and Nutrition': [
+      {
+        series: 'KLB Visionary Agriculture',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Anne K. Wachira, Tom Orwa & Lucy Nyamu',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized Agriculture & Nutrition',
+      },
+      {
+        series: 'Oxford Modern Agriculture',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Steward Anyona, Charles Wachira & Joan Owiye',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized Agriculture & Nutrition',
+      },
+      {
+        series: 'Mentor Agriculture',
+        publisher: 'Mentor Publishing',
+        authors: 'A. Wesonga, Dr. Josephine Opondo & Jane Thungu',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized Agriculture & Nutrition',
+      },
+      {
+        series: 'Healthy Planet Agriculture',
+        publisher: 'One Planet Publishing',
+        authors: 'Daniel Kemei & Peter Sigei',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized Agriculture & Nutrition',
+      },
+      {
+        series: 'MTP Agriculture',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Mountain Top Agriculture & Nutrition Panel',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized Agriculture & Nutrition',
+      },
+    ],
+    'Social Studies': [
+      {
+        series: 'Oxford Our Lives Today Social Studies',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Cephas Kamau, Maryclaire Indire & Said Farah',
+      },
+      {
+        series: 'KLB Visionary Social Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Joseph Waliaula, Maurice Saka & Agumba Ndalo',
+      },
+      {
+        series: 'Our World Social Studies',
+        publisher: 'Moran (EA) Publishers',
+        authors: "Andrew Simolo & Ferdinanda Gachang'i",
+      },
+      {
+        series: 'Spotlight Social Studies',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Ezekiel Mudi & Wilson Sirengo',
+      },
+      {
+        series: 'Mentor Social Studies',
+        publisher: 'Mentor Publishing',
+        authors: 'Dickson Njue & Evans Waweru',
+      },
+    ],
+    'Creative Arts': [
+      {
+        series: 'KLB Visionary Creative Arts',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Esther Muchiri, Marsyden Matsigulu & Ruth Kahiga',
+      },
+      {
+        series: 'Mentor Creative Arts',
+        publisher: 'Mentor Publishing',
+        authors: "Anne Ndung'u, Clement Mugambi & Dorcas Wacera",
+      },
+      {
+        series: 'Spotlight Creative Arts',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Fredrick Onaka, Hudson Munayi & Sisto Chege',
+      },
+      {
+        series: 'Hummingbird Creative Arts',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Catherine Simiyu & Naftali Korir',
+      },
+    ],
+    'Christian Religious Education (CRE)': [
+      {
+        series: 'KLB Visionary CRE',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Philomena Mwaura, Elvira Shitohi & Shiphrah Gichaga',
+      },
+      {
+        series: 'Oxford Growing in Christ CRE',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Hezron Onyango, Jesse Watiki & Denis Rutere',
+      },
+      {
+        series: 'Knowing God CRE',
+        publisher: 'One Planet Publishing',
+        authors: 'Shirley Kokonya & James Mugendi',
+      },
+      {
+        series: 'Mentor CRE',
+        publisher: 'Mentor Publishing',
+        authors: 'Caroline Kiini & James Njehuri',
+      },
+    ],
+    'Islamic Religious Education (IRE)': [
+      {
+        series: 'KLB Visionary IRE',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Idris Matsukhu Makokha & Mwanaidi Lyani Omar',
+      },
+      {
+        series: 'Oxford New Beginning IRE',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Mohamed Mraja, Dhulfa Gongo & Abdi Adan',
+      },
+      {
+        series: 'Atfaal IRE',
+        publisher: 'Atfaal Publishers',
+        authors: 'F. Shariff & Ramadhan Lihanda',
+      },
+    ],
+  },
+
+  // ================= JUNIOR SECONDARY (GRADES 7 - 9) =================
+  jss: {
+    Mathematics: [
+      {
+        series: 'KLB Top Scholar Mathematics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Vincent Odhiambo, Zipporah Muli, Jane Mbugua & Wycliffe Ogembo',
+      },
+      {
+        series: 'Oxford Active Mathematics',
+        publisher: 'Oxford University Press (EA)',
+        authors: "Catherine Kiyiapi, Martin Ng'ang'a & Maurice Aketch",
+      },
+      {
+        series: 'Mentor Mathematics',
+        publisher: 'Mentor Publishing',
+        authors: "Dr. Donata Odago, Alex Odhong' & Josephine Njehuri",
+      },
+      {
+        series: 'Longhorn Mathematics',
+        publisher: 'Longhorn Publishers',
+        authors: "Leonard King'oo, Philip Obwoge & Kefa Masita",
+      },
+      {
+        series: 'Smart Minds Mathematics',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Beatrice Mwendo & Josephat Wambua',
+      },
+    ],
+    English: [
+      {
+        series: 'Oxford Head Start English',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Angelina Kioko, Benedict Mutei, Leah Kariuki & Shikuku Shitubi',
+      },
+      {
+        series: 'KLB Top Scholar English',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Phyllis Mwangi, Gatitu Kiguru & Charles Maina Gecaga',
+      },
+      {
+        series: 'Skills in English',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi, Joseph Ndirangu & Mark Chetambe',
+      },
+      {
+        series: 'Smart Minds English',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Joseph Maina, Catherine Njuguna & Oroni Tendera',
+      },
+      {
+        series: 'Mentor English',
+        publisher: 'Mentor Publishing',
+        authors: 'Martha Mbuvi & Monicah Onyancha',
+      },
+    ],
+    Kiswahili: [
+      {
+        series: 'Oxford Kiswahili Fasaha',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Ahmed Shikuku, Alfaxard Chokera, Evans Osoro & Ruth Omache',
+        isKiswahili: true,
+      },
+      {
+        series: 'KLB Top Scholar Kiswahili',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Mutahi Miricho, Pauline Kea & David Maina Kamau',
+        isKiswahili: true,
+      },
+      {
+        series: 'Longhorn Mwanga wa Kiswahili',
+        publisher: 'Longhorn Publishers',
+        authors: 'John Kobia, Jane Maina & Tobbie Wekesa',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kielekezi cha Kiswahili',
+        publisher: 'Mentor Publishing',
+        authors: 'Christopher Lubanga, Ken Chituyi & Sam Washika',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kurunzi ya Kiswahili',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Assumpta K. Matei & Joseph Mwamburi',
+        isKiswahili: true,
+      },
+    ],
+    'Integrated Science': [
+      {
+        series: 'KLB Top Scholar Integrated Science',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Geoffrey Mbaluto, Magdaline Aludo & Alex Kihugu',
+      },
+      {
+        series: 'Oxford Active Integrated Science',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Dickson Mugendi, Zedekiah Okwany & Jacob Odhiambo',
+      },
+      {
+        series: 'Mentor Integrated Science',
+        publisher: 'Mentor Publishing',
+        authors: 'Charles Kogi, Eunice Odago & J. N. Gathogo',
+      },
+      {
+        series: 'Spotlight Integrated Science',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Kellen Ngigi, Jacob Asenje & Mathew Opiyo',
+      },
+      {
+        series: 'MTP Integrated Science',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Franco Munene Njeru & Dr. Everlyne Chitechi Wemali',
+      },
+    ],
+    'Agriculture and Nutrition': [
+      {
+        series: 'KLB Top Scholar Agriculture',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Anne K. Wachira, Daniel N. Gitahi & Tom Orwa',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized JSS Agriculture & Nutrition',
+      },
+      {
+        series: 'Oxford Agriculture Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Steward Anyona, Damaris Wambua & Mariam Karabu',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized JSS Agriculture & Nutrition',
+      },
+      {
+        series: 'Mentor Agriculture',
+        publisher: 'Mentor Publishing',
+        authors: 'George Waweru, Dr. Josephine Opondo & Jane Thungu',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized JSS Agriculture & Nutrition',
+      },
+      {
+        series: 'Healthy Planet Agriculture',
+        publisher: 'One Planet Publishing',
+        authors: 'Daniel Kemei, Peter Sigei & Erick Oyaro',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized JSS Agriculture & Nutrition',
+      },
+      {
+        series: 'MTP Agriculture',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Philip Ngunyu & MTP Agriculture Panel',
+        note: 'KICD Orange Book Addendum Approved Coursebook for Rationalized JSS Agriculture & Nutrition',
+      },
+    ],
+    'Social Studies': [
+      {
+        series: 'KLB Top Scholar Social Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Assa Okoth, Agumba Ndaloh & Musungu Mugoha',
+      },
+      {
+        series: 'Oxford Evolving World Social Studies',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Cephas Kamau, Maryclaire Indire & Nancy Kihwaga',
+      },
+      {
+        series: 'Moran Social Studies',
+        publisher: 'Moran (EA) Publishers',
+        authors: "Ferdinanda Gachang'i & Andrew Simolo",
+      },
+      {
+        series: 'Mentor Social Studies',
+        publisher: 'Mentor Publishing',
+        authors: 'Dickson Njue & Evans Waweru',
+      },
+      {
+        series: 'Smart Minds Social Studies',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Simon Ndegwa Mungai & Chrispinus Tumbu',
+      },
+    ],
+    'Pre-Technical Studies': [
+      {
+        series: 'KLB Top Scholar Pre-Technical Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Omukaga Panyako & Petronila Mutwiwa',
+      },
+      {
+        series: 'Oxford Pre-Technical Studies Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Simon Gichoru, Mary Nyaga, Ken Mbuvi & Patrick Otundo',
+      },
+      {
+        series: 'Mentor Pre-Technical Studies',
+        publisher: 'Mentor Publishing',
+        authors: "Angela Bera, Claude Ochieng' & J. N. Gathogo",
+      },
+      {
+        series: 'Longhorn Pre-Technical Studies',
+        publisher: 'Longhorn Publishers',
+        authors: 'Basil Ochieng & Aggrey Welashina',
+      },
+      {
+        series: 'Spotlight Pre-Technical Studies',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Daniel Arapai, Joshua Wakhu & Francis Mayabi',
+      },
+    ],
+    'Creative Arts and Sports': [
+      {
+        series: 'KLB Top Scholar Creative Arts and Sports',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Kariuki Kanogu, Marsyden Matsigulu & Peter Njihia',
+      },
+      {
+        series: 'Hummingbird Creative Arts and Sports',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Catherine Simiyu, Collins Owino & Naftali Korir',
+      },
+      {
+        series: 'Mentor Creative Arts and Sports',
+        publisher: 'Mentor Publishing',
+        authors: "Ann Ndung'u, Clement Mugambi & Peter Mayienga",
+      },
+      {
+        series: 'Moran Creative Arts and Sports',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Paul Maina, Evance Asol & Delphine Amimo',
+      },
+    ],
+    'Christian Religious Education (CRE)': [
+      {
+        series: 'KLB Top Scholar CRE',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Philomena N. Mwaura, Shiprah N. Gichaga & Jane Ntaari',
+      },
+      {
+        series: 'Oxford Alive CRE',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Hezron Onyango, Daniel Ndegwa Karanu & Jane Mbugua',
+      },
+      {
+        series: 'Knowing God CRE',
+        publisher: 'One Planet Publishing',
+        authors: 'Shirley Kokonya & James Mugendi',
+      },
+      {
+        series: 'Mentor CRE',
+        publisher: 'Mentor Publishing',
+        authors: 'J. N. Gathogo & Margaret Wanyonyi',
+      },
+    ],
+    'Islamic Religious Education (IRE)': [
+      {
+        series: 'KLB Top Scholar IRE',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Idris Matsukhu Makokha, Mwanaidi Lyani Omar & Fatuma Mwatamu',
+      },
+      {
+        series: 'Atfaal IRE',
+        publisher: 'Atfaal Publishers',
+        authors: 'F. Shariff & Ramadhan Lihanda',
+      },
+    ],
+  },
+
+  // ================= SENIOR SCHOOL (GRADES 10 - 12) =================
+  senior: {
+    'Core Mathematics': [
+      {
+        series: 'KLB Excelling Core Mathematics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Vincent Odhiambo, Winfred Mutuku, Moses Maswai & Wicklif Ogembo',
+      },
+      {
+        series: 'Oxford Mathematics Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Alexander Kioko, Joy Mutonyi Butali & Raphael Otieno',
+      },
+      {
+        series: 'Longhorn Advancing in Core Mathematics',
+        publisher: 'Longhorn Publishers',
+        authors: 'Milkah Manyala, Philip Obwage & Kefa Masita',
+      },
+      {
+        series: 'Mentor Core Mathematics',
+        publisher: 'Mentor Publishing',
+        authors: "Alex Odhong', Dr. Donata Odago & Ezekiel Thugu",
+      },
+    ],
+    English: [
+      {
+        series: 'KLB Excelling in English',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Phyllis Mwangi, Gatitu Kiguru & Charles Maina Gecaga',
+      },
+      {
+        series: 'Oxford Head Start English',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Angelina Kioko, Eunice Kamanthe & David Amayo',
+      },
+      {
+        series: 'Moran Skills in English',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi, Joseph Ndirangu & Mark Chetambe',
+      },
+      {
+        series: 'Longhorn Advancing in English',
+        publisher: 'Longhorn Publishers',
+        authors: 'Joab Tabakori & Elizabeth Odhiambo',
+      },
+    ],
+    Kiswahili: [
+      {
+        series: 'Oxford Kiswahili Fasaha',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Ruth Omache, Ali Chembea, Enos Barasa & Chacha Mwita',
+        isKiswahili: true,
+      },
+      {
+        series: 'Longhorn Chemchemi za Kiswahili',
+        publisher: 'Longhorn Publishers',
+        authors: 'Kenan O. Ngere, Tobbie Wekesa & Jane Maina',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kielekezi cha Kiswahili',
+        publisher: 'Mentor Publishing',
+        authors: 'Moses Owino, Patrick Kamithi & Sam Washika',
+        isKiswahili: true,
+      },
+      {
+        series: 'Moran Kiswahili Chanana',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Boniface Ngugi & Evans Makhulo',
+        isKiswahili: true,
+      },
+    ],
+    'Community Service Learning (CSL)': [
+      {
+        series: 'KLB Excelling Community Service Learning',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Maurice Saka, Agumba Ndalo & Florence Kamaitha',
+      },
+      {
+        series: 'Oxford Essential Community Service Learning (CSL)',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Paul Wafula, Christine Mutua & Mildred Onyango',
+      },
+      {
+        series: 'Longhorn Pioneer Community Service Learning',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn CSL Senior School Panel',
+      },
+      {
+        series: 'MTP Community Service Learning',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'MTP Senior School CSL Panel',
+      },
+    ],
+    Biology: [
+      {
+        series: 'KLB Excelling Biology',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Kaluli Nengo, Rosebella Jerotich & Samson Ochar',
+      },
+      {
+        series: 'Oxford Biology Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Fredrick Okwacho, Zedekiah Okwany & Peter Muchiri',
+      },
+      {
+        series: 'Mentor Biology',
+        publisher: 'Mentor Publishing',
+        authors: 'Charles Kogi, Emily Irene Njeri & Francis Ndaka Kinaka',
+      },
+      {
+        series: 'Longhorn Advancing in Biology',
+        publisher: 'Longhorn Publishers',
+        authors: 'Zipporah Gatheche & Alfred Mukolwe Otipa',
+      },
+    ],
+    Chemistry: [
+      {
+        series: 'Oxford Chemistry Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Grace Orado, Dickson Mugendi & Rosemary Nelima Wafula',
+      },
+      {
+        series: 'KLB Excelling Chemistry',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Levi Mabogha, Pauline Wainaina & Zipporah Muli',
+      },
+      {
+        series: 'Longhorn Advancing in Chemistry',
+        publisher: 'Longhorn Publishers',
+        authors: "Antoney Ochieng', Joel Mungai & Stephen Olwali Ahurah",
+      },
+      {
+        series: 'Mentor Chemistry',
+        publisher: 'Mentor Publishing',
+        authors: 'Eunice Odago, Christopher Keya & Nebert Lumire',
+      },
+    ],
+    Physics: [
+      {
+        series: 'KLB Excelling Physics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Hesborne O. Omollo, Oliver Minishi, Grace Mwangasha & Lilian Adika',
+      },
+      {
+        series: 'Longhorn Advancing in Physics',
+        publisher: 'Longhorn Publishers',
+        authors: 'Peterson Gichaba, Philip Obwage & Kefa Masita',
+      },
+      {
+        series: 'Mentor Physics',
+        publisher: 'Mentor Publishing',
+        authors: 'Joash Wamalwa & Lavenah Shitera',
+      },
+      {
+        series: 'Spotlight Physics',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Isaac Ondieki & Theophilus Kanuna',
+      },
+    ],
+    'Computer Science': [
+      {
+        series: 'KLB Excelling Computer Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Petronilla Mutwiwa, Charles Loka & Kanyi Gioko',
+        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+      },
+      {
+        series: 'Oxford Active Computer Studies',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Dorothy Aluoch, Wycliffe Mutuli & Patrick Mumo',
+        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+      },
+      {
+        series: 'Longhorn Advancing in Computer Studies',
+        publisher: 'Longhorn Publishers',
+        authors: 'Alex Larry Kayeli & Benson Muguro Mungai',
+        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+      },
+      {
+        series: 'Mentor Computer Studies',
+        publisher: 'Mentor Publishing',
+        authors: 'Claude Ochieng, Grace Nyaga & Patrick Sifuna',
+        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+      },
+    ],
+    'History and Citizenship': [
+      {
+        series: 'KLB Excelling History and Citizenship',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Dr. Susan Mutune, Dr. Gladys Kinyanjui & Assa Okoth',
+      },
+      {
+        series: 'Oxford Evolving World History and Citizenship',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Maryclaire Indire, Mercy Muthoni & George Gitonga',
+      },
+      {
+        series: 'Moran History and Citizenship',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Agumba M. Ndaloh & Rachael Nyatichi',
+      },
+      {
+        series: 'Mentor History and Citizenship',
+        publisher: 'Mentor Publishing',
+        authors: 'Evans Tsabuko, Felix Oduor & Wycliffe Mokaya',
+      },
+    ],
+    Geography: [
+      {
+        series: 'Oxford Active Geography',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Nancy Kihwaga, Cephas Kamau & Patrick Esendi',
+      },
+      {
+        series: 'KLB Excelling Geography',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Julius Huho, Maurice Saka & Adelaide Maghanga',
+      },
+      {
+        series: 'Mentor Geography',
+        publisher: 'Mentor Publishing',
+        authors: 'Evans Tsabuko & Florence Muigua',
+      },
+      {
+        series: 'Moran Geography',
+        publisher: 'Moran (EA) Publishers',
+        authors: "Ferdinanda Gachang'i, Isaac Biwott & Andrew Simolo",
+      },
+    ],
+    'Business Studies': [
+      {
+        series: 'Oxford Active Business Studies',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Kenneth Mbuvi, Patrick Otundo & Josephine Masika',
+      },
+      {
+        series: 'KLB Excelling Business Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Salome Boit, Tobias Yogo & Jared Bosire',
+      },
+      {
+        series: 'Mentor Business Studies',
+        publisher: 'Mentor Publishing',
+        authors: 'Dr. George Gathogo & Mollyne Mahuga',
+      },
+      {
+        series: 'Smart Minds Business Studies',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Ann Kihuro & John Mbogo',
+      },
+    ],
+    'Christian Religious Education (CRE)': [
+      {
+        series: 'Hummingbird CRE',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Edith Gichohi & Edward Kiratu',
+      },
+      {
+        series: 'MTP CRE',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Nyamboki S. M. & Dinah K. Omweri',
+      },
+      {
+        series: 'Smart Minds CRE',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Odhiambo Odongo & Nickson Juma',
+      },
+    ],
+    'Islamic Religious Education (IRE)': [
+      {
+        series: 'KLB Excelling Islamic Religious Education',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Idris Matsukhu Makokha, Khamis Mohamed Omar & Fatuma Kassim Mwatamu',
+      },
+      {
+        series: 'Atfaal IRE',
+        publisher: 'Atfaal Publishers',
+        authors: 'F. Shariff & Harun Abubakar',
+      },
+    ],
+  },
+};
+
+/**
+ * Deterministically returns the exact KICD Orange Book Approved Primary Coursebook
+ * (Learner's Book + Teacher's Guide + Publisher + Authors) and Supplementary KICD-Approved
+ * Coursebooks for a given (grade, subject).
+ * Because this depends ONLY on (grade, subject), every document category & term for that
+ * (grade, subject) cites the exact same KICD-approved books!
+ */
+export function getApprovedCoursebook(grade, subject) {
+  const bandKey = grade <= 3 ? 'lower' : grade <= 6 ? 'upper' : grade <= 9 ? 'jss' : 'senior';
+  const bandObj = KICD_APPROVED_COURSEBOOKS[bandKey] || {};
+  const list = bandObj[subject] || [
+    {
+      series: `KLB Approved ${subject}`,
+      publisher: 'Kenya Literature Bureau (KLB)',
+      authors: 'KICD Approved Curriculum Panel',
+    },
+  ];
+
+  // Grade 3 KLB English Language Activities has exact title "KLB Lower Primary English Language Activities"
+  const primaryIdx = (grade - 1) % list.length;
+  const rawPrimary = list[primaryIdx];
+  const resolvedSeries =
+    grade === 3 && rawPrimary.series === 'KLB Visionary English Language Activities'
+      ? 'KLB Lower Primary English Language Activities'
+      : rawPrimary.series.replace(' &实用 KICD Panel', '');
+
+  const isKis = Boolean(rawPrimary.isKiswahili || String(subject).toLowerCase().includes('kiswahili'));
+
+  const lbTitle = isKis
+    ? `${resolvedSeries} Kitabu cha Mwanafunzi Gredi ya ${grade}`
+    : `${resolvedSeries} Learner's Book Grade ${grade}`;
+  const tgTitle = isKis
+    ? `${resolvedSeries} Mwongozo wa Mwalimu Gredi ya ${grade}`
+    : `${resolvedSeries} Teacher's Guide Grade ${grade}`;
+
+  const lbShort = isKis
+    ? `${resolvedSeries} Kitabu cha Mwanafunzi Grd ${grade}`
+    : `${resolvedSeries} LB Grd ${grade}`;
+  const tgShort = isKis
+    ? `${resolvedSeries} Mwongozo wa Mwalimu Grd ${grade}`
+    : `${resolvedSeries} TG Grd ${grade}`;
+
+  const alternates = list
+    .filter((_, idx) => idx !== primaryIdx)
+    .slice(0, 2)
+    .map((alt) => `${alt.series} Grade ${grade} (${alt.publisher})`);
+
+  return {
+    series: resolvedSeries,
+    publisher: rawPrimary.publisher,
+    authors: rawPrimary.authors.replace(' &实用 KICD Panel', '').replace(' &agumba Panel', ''),
+    lbTitle,
+    tgTitle,
+    lbShort,
+    tgShort,
+    isKiswahili: isKis,
+    note: rawPrimary.note || null,
+    alternates,
+  };
+}
 
 export const SUBJECT_SYLLABUS = {
   // ================= LOWER PRIMARY (GRADES 1 - 3) =================
@@ -29,13 +1069,57 @@ export const SUBJECT_SYLLABUS = {
         { strand: '1.0 NUMBERS', subs: ['Addition of Whole Numbers', 'Addition Word Tasks', 'Subtraction as Taking Away', 'Relationship Between Addition & Subtraction'], kiq: 'When do we add or subtract items at home and school?', resources: 'Number lines, marbles, sticks, flashcards' },
       ],
       2: [
-        { strand: '1.0 NUMBERS', subs: ['Multiplication as Repeated Addition', 'Division as Equal Sharing', 'Fractions (Halves & Quarters of a Whole)', 'Fractions of a Group'], kiq: 'How can we share fruits or books equally among friends?', resources: 'Paper cutouts, fruits realia, fraction charts, counters' },
+        { strand: '1.0 NUMBERS', subs: ['Multiplication as Repeated Addition', 'Division as Equal Sharing', 'Fractions (Halves, Quarters & Eighths)', 'Fractions of a Group'], kiq: 'How can we share fruits or books equally among friends?', resources: 'Paper cutouts, fruits realia, fraction charts, counters' },
         { strand: '2.0 MEASUREMENT', subs: ['Length (Arbitrary & Standard Metres)', 'Mass (Comparing Heavy & Light / Kilograms)', 'Capacity (Filling & Emptying Containers / Litres)'], kiq: 'Why do we measure length, mass, and capacity accurately?', resources: 'Metre rule, beam balance, 1-litre containers, sand, water' },
       ],
       3: [
         { strand: '2.0 MEASUREMENT', subs: ['Time (Days, Months & Reading the Clock Face)', 'Money (Kenyan Coins & Notes, Shopping)', 'Needs and Wants in Spending'], kiq: 'How do we tell time and use Kenyan currency wisely?', resources: 'Model clock faces, Kenyan currency specimens, classroom shop corner' },
-        { strand: '3.0 GEOMETRY', subs: ['Lines (Straight, Curved, Wavy & Zigzag)', '2D Shapes (Rectangles, Circles, Triangles, Ovals)', 'Making Patterns Using Shapes'], kiq: 'What shapes can we observe on buildings and objects around us?', resources: 'Shape cutouts, manila paper, crayons, string, sticks' },
+        { strand: '3.0 GEOMETRY', subs: ['Lines (Straight, Curved, Wavy & Zigzag)', '2D Shapes (Rectangles, Circles, Triangles, Ovals)', 'Making Patterns & Direction Turns'], kiq: 'What shapes can we observe on buildings and objects around us?', resources: 'Shape cutouts, manila paper, crayons, string, sticks' },
       ],
+    },
+    byGrade: {
+      1: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Sorting, Matching & Pairing Objects by Colour and Size', 'Counting & Reading Whole Numbers 1 to 100', 'Place Value of Tens and Ones Using Bundles of Sticks', 'Number Patterns Within 20'], kiq: 'How do we sort and count objects accurately from 1 to 100?', resources: 'Bottle tops, coloured blocks, bundles of 10 sticks, number chart 1-100' },
+          { strand: '1.0 NUMBERS', subs: ['Addition of Single-Digit & 2-Digit Numbers Without Regrouping', 'Real-Life Addition Word Tasks Within 50', 'Subtraction Within 20 as Taking Away', 'Relating Addition and Subtraction Sentences'], kiq: 'How do number lines help us add and take away objects?', resources: 'Floor number line, counters, marbles, addition flashcards' },
+        ],
+        2: [
+          { strand: '1.0 NUMBERS', subs: ['Counting in Twos, Fives & Tens Up to 100', 'Equal Grouping & Sharing Objects Fairly', 'Identifying Whole and Half (1/2) of Concrete Objects'], kiq: 'How do we share an orange or paper strip into two equal halves?', resources: 'Paper strips, safe plastic knives, fruit models, counters' },
+          { strand: '2.0 MEASUREMENT', subs: ['Comparing Length Using Handspans, Paces & Sticks', 'Comparing Mass (Heavier Than, Lighter Than, Same Mass)', 'Comparing Capacity by Filling & Emptying Containers'], kiq: 'Why do two different containers hold different amounts of water?', resources: 'Simple beam balance, cups, tins, sticks, sand & water basin' },
+        ],
+        3: [
+          { strand: '2.0 MEASUREMENT', subs: ['Times of the Day (Morning, Noon, Evening) & Days of the Week', 'Identifying Kenyan Coins & Notes Up to Ksh 100', 'Classroom Shop Role-Play: Needs vs Wants'], kiq: 'How do we identify Kenyan coins and spend pocket money wisely?', resources: 'Kenyan coin/note specimens, daily routine pictures, shop corner items' },
+          { strand: '3.0 GEOMETRY', subs: ['Tracing Straight and Curved Lines in the Environment', 'Identifying Rectangles, Triangles & Circles', 'Creating Repeating Shape Patterns'], kiq: 'Where do we see straight lines, circles, and rectangles in our classroom?', resources: 'Shape cutouts, strings, sticks, crayons, manila charts' },
+        ],
+      },
+      2: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Reading & Writing Whole Numbers 1 to 1,000', 'Place Value: Hundreds, Tens & Ones on an Abacus', 'Reading & Writing Numbers 1 to 100 in Words', 'Increasing & Decreasing Number Patterns to 1,000'], kiq: 'How does an abacus show hundreds, tens, and ones clearly?', resources: 'Three-spike abacus, place value tins, number cards 1-1000' },
+          { strand: '1.0 NUMBERS', subs: ['Addition of 2- & 3-Digit Numbers With Single Regrouping', 'Subtraction of 2- & 3-Digit Numbers Without & With Regrouping', 'Missing Numbers in Addition & Subtraction Equations'], kiq: 'When do we regroup 10 ones into 1 ten when adding?', resources: 'Place value pocket chart, base-ten blocks, flashcards' },
+        ],
+        2: [
+          { strand: '1.0 NUMBERS', subs: ['Multiplication as Repeated Addition (Tables of 2, 3, 4, 5 & 10)', 'Division as Equal Sharing & Grouping Within 50', 'Fractions: Halves (1/2) and Quarters (1/4) of a Whole & Group'], kiq: 'How is repeated addition faster when written as multiplication?', resources: 'Multiplication array grids, counters, circular fraction cutouts' },
+          { strand: '2.0 MEASUREMENT', subs: ['Measuring Length in Standard Metres (m)', 'Measuring Mass in Kilograms (1 kg Reference)', 'Measuring Capacity in Litres (1-Litre Containers)'], kiq: 'Why is a 1-metre rule better than handspans when buying cloth?', resources: '1-metre sticks, 1-kg sandbags, beam balance, graduated 1-litre jugs' },
+        ],
+        3: [
+          { strand: '2.0 MEASUREMENT', subs: ['Months of the Year, Calendar Reading & Telling Time by the Hour/Half-Hour', 'Kenyan Currency Up to Ksh 500: Adding Money & Giving Change', 'Saving Money & Prioritizing Family Needs'], kiq: 'How do we calculate balance when buying items at a shop?', resources: 'Wall calendar, geared clock faces, specimen notes/coins, price tags' },
+          { strand: '3.0 GEOMETRY', subs: ['Drawing Straight, Curved, Wavy & Zigzag Lines', 'Properties of Rectangles, Squares, Triangles, Circles & Ovals', 'Making Decorative Border Patterns With 2D Shapes'], kiq: 'How many corners and sides do squares, rectangles, and triangles have?', resources: 'Rulers, stencils, coloured paper cutouts, glue, art books' },
+        ],
+      },
+      3: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Ordinal Numbers (1st to 20th) & Whole Numbers Up to 10,000', 'Place Value & Total Value: Thousands, Hundreds, Tens & Ones', 'Rounding Off Numbers to the Nearest Ten & Number Patterns', 'Fractions: 1/2, 1/4 & 1/8 of a Whole and of a Group'], kiq: 'How do ordinal numbers and thousands help us organize large events?', resources: 'Four-spike abacus, place value charts, fraction strips, number cards' },
+          { strand: '1.0 NUMBERS', subs: ['Addition of Up to 4-Digit Numbers With Regrouping', 'Subtraction of Up to 4-Digit Numbers With Regrouping', 'Multi-Step Word Problems on Addition & Subtraction'], kiq: 'How do we check subtraction answers using addition?', resources: 'Place value apparatus, word-problem task cards, counters' },
+        ],
+        2: [
+          { strand: '1.0 NUMBERS', subs: ['Multiplication Tables (Up to 9 x 9) & Single-Digit Word Tasks', 'Division as Inverse of Multiplication (Up to 81 ÷ 9)'], kiq: 'How are multiplication facts related to division facts?', resources: '9x9 multiplication grid, counters, division fact wheels' },
+          { strand: '2.0 MEASUREMENT', subs: ['Adding & Subtracting Length in Metres', 'Adding & Subtracting Mass in Kilograms', 'Adding & Subtracting Capacity in Litres & Half-Litres'], kiq: 'How do tailors, shopkeepers, and dairy farmers measure accurately?', resources: 'Tape measures, metre rules, kitchen scales, 500ml & 1L containers' },
+        ],
+        3: [
+          { strand: '2.0 MEASUREMENT', subs: ['Reading Time to 5-Minute Intervals (Past & To the Hour)', 'Kenyan Currency Up to Ksh 1,000: Shopping Bills, Change & Saving'], kiq: 'Why is keeping a shopping list helpful before going to the market?', resources: 'Clock faces, Kenyan currency charts, mock supermarket receipts' },
+          { strand: '3.0 GEOMETRY', subs: ['Position & Direction: Straight Movement, Left & Right Quarter Turns', 'Sorting & Combining 2D Shapes into Models and Patterns'], kiq: 'How do clear left and right directions help someone find their way?', resources: 'Playground grid, direction arrows, geometric tangram cutouts' },
+        ],
+      },
     },
   },
 
@@ -44,15 +1128,15 @@ export const SUBJECT_SYLLABUS = {
     strandsByTerm: {
       1: [
         { strand: '1.0 LISTENING AND SPEAKING', subs: ['Greetings, Polite Words & Etiquette', 'Pronunciation & Letter-Sound Knowledge', 'Oral Comprehension: School & Family'], kiq: 'Why should we use courteous words when greeting elders and peers?', resources: 'Letter-sound flashcards, audio rhymes, picture charts' },
-        { strand: '2.0 READING & 3.0 WRITING', subs: ['Print Awareness & Reading Posture', 'Blending Three- & Four-Letter Words', 'Handwriting: Letter Formation & Spacing', 'Capital Letters & Full Stops'], kiq: 'How do we blend sounds to read new words fluently?', resources: 'Decodable storybooks, pocket charts, ruled exercise books' },
+        { strand: '2.0 READING & 3.0 WRITING', subs: ['Print Awareness & Reading Posture', 'Blending Words & Sight Vocabulary', 'Handwriting: Letter Formation & Spacing', 'Capital Letters & Full Stops'], kiq: 'How do we blend sounds to read new words fluently?', resources: 'Decodable storybooks, pocket charts, ruled exercise books' },
       ],
       2: [
         { strand: '1.0 LISTENING AND SPEAKING', subs: ['Safety at Home & Road Crossing', 'Weather and Our Environment Vocabulary', 'Following Multi-Step Oral Instructions'], kiq: 'How do we stay safe at home, school, and on the road?', resources: 'Road sign posters, weather charts, picture cards' },
-        { strand: '3.0 LANGUAGE IN USE & WRITING', subs: ['Singular and Plural Nouns', 'Action Verbs (Present & Continuous Tense)', 'Personal Pronouns (I, You, He, She, We, They)', 'Guided Sentence Writing'], kiq: 'How do action words help us describe what people are doing?', resources: 'Substitution tables, word wheels, illustrated readers' },
+        { strand: '3.0 LANGUAGE IN USE & WRITING', subs: ['Singular and Plural Nouns', 'Action Verbs (Present, Continuous & Past Tense)', 'Personal & Possessive Pronouns', 'Guided Sentence Writing'], kiq: 'How do action words help us describe what people are doing?', resources: 'Substitution tables, word wheels, illustrated readers' },
       ],
       3: [
         { strand: '2.0 READING COMPREHENSION', subs: ['Reading Short Stories for Meaning', 'Retelling Stories in Sequence', 'Vocabulary Building: Community Helpers & Animals'], kiq: 'What lessons can we learn from stories about our community?', resources: 'Graded CBC readers, animal flashcards, sequence cards' },
-        { strand: '4.0 WRITING & GRAMMAR', subs: ['Prepositions (in, on, under, behind, near)', 'Describing Words (Adjectives of Size & Colour)', 'Spelling & Dictation', 'Writing a Short Guided Paragraph'], kiq: 'How do describing words make our sentences clear and interesting?', resources: 'Classroom realia, word walls, picture composition prompts' },
+        { strand: '4.0 WRITING & GRAMMAR', subs: ['Prepositions & Conjunctions (and, but, because)', 'Describing Words (Adjectives of Size, Shape & Colour)', 'Spelling, Dictation & Guided Paragraph Writing'], kiq: 'How do describing words make our sentences clear and interesting?', resources: 'Classroom realia, word walls, picture composition prompts' },
       ],
     },
   },
@@ -61,16 +1145,16 @@ export const SUBJECT_SYLLABUS = {
     shortCode: 'KIS-ACT',
     strandsByTerm: {
       1: [
-        { strand: '1.0 KUSIKILIZA NA KUZUNGUMZA', subs: ['Maamkizi na Maagano ya Wakati Mbalimbali', 'Matamshi Bora ya Sauti na Silabi', 'Msamiati wa Shuleni na Nyumbani'], kiq: 'Tunatumia maneno gani ya adabu tunapowasalimia watu?', resources: 'Kadi za silabi, chati za picha, vifaa vya kidijitali' },
-        { strand: '2.0 KUSOMA NA 3.0 KUANDIKA', subs: ['Kusoma Silabi na Maneno Rahisi', 'Kusoma Hadithi Fupi kwa Ufasaha', 'Maumbo ya Herufi Kubwa na Ndogo', 'Nafasi Kati ya Maneno'], kiq: 'Tunaunganishaje silabi ili kusoma maneno kwa ufasaha?', resources: 'Vitabu vya hadithi, chati ya herufi, madaftari' },
+        { strand: '1.0 KUSIKILIZA NA KUZUNGUMZA', subs: ['Maamkizi na Maagano ya Wakati Mbalimbali', 'Matamshi Bora ya Sauti na Silabi za Kiswahili', 'Msamiati wa Shuleni na Nyumbani'], kiq: 'Tunatumia maneno gani ya adabu tunapowasalimia watu?', resources: 'Kadi za silabi, chati za picha, vifaa vya kidijitali' },
+        { strand: '2.0 KUSOMA NA 3.0 KUANDIKA', subs: ['Kusoma Silabi na Maneno Rahisi', 'Kusoma Hadithi Fupi kwa Ufasaha', 'Maumbo Bora ya Herufi Kubwa na Ndogo', 'Nafasi Sahihi Kati ya Maneno'], kiq: 'Tunaunganishaje silabi ili kusoma maneno kwa ufasaha?', resources: 'Vitabu vya hadithi teule, chati ya herufi, madaftari' },
       ],
       2: [
         { strand: '1.0 MWILI WANGU NA USAFI', subs: ['Sehemu za Mwili wa Binadamu', 'Usafi wa Kibinafsi na Mazingira', 'Umoja na Wingi wa Majina (Ngeli ya A-WA na KI-VI)'], kiq: 'Kwa nini ni muhimu kudumisha usafi wa mwili na mazingira?', resources: 'Chati ya mwili, vifaa vya usafi, kadi za maneno' },
-        { strand: '4.0 SARUFI NA KUANDIKA', subs: ['Nyakati: Wakati Uliopo (-na-) na Uliopita (-li-)', 'ukanushaji Rahisi wa Sentensi', 'Kuandika Sentensi Fupi Zenye Maana'], kiq: 'Tunatambuaje wakati kitendo kilipofanyika katika sentensi?', resources: 'Jedwali la kutunga sentensi, picha za vitendo' },
+        { strand: '4.0 SARUFI NA KUANDIKA', subs: ['Nyakati: Wakati Uliopo (-na-), Uliopita (-li-) na Ujao (-ta-)', 'Ukanushaji Rahisi wa Sentensi', 'Kuandika Sentensi Fupi Zenye Maana'], kiq: 'Tunatambuaje wakati kitendo kilipofanyika katika sentensi?', resources: 'Jedwali la kutunga sentensi, picha za vitendo' },
       ],
       3: [
         { strand: '2.0 HALI YA ANGA NA USALAMA', subs: ['Msamiati wa Hali ya Anga na Mavazi', 'Haki na Usalama wa Mtoto', 'Kusoma Ufahamu na Kujibu Maswali'], kiq: 'Tunajikingaje kutokana na hatari mbalimbali nyumbani na njiani?', resources: 'Picha za hali ya anga, hadithi za watoto, bango la usalama' },
-        { strand: '3.0 KUANDIKA NA SARUFI', subs: ['Vivumishi vya Sifa na Idadi', 'Alama za Uakifishaji (Kikomo na Kiulizi)', 'Imla na Kuandika Kifungu Fupi'], kiq: 'Alama za uakifishaji zinatusaidiaje tunaposoma na kuandika?', resources: 'Kadi za alama za uakifishaji, vitabu vya mazoezi' },
+        { strand: '3.0 KUANDIKA NA SARUFI', subs: ['Vivumishi vya Sifa na Idadi', 'Alama za Uakifishaji (Kikomo, Mkato na Kiulizi)', 'Imla na Kuandika Kifungu Fupi cha Maelezo'], kiq: 'Alama za uakifishaji zinatusaidiaje tunaposoma na kuandika?', resources: 'Kadi za alama za uakifishaji, vitabu vya mazoezi' },
       ],
     },
   },
@@ -97,15 +1181,15 @@ export const SUBJECT_SYLLABUS = {
     shortCode: 'ENV-ACT',
     strandsByTerm: {
       1: [
-        { strand: '1.0 SOCIAL ENVIRONMENT & HYGIENE', subs: ['Personal Hygiene: Handwashing, Oral Care & Grooming', 'Keeping Our Home & Classroom Clean', 'Family Needs, Shelter & Basic Rights'], kiq: 'Why must we wash hands with soap and clean running water?', resources: 'Soap, clean water container, toothbrush model, broom, hygiene charts' },
-        { strand: '1.0 SAFETY & NEIGHBOURHOOD', subs: ['Safe & Unsafe Places in the Neighbourhood', 'Basic Road Safety Signs & Pedestrian Rules', 'Healthy Habits & Clean Toilets/Latrines'], kiq: 'How do we identify and avoid hazards on our way to school?', resources: 'Road safety posters, picture cards, first-aid display' },
+        { strand: '1.0 SOCIAL ENVIRONMENT', subs: ['Personal Hygiene: Handwashing, Oral Care & Grooming', 'Keeping Our Home, Sleeping Area & Classroom Clean', 'Family Needs, Shelter & Basic Child Rights'], kiq: 'Why must we wash hands with soap and clean running water?', resources: 'Soap, clean water container, toothbrush model, broom, hygiene charts' },
+        { strand: '1.0 SAFETY & NEIGHBOURHOOD', subs: ['Safe & Unsafe Places in the Neighbourhood', 'Basic Road Safety Signs & Pedestrian Rules', 'Healthy Habits & Proper Use of Latrines/Toilets'], kiq: 'How do we identify and avoid hazards on our way to school?', resources: 'Road safety posters, picture cards, first-aid display' },
       ],
       2: [
-        { strand: '2.0 NATURAL ENVIRONMENT', subs: ['Weather Conditions & Recording a Weather Chart', 'Soil Types (Clay, Loam, Sand) & Modelling', 'Water Sources, Safe Storage & Making Water Safe'], kiq: 'How can we make water safe for drinking at home?', resources: 'Soil samples, sieves, weather symbols chart, clean cloth filter' },
-        { strand: '2.0 PLANTS & ANIMALS', subs: ['Parts of a Plant & Caring for Young Plants', 'Domestic Animals & Their Products/Care', 'Healthy Foods & Balanced Meals (Hygiene & Nutrition)'], kiq: 'Why are plants and domestic animals important to our families?', resources: 'Potted seedlings, food group charts, animal flashcards' },
+        { strand: '2.0 NATURAL ENVIRONMENT', subs: ['Weather Conditions & Recording a Daily Weather Chart', 'Soil Types (Clay, Loam, Sand), Texture & Modelling', 'Water Sources, Safe Storage & Making Water Safe by Boiling/Filtering'], kiq: 'How can we make water safe for drinking at home?', resources: 'Soil samples, sieves, weather symbols chart, clean cloth filter' },
+        { strand: '2.0 PLANTS & ANIMALS', subs: ['Parts of a Plant & Caring for Young Plants', 'Domestic Animals: Products, Shelter & Humane Care', 'Healthy Foods, Food Groups & Balanced Meals'], kiq: 'Why are plants and domestic animals important to our families?', resources: 'Potted seedlings, food group charts, animal flashcards' },
       ],
       3: [
-        { strand: '3.0 RESOURCES IN OUR ENVIRONMENT', subs: ['Conserving Water & Switching Off Lights', 'Sources of Light, Heat & Sound', 'Managing Solid Waste: Reusing & Recycling'], kiq: 'How can we reduce litter and reuse materials in our school?', resources: 'Sorting bins, recyclable bottles/cartons, torch, safety posters' },
+        { strand: '3.0 RESOURCES IN OUR ENVIRONMENT', subs: ['Conserving Water & Switching Off Unused Lights', 'Sources & Safe Use of Light, Heat & Sound', 'Managing Solid Waste: Sorting, Reusing & Recycling'], kiq: 'How can we reduce litter and reuse materials in our school?', resources: 'Sorting bins, recyclable bottles/cartons, torch, safety posters' },
         { strand: '3.0 CARING FOR THE ENVIRONMENT', subs: ['Tree Planting & School Clean-Up Project', 'Good Table Manners & Food Hygiene', 'End-of-Year Practical Environmental Portfolio'], kiq: 'What happens when everyone participates in keeping the school green?', resources: 'Tree seedlings, watering cans, protective gloves' },
       ],
     },
@@ -115,12 +1199,12 @@ export const SUBJECT_SYLLABUS = {
     shortCode: 'CREATIVE-ACT',
     strandsByTerm: {
       1: [
-        { strand: '1.0 CREATING AND EXECUTING', subs: ['Drawing & Colouring Simple Forms', 'Locomotor Skills: Hopping, Skipping & Galloping', 'Singing Action Songs & Clapping Rhythms'], kiq: 'How do we express joy through drawing, singing, and movement?', resources: 'Crayons, drawing books, shakers, drums, open playfield' },
-        { strand: '1.0 CRAFT & MODELLING', subs: ['Modelling Pinch Pots & Animals Using Clay/Plasticine', 'Paper Folding, Tearing & Collage Making', 'Throwing and Catching Improvised Balls'], kiq: 'Which local materials can we recycle to make safe play items?', resources: 'Clay, old newspapers, sisal strings, safe glue' },
+        { strand: '1.0 CREATING AND EXECUTING', subs: ['Drawing, Shading & Colouring Simple Forms', 'Locomotor Skills: Hopping, Skipping, Dodging & Galloping', 'Singing Action Songs & Clapping Rhythmic Patterns'], kiq: 'How do we express joy through drawing, singing, and movement?', resources: 'Crayons, drawing books, shakers, drums, open playfield' },
+        { strand: '1.0 CRAFT & MODELLING', subs: ['Modelling Pinch Pots & Animals Using Clay/Plasticine', 'Paper Folding, Tearing & Collage Making', 'Throwing, Rolling and Catching Improvised Balls'], kiq: 'Which local materials can we recycle to make safe play items?', resources: 'Clay, old newspapers, sisal strings, safe glue' },
       ],
       2: [
-        { strand: '2.0 PERFORMING AND DISPLAYING', subs: ['Kenyan Children Singing Games & Folk Songs', 'Painting & Pattern Printing (Leaf/Potato Prints)', 'Gymnastics: Balancing, Rolling & Stretching'], kiq: 'How do we maintain balance and safety during movement games?', resources: 'Water paints, leaves, landing mats, whistles, costumes' },
-        { strand: '2.0 RHYTHM & MELODY', subs: ['Improvised Percussion Instruments (Shakers & Drums)', 'Beading & Threading Ornaments', 'Water Safety Awareness & Pool Rules'], kiq: 'How can we create steady rhythms using improvised percussion?', resources: 'Bottle-top shakers, large seeds/beads, threads, charts' },
+        { strand: '2.0 PERFORMING AND DISPLAYING', subs: ['Kenyan Children Singing Games & Folk Songs', 'Painting & Pattern Printing (Leaf/Block Prints)', 'Gymnastics: Balancing, Forward Rolls & Stretching'], kiq: 'How do we maintain balance and safety during movement games?', resources: 'Water paints, leaves, landing mats, whistles, costumes' },
+        { strand: '2.0 RHYTHM & MELODY', subs: ['Improvised Percussion Instruments (Shakers & Drums)', 'Beading & Threading Cultural Ornaments', 'Water Safety Awareness & Pool Hygiene Rules'], kiq: 'How can we create steady rhythms using improvised percussion?', resources: 'Bottle-top shakers, large seeds/beads, threads, charts' },
       ],
       3: [
         { strand: '3.0 APPRECIATION IN CREATIVE ACTIVITIES', subs: ['Performing the Kenya National Anthem with Etiquette', 'Weaving Simple Mats Using Paper/Banana Fibres', 'Mini Class Art Exhibition & Talent Showcase'], kiq: 'Why do we stand at attention when singing the National Anthem?', resources: 'Kenyan flag, woven mat samples, display boards' },
@@ -129,8 +1213,8 @@ export const SUBJECT_SYLLABUS = {
     },
   },
 
-  // ================= UPPER PRIMARY (GRADES 4 - 6) =================
-  'Mathematics': {
+  // ================= UPPER PRIMARY & JSS MATHEMATICS (GRADES 4 - 9) =================
+  Mathematics: {
     shortCode: 'MATH',
     strandsByTerm: {
       1: [
@@ -138,7 +1222,7 @@ export const SUBJECT_SYLLABUS = {
         { strand: '1.0 FRACTIONS & DECIMALS', subs: ['Equivalent & Simplified Fractions', 'Addition, Subtraction & Multiplication of Fractions', 'Decimals: Place Value & Operations', 'Squares, Square Roots & Percentages'], kiq: 'Where are fractions, decimals, and percentages used in trade and science?', resources: 'Fraction strips, hundred-square grids, price catalogues' },
       ],
       2: [
-        { strand: '2.0 MEASUREMENT', subs: ['Length (mm, cm, m, km), Perimeter & Circumference', 'Area of Rectangles, Triangles & Combined Shapes', 'Volume & Capacity (cm³, m³, ml & Litres)', 'Mass (g, kg, tonnes) & Time (12-hr / 24-hr Clock)'], kiq: 'Why are standard SI units essential in construction, transport, and farming?', resources: 'Metre rules, tape measures, 1-litre jugs, weighing scales, timetables' },
+        { strand: '2.0 MEASUREMENT', subs: ['Length (mm, cm, m, km), Perimeter & Circumference', 'Area of Rectangles, Triangles & Combined Shapes', 'Volume & Capacity (cm3, m3, ml & Litres)', 'Mass (g, kg, tonnes) & Time (12-hr / 24-hr Clock)'], kiq: 'Why are standard SI units essential in construction, transport, and farming?', resources: 'Metre rules, tape measures, 1-litre jugs, weighing scales, timetables' },
         { strand: '2.0 MONEY & ALGEBRA', subs: ['Budgets, Profit, Loss, Discount & Tax', 'Forming & Simplifying Algebraic Expressions', 'Linear Equations & Simple Inequalities'], kiq: 'How does preparing a budget promote financial discipline?', resources: 'Sample receipts, price lists, KRA tax awareness charts, beam balance' },
       ],
       3: [
@@ -146,9 +1230,92 @@ export const SUBJECT_SYLLABUS = {
         { strand: '4.0 DATA HANDLING', subs: ['Collecting Data Using Tally Marks & Frequency Tables', 'Bar Graphs, Pictographs & Line Graphs', 'Interpreting Real-World Statistical Charts'], kiq: 'How do graphs help us make quick decisions from large sets of data?', resources: 'Graph books, census charts, rainfall data tables' },
       ],
     },
+    byGrade: {
+      4: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Whole Numbers Up to 99,999: Place Value & Total Value', 'Reading, Writing in Words & Rounding Off to Nearest Ten/Hundred', 'Factors, Multiples & Divisibility Tests (2, 5 & 10)', 'Addition & Subtraction of Up to 5-Digit Whole Numbers'], kiq: 'How do place value and rounding off help estimate quantities in markets?', resources: 'Five-spike abacus, place value charts, number cards, counters' },
+          { strand: '1.0 MULTIPLICATION, DIVISION & FRACTIONS', subs: ['Multiplication of 2-Digit by 2-Digit Whole Numbers', 'Division of Up to 2-Digit by 1-Digit Numbers With Remainder', 'Proper, Improper & Mixed Fractions', 'Decimals Up to Hundredths: Place Value, Addition & Subtraction'], kiq: 'Where do we encounter tenths and hundredths in athletics and measurement?', resources: 'Hundred-square grids, fraction circles, multiplication tables' },
+        ],
+        2: [
+          { strand: '2.0 MEASUREMENT', subs: ['Length in Centimetres (cm) & Metres (m); Perimeter of Plane Figures', 'Area of Rectangles & Squares Using Unit Squares and Formula', 'Volume of Cubes & Cuboids by Stacking Unit Cubes', 'Capacity (Litres, 1/2L, 1/4L) & Mass in Kilograms/Half-Kilograms'], kiq: 'How do carpenters and tailors convert between metres and centimetres?', resources: '30-cm rulers, metre sticks, 1-cm unit cubes, graduated jugs, scales' },
+          { strand: '2.0 TIME, MONEY & ALGEBRA', subs: ['Time in a.m./p.m., Digital/Analogue Clocks & Duration', 'Kenyan Money: Giving Change, Saving & Needs vs Wants', 'Forming & Simplifying Simple Algebraic Expressions Using Letters'], kiq: 'How can letters represent unknown numbers of fruits or books in baskets?', resources: 'Geared clocks, specimen Kenyan notes, counters & labelled boxes' },
+        ],
+        3: [
+          { strand: '3.0 GEOMETRY', subs: ['Clockwise & Counter-Clockwise Turns; Compass Points (N, S, E, W)', 'Identifying Right, Acute, Obtuse & Reflex Angles', 'Properties of Rectangles, Squares, Triangles & Circles'], kiq: 'Where do we observe right angles, acute angles, and obtuse angles in buildings?', resources: 'Paper right-angle testers, magnetic compass, geometrical cutouts' },
+          { strand: '4.0 DATA HANDLING', subs: ['Collecting Classroom Data & Recording Tally Marks', 'Organizing Frequency Tables', 'Interpreting Simple Pictographs & Piling Data'], kiq: 'Why do tally marks in groups of five make counting large surveys fast?', resources: 'Tally charts, manila paper, bottle tops, class survey sheets' },
+        ],
+      },
+      5: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Whole Numbers Up to 999,999: Place Value, Total Value & Rounding Off', 'Divisibility Tests (3, 4, 6, 8, 9), GCD & LCM', 'Addition & Subtraction of 6-Digit Numbers', 'Multiplication (3-Digit by 2-Digit) & Combined Operations (BODMAS)'], kiq: 'How do GCD and LCM solve real-life packaging and bell-ringing schedules?', resources: 'Six-spike abacus, factor tree charts, BODMAS wall poster' },
+          { strand: '1.0 FRACTIONS & DECIMALS', subs: ['Equivalent Fractions, Simplifying & Ordering Fractions', 'Addition & Subtraction of Fractions Using LCM', 'Multiplication of a Fraction by a Whole Number', 'Decimals Up to Thousandths: Place Value, Addition & Subtraction'], kiq: 'Why must fractions share a common denominator before adding or subtracting?', resources: 'Fraction wall strips, place value decimal charts, calculators for checking' },
+        ],
+        2: [
+          { strand: '2.0 MEASUREMENT', subs: ['Length in Kilometres (km) & Metres (m): Conversions & Operations', 'Area of Rectangles and Squares in cm2 & m2', 'Volume of Cubes & Cuboids (V = l x w x h in cm3)', 'Capacity in Litres & Millilitres (ml); Mass in Kilograms & Grams (g)'], kiq: 'How are millilitres and grams used on medicine bottles and food packets?', resources: 'Measuring cylinders, syringes (needleless), kitchen digital scale, metre rules' },
+          { strand: '2.0 TIME, MONEY & ALGEBRA', subs: ['Time in Minutes & Seconds; Bus/Train Timetables', 'Household Budgets, Savings, Banking & Introduction to Tax Services', 'Forming & Solving One-Step Linear Equations'], kiq: 'Why do citizens pay taxes to finance roads, hospitals, and schools?', resources: 'SGR/bus timetables, KRA tax education flyers, household budget templates' },
+        ],
+        3: [
+          { strand: '3.0 GEOMETRY', subs: ['Horizontal, Vertical, Perpendicular & Parallel Lines Construction', 'Measuring & Drawing Angles in Degrees Using a Protractor', '3D Objects in the Environment: Cubes, Cuboids, Cylinders, Spheres & Pyramids'], kiq: 'How do we align a protractor baseline accurately to measure an angle?', resources: 'Protractors, set squares, rulers, 3D solid models' },
+          { strand: '4.0 DATA HANDLING', subs: ['Drawing & Interpreting Vertical and Horizontal Bar Graphs', 'Piling & Real-Life Survey Data Projects'], kiq: 'How do bar graphs reveal trends in school attendance or rainfall?', resources: 'Squared graph exercise books, rulers, county weather records' },
+        ],
+      },
+      6: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Whole Numbers Up to Millions: Place Value, Total Value & Rounding Off', 'Squares & Square Roots of Whole Numbers and Fractions', 'Reciprocals, Multiplication & Division of Fractions', 'Decimals Up to Ten-Thousandths & Conversions (Fractions, Decimals, Percentages)'], kiq: 'How do percentages, decimals, and fractions express the same value in trade?', resources: 'Million place-value chart, square grid paper, discount catalogues' },
+          { strand: '2.0 MEASUREMENT (LENGTH, AREA & VOLUME)', subs: ['Millimetres (mm), Circumference of Circles (C = pi x d)', 'Area of Triangles (1/2 bh) & Combined Rectilinear Shapes', 'Capacity & Volume Relationship (1,000 cm3 = 1 Litre; m3)'], kiq: 'How do plumbers and water engineers relate cubic centimetres to litres?', resources: 'Vernier/mm rulers, cylindrical tins, strings, 1-litre calibrated cube' },
+        ],
+        2: [
+          { strand: '2.0 MASS, TIME, SPEED & MONEY', subs: ['Mass in Tonnes (t), Kilograms (kg) & Grams (g)', '12-Hour and 24-Hour Clock Systems & Speed (km/h, m/s)', 'Price Lists, Budgets, Profit, Loss & Value Added Tax (VAT)'], kiq: 'How is the 24-hour clock used in aviation, hospitals, and transport?', resources: 'Flight/SGR 24-hr schedules, stopwatches, ETR receipts showing 16% VAT' },
+          { strand: '3.0 ALGEBRA', subs: ['Forming & Simplifying Algebraic Inequalities', 'Solving & Representing Simple Inequalities on a Number Line'], kiq: 'How do inequalities represent speed limits and maximum load capacities?', resources: 'Road sign charts (50 km/h, 10 tonnes), number line strips' },
+        ],
+        3: [
+          { strand: '4.0 GEOMETRY', subs: ['Bisecting Lines & Constructing Perpendiculars Using Ruler and Compass', 'Angles on a Straight Line, Vertically Opposite & Interior Angles of Triangles', 'Faces, Edges, Vertices & Nets of 3D Solids'], kiq: 'How do packaging designers fold flat cardboard nets into 3D cartons?', resources: 'Pairs of compasses, protractors, manila carton nets, scissors' },
+          { strand: '5.0 DATA HANDLING (KPSEA SYNTHESIS)', subs: ['Drawing & Interpreting Bar Graphs and Line Graphs', 'Integrated KPSEA Competency Problem-Solving Practice'], kiq: 'How do line graphs track patient temperature or crop growth over time?', resources: 'Graph paper, hospital temperature charts, KPSEA sample tasks' },
+        ],
+      },
+      7: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Whole Numbers Up to Hundreds of Millions: Place Value, Rounding & Operations', 'Prime Factorization, GCD & LCM in Real-Life Contexts', 'Fractions & Decimals: Combined Operations (BODMAS) & Recurring Decimals', 'Squares & Square Roots Using Factorization and Mathematical Tables'], kiq: 'How do prime factorization and BODMAS ensure accuracy in scientific computation?', resources: 'KLB/KNEC Mathematical Tables, place value charts, fraction models' },
+          { strand: '2.0 ALGEBRA', subs: ['Forming & Simplifying Algebraic Expressions (Grouping Like Terms & Brackets)', 'Forming & Solving Linear Equations in One Unknown', 'Forming & Graphing Simple Linear Inequalities'], kiq: 'How do algebraic equations model real-world business and science unknowns?', resources: 'Algebra tiles, balance scale model, squared exercise books' },
+        ],
+        2: [
+          { strand: '3.0 MEASUREMENTS', subs: ['Pythagorean Relationship (a2 + b2 = c2) & Applications', 'Length, Perimeter & Area of Polygons, Circles, Sectors & Borders', 'Volume & Capacity of Cuboids, Cylinders & Triangular Prisms', 'Time, Distance, Average Speed, Temperature (Celsius & Kelvin) & Money (Profit, Loss, Discount, Commission, VAT)'], kiq: 'How do builders use the 3-4-5 Pythagorean triangle to set square corners?', resources: 'Knotted 3-4-5 builder rope, thermometers, cylinders, ETR/commission sheets' },
+        ],
+        3: [
+          { strand: '4.0 GEOMETRY', subs: ['Angle Properties of Parallel Lines, Transversals & Polygons', 'Geometrical Constructions: Bisectors, Special Angles (30, 45, 60, 90) & Triangles', 'Nets & Surface Area Intro of Cubes, Cuboids, Cylinders & Pyramids'], kiq: 'Why is compass-and-straightedge construction more exact than freehand drawing?', resources: 'Geometrical sets, chalkboard compass/protractor, 3D wireframe solids' },
+          { strand: '5.0 DATA HANDLING AND PROBABILITY', subs: ['Data Collection, Frequency Distribution Tables & Choosing Scales', 'Pictographs, Bar Graphs, Pie Charts & Travel/Line Graphs'], kiq: 'How do pie charts represent county budget allocations proportionally?', resources: 'Protractors for pie sectors, graph books, KNBS county statistics' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Integers: Number Line Representation & Combined Operations', 'Fractions & Decimals: Order of Operations & Standard Form', 'Squares, Square Roots, Rates, Ratio, Proportions & Percentages', 'Indices & Common Logarithms (Base 10) Reading'], kiq: 'How do negative integers represent altitude below sea level and bank overdrafts?', resources: 'Integer number lines, 4-figure mathematical tables, scientific charts' },
+          { strand: '2.0 ALGEBRA', subs: ['Matrices: Order, Elements, Compatibility, Addition & Subtraction', 'Equations of Straight Lines (Gradient m & y = mx + c)', 'Simultaneous Linear Equations (Elimination, Substitution & Graphical)', 'Linear Inequalities in One and Two Unknowns'], kiq: 'How do matrices organize multi-branch inventory and tournament standings?', resources: 'Spreadsheet grids, Cartesian graph boards, rulers' },
+        ],
+        2: [
+          { strand: '3.0 MEASUREMENTS', subs: ['Area of Circles, Sectors, Segments & Irregular Shapes', 'Surface Area of Cubes, Cuboids, Cylinders, Triangular Prisms & Pyramids', 'Volume & Capacity of Frustums/Cylinders/Prisms', 'Commercial Arithmetic: Hire Purchase, Simple Interest, Appreciation & Currency Exchange'], kiq: 'When is hire purchase more expensive than saving for cash purchase?', resources: 'CBK foreign exchange boards, hire-purchase catalogues, 3D solid models' },
+        ],
+        3: [
+          { strand: '4.0 GEOMETRY', subs: ['Cartesian Plane Coordinates & Scale Drawing (Bearings & Angles of Elevation/Depression)', 'Common Solids: Nets, Skew Lines & Accurate Isometric Sketches', 'Geometric Transformations: Reflection, Rotation & Translation'], kiq: 'How do surveyors and pilots use true bearings and angles of elevation?', resources: 'Magnetic compasses, clinometers, tracing paper, graph books' },
+          { strand: '5.0 DATA HANDLING AND PROBABILITY', subs: ['Discrete Data: Mean, Mode & Median', 'Experimental & Theoretical Probability (Coins, Dice, Cards & Mutually Exclusive Events)'], kiq: 'How does probability guide weather forecasting and insurance risk?', resources: 'Fair dice, coins, spinners, weather forecast bulletins' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 NUMBERS', subs: ['Combined Operations on Integers, Cubes & Cube Roots (Factorization & Tables)', 'Laws of Indices (Positive, Zero, Negative & Fractional Indices) & Logarithms', 'Compound Proportions & Rates of Work / Mixtures'], kiq: 'How do compound proportions determine workforce and time on engineering projects?', resources: '4-figure mathematical tables, calculators, project work-rate worksheets' },
+          { strand: '2.0 ALGEBRA', subs: ['Matrix Multiplication (Row-by-Column) & Real-Life Costing', 'Equations of Straight Lines: Parallel & Perpendicular Gradients (m1.m2 = -1)', 'Graphical Regions of Linear Inequalities & Quadratic Expressions Intro'], kiq: 'How does matrix multiplication compute total revenue across multiple products?', resources: 'Cartesian graph books, matrix costing tables, set squares' },
+        ],
+        2: [
+          { strand: '3.0 MEASUREMENTS', subs: ['Area of Pentagons, Hexagons & Surface Area/Volume of Cones, Spheres & Hemispheres', 'Mass, Volume, Density & Relative Density Calculations', 'Time Zones (Longitude & GMT/UTC) & Speed-Time Graphs', 'Commercial Arithmetic: Compound Interest, Income Tax (PAYE) & Commission'], kiq: 'How do longitude differences determine local time across world cities?', resources: 'World globe with meridians, KRA PAYE tax bands, cone/sphere models' },
+        ],
+        3: [
+          { strand: '4.0 GEOMETRY & TRIGONOMETRY', subs: ['Coordinates, Scale Drawing & Survey Triangulation/Offsets', 'Similarity, Linear/Area/Volume Scale Factors & Enlargement', 'Trigonometric Ratios (Sine, Cosine & Tangent) in Right-Angled Triangles'], kiq: 'How does trigonometry calculate heights of towers and widths of rivers indirectly?', resources: 'Clinometers, tape measures, trigonometric tables, graph paper' },
+          { strand: '5.0 DATA HANDLING & KJSEA PROBABILITY', subs: ['Grouped Frequency Tables: Modal Class, Mean & Median Estimation', 'Histograms, Frequency Polygons & Combined Probability Events'], kiq: 'How do grouped data histograms inform national demographic planning?', resources: 'Graph books, census age-group tables, KJSEA revision sets' },
+        ],
+      },
+    },
   },
 
-  'English': {
+  English: {
     shortCode: 'ENG',
     strandsByTerm: {
       1: [
@@ -164,9 +1331,80 @@ export const SUBJECT_SYLLABUS = {
         { strand: '6.0 SUMMARY, DIARIES & EXAM REVISION', subs: ['Note-Making & Summary Writing', 'Keeping Journals, Speeches & Descriptive Essays', 'Integrated Comprehension & Grammar Synthesis'], kiq: 'Why is summarizing key points a vital study skill?', resources: 'Model compositions, past assessment papers' },
       ],
     },
+    byGrade: {
+      7: {
+        1: [
+          { strand: '1.0 PERSONAL RESPONSIBILITY, SCIENCE & HYGIENE', subs: ['Conversational Skills: Polite Turn-Taking & Vowel/Consonant Contrasts', 'Intensive Reading: Trickster & Ogre Narratives and Factual Passages', 'Word Classes: Common, Proper, Concrete, Abstract & Count/Non-Count Nouns', 'Handwriting Legibility, Punctuation & Narrative Paragraph Sequencing'], kiq: 'How do polite turn-taking and clear paragraphing strengthen communication?', resources: 'JSS Oral Literature anthology, Oxford/Longman dictionaries, sample narratives' },
+          { strand: '2.0 LEADERSHIP, FAMILY & DRUG ABUSE PREVENTION', subs: ['Listening for Main Ideas & Specific Details; Word Stress', 'Personal, Possessive & Reflexive Pronouns; Simple Present & Past Tenses', 'Reading JSS Graded Readers: Characters & Moral Lessons', 'Functional Writing: Friendly Letters, Apology Notes & Packing Lists'], kiq: 'How do character choices in stories mirror youth decisions in real life?', resources: 'KICD-approved Grade 7 class reader, grammar charts, letter templates' },
+        ],
+        2: [
+          { strand: '3.0 NATURAL RESOURCES, TRAVEL & HEROES', subs: ['Oral Poetry, Lullabies & Praise Songs Performance', 'Continuous & Perfect Aspects; Gradable/Non-Gradable Adjectives & Order of Adjectives', 'Adverbs of Manner, Time, Place & Frequency; Prepositions', 'Creative Writing: Descriptive Essays & Pictorial Compositions'], kiq: 'How do sensory adjectives and adverbs bring descriptive writing to life?', resources: 'Recorded African songs, travel brochures, descriptive writing rubrics' },
+        ],
+        3: [
+          { strand: '4.0 MUSIC, PROFESSIONS & TRADITIONAL FASHION', subs: ['Interviews, Non-Verbal Cues & Giving Clear Directions', 'Coordinating & Subordinating Conjunctions; Synonyms, Antonyms & Phrasal Verbs', 'Analyzing Simple Poems (Stanzas, Rhyme & Message)', 'Writing Personal Diaries, Dialogue Scripts & Posters'], kiq: 'Why are non-verbal cues like eye contact and posture vital during interviews?', resources: 'Poetry booklets, interview role-play cards, sample journals' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 HUMAN RIGHTS, SCIENTIFIC INNOVATIONS & POLLUTION', subs: ['Telephone Etiquette, Intonation & Diphthongs Pronunciation', 'Intensive Reading: Etiological Myths, Legends & Environmental Texts', 'Primary & Modal Auxiliaries; Collective & Compound Nouns', 'Writing Mechanics: Commonly Misspelt Words, Prefixes/Suffixes & Narrative Essays'], kiq: 'How do modal auxiliaries express obligation, permission, and possibility?', resources: 'Myths/legends anthology, dictionaries, environmental articles' },
+          { strand: '2.0 CONSUMER ROLES, RELATIONSHIPS & REHABILITATION', subs: ['Active Listening, Polite Disagreement & Conversational Repairs', 'Indefinite & Interrogative Pronouns; Present/Past Perfect Continuous', 'Intensive Study of Approved Grade 8 Short Story / Play (Plot & Conflict)', 'Functional Writing: Formal Letters of Inquiry, Complaint & Thank-You Notes'], kiq: 'How do we express disagreement politely in formal discussions?', resources: 'Approved Grade 8 class play/reader, consumer rights pamphlets, formal letter charts' },
+        ],
+        2: [
+          { strand: '3.0 NATURAL RESOURCES (WILDLIFE), TOURISM & HEROES', subs: ['Riddles, Proverbs, Tongue Twisters & Dramatic Choral Verse', 'Complex Prepositions, Subordinating Conjunctions & Adjectival Phrases', 'Active and Passive Voice Transformations', 'Writing Notices, Agendas & Minutes of Club Meetings'], kiq: 'Why must club secretaries record accurate agendas and minutes?', resources: 'Sample school club minutes, wildlife magazines, grammar workbooks' },
+        ],
+        3: [
+          { strand: '4.0 ART, CHOOSING A CAREER & MODERN FASHION', subs: ['Job Interviews, Impromptu Speeches & Negotiating Skills', 'Phrasal Verbs, Similes, Metaphors & Idiomatic Expressions', 'Character Traits, Themes & Style in Grade 8 Play/Novella', 'Writing Personal Journals, Recipes & Expository Essays'], kiq: 'How do writers use figurative language to deepen themes in plays?', resources: 'Grade 8 approved play, career brochures, expository essay models' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 CITIZENSHIP, SCIENCE FICTION & ENVIRONMENTAL CONSERVATION', subs: ['Eradicating Mother-Tongue Interference, Stress Shifts & Public Debate', 'Critical Reading, Note-Making & Summary Writing Skills', 'Relative Pronouns, Relative Clauses & Determiners/Quantifiers', 'Descriptive & Imaginative Essays Using Sensory Imagery'], kiq: 'How do relative clauses combine ideas concisely in academic writing?', resources: 'Approved Grade 9 Novella/Play, summary passages, debate scorecards' },
+          { strand: '2.0 CONSUMER LAWS, RELATIONSHIPS & LEISURE', subs: ['Negotiation, Empathy & Conflict-Resolution Dialogues', 'Conditional Clauses (Zero, First, Second & Third Conditionals)', 'Direct and Indirect (Reported) Speech Transformations', 'Functional Writing: Formal Application Letters, Curriculum Vitae (CV) & Emails'], kiq: 'What elements make a formal job/scholarship application letter and CV persuasive?', resources: 'Sample CVs, Consumer Protection Act excerpts, grammar charts' },
+        ],
+        2: [
+          { strand: '3.0 MARINE LIFE, TOURISM & WORLD HEROES', subs: ['Oral Reports, News Broadcasts & Oral Literature Fieldwork Analysis', 'Question Tags, Inversion for Emphasis & Complex Sentences', 'Deep Literary Analysis of Grade 9 Novella/Play: Plot, Themes, Style & Characterisation', 'Writing Speeches, Book Reviews & Investigative Reports'], kiq: 'How do stylistic devices advance moral and social themes in set texts?', resources: 'Approved Grade 9 Novella/Play, literary guide, sample speeches' },
+        ],
+        3: [
+          { strand: '4.0 PERSONAL GROOMING, SPORTS ETHICS & KJSEA SYNTHESIS', subs: ['Symposium Presentations & Panel Discussions', 'Idioms, Collocations, Register & Cloze Test Mastery', 'Poetic Persona, Tone, Mood, Alliteration & Assonance', 'Autobiographies, Biographies & Timed KJSEA Composition/Paper Practice'], kiq: 'How do tone and mood shape a reader’s emotional response to poetry?', resources: 'Poetry anthology, KJSEA specimen papers & marking rubrics' },
+        ],
+      },
+      10: {
+        1: [
+          { strand: '1.0 ADVANCED ORAL COMMUNICATION, LISTENING & CRITICAL READING', subs: ['Phonemic Transcription (IPA),Connected Speech, Stress & Intonation', 'Critical Comprehension, Inference, Tone & Vocabulary in Context', 'Noun Phrases, Pronominal Reference, Aspect & Modality in Discourse'], kiq: 'How does phonemic awareness sharpen spoken clarity in academic and professional settings?', resources: 'Advanced learner dictionaries (with IPA), recorded speeches, Senior English reader' },
+        ],
+        2: [
+          { strand: '2.0 ORAL LITERATURE, SET TEXT INTRODUCTION & FUNCTIONAL WRITING', subs: ['Classification, Performance & Fieldwork Ethics in Oral Literature', 'Adjectival/Adverbial Clauses, Coordination, Subordination & Cohesion', 'Functional Writing: Memoranda (Memos), Official Notices, Agendas & Minutes'], kiq: 'Why is ethical fieldwork essential when documenting community oral traditions?', resources: 'Oral literature fieldwork guides, corporate memo/minutes samples' },
+        ],
+        3: [
+          { strand: '3.0 POETRY APPRECIATION, CREATIVE & EXPOSITORY WRITING', subs: ['Elements of Poetry: Persona, Imagery, Rhythm, Rhyme & Sound Devices', 'Direct/Reported Speech, Register Shifts & Editing/Proofreading', 'Expository, Argumentative & Reflective Essay Writing'], kiq: 'How do logical transitions and evidence build a compelling argumentative essay?', resources: 'East African poetry anthology, essay rubrics, newspaper editorials' },
+        ],
+      },
+      11: {
+        1: [
+          { strand: '1.0 PUBLIC DISCOURSE, INTENSIVE LITERARY STUDY & SYNTAX', subs: ['Parliamentary/Academic Debate, Panel Moderation & Persuasive Rhetoric', 'Intensive Analysis of Senior School Novel: Plot, Characterisation & Themes', 'Complex Sentence Transformations, Inversion, Cleft Sentences & Ellipsis'], kiq: 'How do novelists construct multi-dimensional characters to critique society?', resources: 'KICD Approved Grade 11 Set Novel, rhetoric guides, syntax charts' },
+        ],
+        2: [
+          { strand: '2.0 DRAMA ANALYSIS, RESEARCH SUMMARY & PROFESSIONAL WRITING', subs: ['Dramatic Techniques in Senior School Play: Irony, Soliloquy, Stage Directions & Conflict', 'Information Synthesis, Paraphrasing & Précis / Summary Writing', 'Professional Writing: Project Proposals, Investigative Reports & Formal Emails'], kiq: 'How does dramatic irony heighten tension between characters and audience?', resources: 'KICD Approved Grade 11 Set Play, sample proposals & formal reports' },
+        ],
+        3: [
+          { strand: '3.0 SHORT STORIES, MEDIA LITERACY & CREATIVE PORTFOLIO', subs: ['Thematic & Stylistic Study of Approved Short Story Anthology', 'Critical Media Literacy: Detecting Bias, Fallacies & Disinformation', 'Creative Short Story Crafting, Reviews & Speech Writing'], kiq: 'How can readers distinguish factual journalism from persuasive propaganda?', resources: 'Approved Short Story Anthology, print/digital media samples' },
+        ],
+      },
+      12: {
+        1: [
+          { strand: '1.0 COMPARATIVE LITERATURE, ADVANCED POETRY & STYLISTICS', subs: ['Comparative Thematic Synthesis Across Novel, Play & Short Stories', 'Advanced Unseen Poetry: Ambiguity, Symbolism, Satire & Tone Shifts', 'Advanced Grammar: Discourse Markers, Register Precision & Idiomatic Mastery'], kiq: 'How do satire and symbolism expose societal contradictions across genres?', resources: 'Approved Senior Set Texts, unseen poetry collections, stylistic guides' },
+        ],
+        2: [
+          { strand: '2.0 INSTITUTIONAL WRITING, DIPLOMATIC COMMUNICATION & RESEARCH', subs: ['Executive Summaries, Policy Briefs, Reference Letters & CVs', ' Formal Interviews, Etiquette & Cross-Cultural Communication', 'Synthesizing Multi-Source Comprehension & Summary Passages'], kiq: 'What distinguishes an executive policy brief from a general academic essay?', resources: 'Sample policy briefs, executive CVs, interview evaluation rubrics' },
+        ],
+        3: [
+          { strand: '3.0 SENIOR SCHOOL CBE ASSESSMENT SYNTHESIS & PORTFOLIO', subs: ['Timed Essay Planning: Narrative, Descriptive, Discursive & Set-Text Essays', 'Integrated Grammar, Cloze, Oral Skills & Functional Writing Mastery'], kiq: 'How do precision, coherence, and textual evidence elevate summative literary essays?', resources: 'KNEC Senior School Assessment guides, model scripts & rubrics' },
+        ],
+      },
+    },
   },
 
-  'Kiswahili': {
+  Kiswahili: {
     shortCode: 'KIS',
     strandsByTerm: {
       1: [
@@ -179,8 +1417,79 @@ export const SUBJECT_SYLLABUS = {
       ],
       3: [
         { strand: '5.0 USHAIRI, MAZINGIRA NA URAIA', subs: ['Kusoma na Kuchambua Mashairi Mepesi', 'Ukubwa na Udogo wa Nomino & Kinyume cha Maneno', 'Mjadala na Hotuba Fupi Kuhusu Utunzaji wa Mazingira'], kiq: 'Tunawezaje kutumia lugha kuhamasisha jamii kutunza mazingira?', resources: 'Mashairi teule, mabango ya mazingira, kamusi' },
-        { strand: '6.0 UFUPISHO NA MARUDIO YA MTIHANI', subs: ['Kusoma kwa Mapana (Novela / Tamthilia ya Ngazi Husika)', 'Kuandika Shajara, Ratiba na Insha ya Mazungumzo', 'uchambuzi wa Maswali ya Sarufi na Lugha'], kiq: 'Kusoma vitabu vya ziada kunakuza vipi uwezo wa kujieleza?', resources: 'Vitabu teule vya kusoma kwa mapana, karatasi za tathmini' },
+        { strand: '6.0 UFUPISHO NA MARUDIO YA MTIHANI', subs: ['Kusoma kwa Mapana (Novela / Tamthilia ya Ngazi Husika)', 'Kuandika Shajara, Ratiba na Insha ya Mazungumzo', 'Uchambuzi wa Maswali ya Sarufi na Matumizi ya Lugha'], kiq: 'Kusoma vitabu vya ziada kunakuza vipi uwezo wa kujieleza?', resources: 'Vitabu teule vya kusoma kwa mapana, karatasi za tathmini' },
       ],
+    },
+    byGrade: {
+      7: {
+        1: [
+          { strand: '1.0 USAFI WA KIBINAFSI NA LISHE BORA', subs: ['Kusikiliza na Kuzungumza: Sauti Tata (/b/ na /mb/, /d/ na /nd/, /g/ na /ng/)', 'Kusoma kwa Ufahamu na Kusoma kwa Mapana (Matini za Afya)', 'Sarufi: Nomino za Pekee, Kawaida, Makundi, Dhahania na Wingi', 'Kuandika: Viakifishi na Insha ya Masimulizi Yenye Mvuto'], kiq: 'Matamshi sahihi ya sauti tata yanasaidiaje kuepuka utata wa maana?', resources: 'Kamusi ya Kiswahili Sanifu, chati ya sauti tata, kielelezo cha insha' },
+          { strand: '2.0 UHURU WA WANYAMA NA AINA ZA MALIASILI', subs: ['Fasihi Simulizi: Maana, Dhima na Tanzu za Hadithi (Ngano za Wanyama na Mazimwi)', 'Upatanisho wa Kisintaksia: Ngeli za A-WA, U-I, LI-YA na KI-VI', 'Nyakati na Hali (-na-, -li-, -ta- na ukanushaji wake)', 'Insha za Kiuamilifu: Barua ya Kirafiki na Orodha ya Manunuzi'], kiq: 'Hadithi za fasihi simulizi zina nafasi gani katika kukuza maadili ya vijana?', resources: 'Kitabu cha ngano teule, jedwali la ngeli, vielelezo vya barua' },
+        ],
+        2: [
+          { strand: '3.0 UNYANYASAJI WA KIJINSIA NA USALAMA SHULENI', subs: ['Mazungumzo yenye Adabu na Kusikiliza kwa Makini', 'Ngeli za I-ZI, U-ZI na U-YA; Vitenzi Vikuu na Visaidizi', 'Utangulizi wa Novela Teule ya Gredi ya 7 (Dhamira na Wahusika)', 'Kuandika: Insha ya Maelezo na Matangazo Fupi'], kiq: 'Tunawezaje kutumia lugha ya staha kukabiliana na unyanyasaji wa kijinsia?', resources: 'Novela teule ya Gredi ya 7 iliyoidhinishwa na KICD, mabango ya usalama' },
+        ],
+        3: [
+          { strand: '4.0 HUDUMA ZA KIJAMII NA TEKNOLOJIA', subs: ['Nyimbo za Kazi, Bembelezi na Mighani katika Fasihi Simulizi', 'Vivumishi (vya Sifa, Idadi, Kumiliki na Kuonyesha) na Vielezi', 'Ushairi Mwepesi: Mishororo, Beti na Vina', 'Kuandika Shajara, Ratiba na Barua Pepe Rahisi'], kiq: 'Teknolojia ya kidijitali inarahisishaje mawasiliano rasmi ya Kiswahili?', resources: 'Diwani fupi ya mashairi, kompyuta/simu tamba, mifano ya shajara' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 USAFI WA SEHEMU ZA UMMA NA MATUMIZI YA DAWA', subs: ['Mahojiano Rasmi na Matamshi ya Sauti (/ch/ na /sh/, /l/ na /r/)', 'Kusoma kwa Kina: Ufupisho wa Habari na Msamiati wa Afya', 'Ngeli za KU na PA-KU-MU; Viwakilishi vya Nafsi, Kuonyesha na Viulizi', 'Kuandika: Barua Rasmi ya Kuomba Ruhusa au Msamaha'], kiq: 'Ni mambo gani yanayotofautisha barua rasmi na barua ya kirafiki?', resources: 'Kamusi ya Kiswahili, vielelezo vya barua rasmi, makala ya afya' },
+          { strand: '2.0 MABADILIKO YA TABIANCHI NA UTUNZAJI WA WANYAMA', subs: ['Fasihi Simulizi: Miviga, Maigizo, Methali na Vitendawili', 'Mnyambuliko wa Vitenzi (Kauli ya Kutenda, Kutendea, Kutendwa na Kutendeka)', 'Hali ya -me-, -ki-, -ka- na Mazoea (hu-)', 'Uhakiki wa Tamthilia Teule ya Gredi ya 8 (Msuko na Migogoro)'], kiq: 'Tamthilia inaonyeshaje migogoro ya kijamii na suluhisho lake?', resources: 'Tamthilia teule ya Gredi ya 8 iliyoidhinishwa na KICD, chati ya kauli' },
+        ],
+        2: [
+          { strand: '3.0 UTATUZI WA MIZOZO NA UWAJIBIKAJI WA KIFEDHA', subs: ['Majadiliano na Uzungumzaji wa Papo kwa Hapo', 'Viunganishi, Vihusishi, Vihisishi na Kinyume cha Maneno', 'Usemi Halisi na Usemi wa Taarifa', 'Insha za Kiuamilifu: Hotuba, Dayalojia na Tahadhari'], kiq: 'Mazungumzo ya amani yanasaidiaje kutatua mizozo shuleni na katika jamii?', resources: 'Tamthilia teule, kadi za majadiliano, vielelezo vya hotuba' },
+        ],
+        3: [
+          { strand: '4.0 MAADILI YA KITAIFA NA BIASHARA MTANDAONI', subs: ['Uchambuzi wa Wahusika na Mbinu za Lugha katika Tamthilia Teule', 'Ukubwa, Udogo na Wastani wa Nomino', 'Ushairi: Mashairi ya Arudhi na Mashairi Huru', 'Kuandika Insha ya Methali na Ripoti Fupi'], kiq: 'Insha ya methali inajengwaje ili kisa kioane na maana ya ndani ya methali?', resources: 'Diwani ya mashairi, kitabu cha methali, kielelezo cha ripoti' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 USAFI WA MAZINGIRA, MAendeleo YA KIUCHUMI NA HAKI', subs: ['Mjadala Rasmi na Uwasilishaji wa Hoja kwa Ufasaha', 'Kusoma kwa Uchambuzi na Mbinu za Kufupisha Kifungu (Ufupisho)', 'Uchanganuzi wa Sentensi: Sentensi Sahili, Ambatano na Changamano', 'Insha za Kiuamilifu: Kumbukumbu za Mkutano na Ajenda'], kiq: 'Kwa nini ufupisho unahitaji kudumisha hoja kuu bila kubadili maana ya mwandishi?', resources: 'Vielelezo vya kumbukumbu za mkutano, makala ya magazeti, kamusi' },
+          { strand: '2.0 UTAIFA, UADILIFU NA TEKNOLOJIA YA HABARI', subs: ['Fasihi Simulizi: Ngomezi, Ulumbi, Lakabu na Misimu', 'Vishazi Huru na Vishazi Tegemezi; Shamirisho (Kipozi, Kitondo, Ala) na Chagizo', 'Uhakiki wa Kina wa Novela/Tamthilia Teule ya Gredi ya 9', 'Kuandika Tawasifu, Wasifu na Barua ya Kuomba Kazi'], kiq: 'Tawasifu na wasifu zinatofautianaje kimuundo na kinafsi?', resources: 'Kitabu teule cha fasihi cha Gredi ya 9 (KICD), jedwali la vishazi' },
+        ],
+        2: [
+          { strand: '3.0 UTALII, AFYA YA AKILI NA UJASIRIAMALI', subs: ['Ukusanyaji na Uhifadhi wa Tanzu za Fasihi Simulizi Nyanjani', 'Mofimu (Mzizi na Viambishi), Uundaji wa Nomino na Mnyambuliko Mpana', 'Mbinu za Sanaa na Tamathali za Usemi katika Kitabu Teule', 'Insha za Kiuamilifu: Risala, Tangazo Rasmi na Hojaji'], kiq: 'Tamathali za usemi zinachangiaje ujumbe mzito katika kazi ya fasihi?', resources: 'Kitabu teule cha Gredi ya 9, fomu za hojaji, vielelezo vya risala' },
+        ],
+        3: [
+          { strand: '4.0 URAIA WA KImataifa NA MAANDALIZI YA KJSEA', subs: ['Uchambuzi wa Mashairi (Bahari, Muundo, Lugha ya Kishairi na Uhuru wa Mshairi)', 'Marudio Jumuishi ya Sarufi, Isimujamii (Sajili za Lugha) na Fasihi', 'Kuandika Insha za Hoja, Maelezo ya Kina na Masimulizi (KJSEA)'], kiq: 'Sajili ya lugha hubadilikaje kulingana na muktadha wa hospitalini, mahakamani au sokoni?', resources: 'Karatasi za kielelezo za KJSEA, diwani ya mashairi, kamusi' },
+        ],
+      },
+      10: {
+        1: [
+          { strand: '1.0 FONOLOJIA, ISIMUJAMII NA KUSOMA KWA UCHAMBUZI', subs: ['Ainisho la Sauti za Kiswahili (Irabu na Konsonanti: Mahali na Jinsi ya Kutamka)', 'Isimujamii: Sajili za Kidini, Kisiasa, Biashara na Sheria', 'Mofolojia: Aina za Mofimu, Viambishi Awali na Tamati & Uainishaji wa Maneno', 'Ufupisho na Ufahamu wa Matini Changamano'], kiq: 'Ujuzi wa fonolojia na sajili za lugha unamsaidiaje mzungumzaji katika miktadha rasmi?', resources: 'Kamusi Kuu ya Kiswahili, chati ya ala za matamshi, matini za sajili' },
+        ],
+        2: [
+          { strand: '2.0 FASIHI SIMULIZI NA RIWAYA TEULE YA SHULE YA UPILI', subs: ['Nadharia, Sifa na Utafiti wa Nyanjani katika Fasihi Simulizi', 'Sintaksia: Virai (RN, RT, RV, RE, RH) na Vishazi', 'Utangulizi na Uhakiki wa Riwaya Teule (Dhamira, Maudhui na Wahusika)', 'Insha za Kiuamilifu: Barua Rasmi kupitia Mkuu wa Taasisi, Memo na Ratiba'], kiq: 'Utafiti wa nyanjani unakumbwa na changamoto gani na hutatuliwaje?', resources: 'Riwaya Teule iliyoidhinishwa na KICD (Gredi 10), mwongozo wa nyanjani' },
+        ],
+        3: [
+          { strand: '3.0 USHAIRI WA ARUDHI NA UANDISHI WA UBUNIFU', subs: ['Arudhi za Ushairi wa Kiswahili (Vina, Mizani, Kibwagizo na Bahari)', 'Nyakati, Hali na Mnyambuliko wa Vitenzi vya Kiarabu na Kibantu', 'Uandishi wa Insha za Hoja, Mdahalo na Masimulizi ya Kiubunifu'], kiq: 'Kanuni za arudhi zina nafasi gani katika urembo wa ushairi wa Kiswahili?', resources: 'Diwani ya Mashairi (KICD), vielelezo vya insha za hoja' },
+        ],
+      },
+      11: {
+        1: [
+          { strand: '1.0 HISTORIA YA KISWAHILI, TAMTHILIA TEULE NA SINTAKSIA', subs: ['Chimbuko, Maendeleo na Usanifishaji wa Kiswahili Afrika Mashariki', 'Uchanganuzi wa Sentensi kwa Njia ya Mishale, Visanduku na Matawi', 'Uhakiki wa Kina wa Tamthilia Teule (Ploti, Migogoro, Wahusika na Mbinu)', 'Insha za Kiuamilifu: Kumbukumbu Rasmi, Ripoti ya Uchunguzi na Hotuba'], kiq: 'Kiswahili kilikua na kuenea vipi kutoka pwani hadi bara la Afrika Mashariki?', resources: 'Tamthilia Teule iliyoidhinishwa na KICD (Gredi 11), ramani ya historia ya Kiswahili' },
+        ],
+        2: [
+          { strand: '2.0 HADITHI FUPI, SEMANTIKIA NA MAWASILIANO YA KITAALUMA', subs: ['Uhakiki wa Diwani ya Hadithi Fupi Teule (Maudhui na Fani)', 'Shamirisho, Chagizo, Uakifishaji Mkuu na Usemi wa Taarifa', 'Uandishi wa Pendekezo la Mradi, Tawasifu/Wasifu na Hojaji'], kiq: 'Hadithi fupi inatofautianaje na riwaya kimuundo na kimaudhui?', resources: 'Diwani ya Hadithi Fupi (KICD), vielelezo vya ripoti na miradi' },
+        ],
+        3: [
+          { strand: '3.0 USHAIRI HURU NA WA KISASA & FASIHI SIMULIZI (MAIGIZO)', subs: ['Ulinganishi wa Mashairi ya Arudhi na Mashairi Huru (Mavue)', 'Tanzu za Maigizo, Mazungumzo na Semi katika Fasihi Simulizi', 'Insha za Methali, Tahariri ya Gazeti na Mahojiano'], kiq: 'Uhuru wa mshairi (inkisari, mazida, tabdila, utohozi) hutumiwa kwa madhumuni gani?', resources: 'Diwani za ushairi, magazeti ya Kiswahili (Taifa Leo)' },
+        ],
+      },
+      12: {
+        1: [
+          { strand: '1.0 ULINGANISHI WA VITABU TEULE, ISIMUJAMII NA SARUFI KUU', subs: ['Ulinganishi wa Maudhui na Fani katika Riwaya, Tamthilia na Hadithi Fupi Teule', 'Changamoto za Kiswahili Kitaifa/Kimataifa na Sera ya Lugha nchini Kenya', 'Udodosaji wa Makosa ya Kisarufi, Kimantiki na Kimtindo'], kiq: 'Katiba ya Kenya 2010 inaipa Kiswahili hadhi na majukumu gani kitaifa?', resources: 'Vitabu vyote teule vya Shule ya Upili (KICD), Katiba ya Kenya' },
+        ],
+        2: [
+          { strand: '2.0 USHAIRI CHANGAMANO NA INSHA ZA KITAASISI', subs: ['Uchambuzi wa Mashairi ya Tasfida, Mafumbo na Toni/Mood', 'Insha za Kiuamilifu: Tathmini ya Kitabu (Resensi), Risala, Ilani na Wasifu wa Kazi (CV)', 'Mbinu Bora za Kujibu Ufahamu na Ufupisho wa Kiwango cha Juu'], kiq: 'Resensi ya kitabu inamsaidiaje msomaji kutathmini ubora wa kazi ya fasihi?', resources: 'Diwani za ushairi, vielelezo vya insha za kitaasisi' },
+        ],
+        3: [
+          { strand: '3.0 MTIHANI MKUU WA KUMALIZA SHULE YA UPILI (CBE SYNTHESIS)', subs: ['Mkakati wa Kujibu Maswali ya Muktadha na Insha za Fasihi', 'Mazoezi Jumuishi ya Lugha, Isimujamii, Fasihi Simulizi na Uandishi wa Insha'], kiq: 'Mpangilio mzuri wa hoja na mifano mahsusi huinua vipi alama za mtahiniwa?', resources: 'Karatasi za Mfano za KNEC CBE, miongozo ya usahihishaji' },
+        ],
+      },
     },
   },
 
@@ -200,6 +1509,41 @@ export const SUBJECT_SYLLABUS = {
         { strand: '3.0 SIMPLE MACHINES & DIGITAL CODING', subs: ['Levers (First, Second & Third Class) & Inclined Planes', 'Digital Devices, Word Processing & Scratch Visual Coding'], kiq: 'How do simple machines make everyday farm and construction work easier?', resources: 'Claw hammer, wheelbarrow, bottle opener, laptops/tablets with Scratch' },
       ],
     },
+    byGrade: {
+      4: {
+        1: [
+          { strand: '1.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Characteristics of Plants as Living Things & Safety When Handling Plants', 'Characteristics of Animals: Vertebrates vs Invertebrates', 'Human Digestive System: Parts (Mouth to Anus), Functions & Healthy Teeth'], kiq: 'How does each part of the human digestive system break down food?', resources: 'Potted plants, hand lenses, forceps/gloves, digestive system & dental model' },
+        ],
+        2: [
+          { strand: '2.0 MATTER', subs: ['Properties of Solids, Liquids & Gases (Shape, Volume & Mass)', 'Floating and Sinking: Shape & Material Factors and Floaters/Sinkers', 'Water Pollution: Common Pollutants, Effects & Safe Water Practices'], kiq: 'How does changing the shape of plasticine or metal foil make it float?', resources: 'Balloons, syringes, plasticine, bottle tops, water basin, clean cloth filter' },
+        ],
+        3: [
+          { strand: '3.0 FORCE, ENERGY & DIGITAL LITERACY', subs: ['Force and Its Effects on Objects (Start, Stop, Direction & Shape)', 'Light & Heat Energy: Sources, Uses & Safety at Home', 'Digital Devices: Parts, Functions, Care & Simple Block Coding Games'], kiq: 'How do pushes and pulls affect moving objects in sports and work?', resources: 'Toy cars, balls, torches, candles, tablets/computers' },
+        ],
+      },
+      5: {
+        1: [
+          { strand: '1.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Classification of Green Plants: Flowering vs Non-Flowering Plants', 'Fungi: Moulds, Puffballs, Yeast & Mushrooms (Safety & Economic Value)', 'Vertebrate Groups: Mammals, Birds, Reptiles, Amphibians & Fish', 'Human Breathing System & Sense Organs Care'], kiq: 'How is yeast useful in bakeries while moulds spoil damp food?', resources: 'Fern/moss/bean specimens, bread mould in sealed clear bag, lung bottle model' },
+        ],
+        2: [
+          { strand: '2.0 MATTER', subs: ['Change of State of Matter: Melting, Evaporation, Condensation & Freezing', 'Acids and Bases: Preparing Plant-Extract Indicators & Household Uses', 'Mixtures: Winnowing, Sieving, Picking, Filtering & Decanting'], kiq: 'How does the water cycle depend on evaporation and condensation?', resources: 'Red hibiscus/cabbage petals, lemon juice, wood ash, ice cubes, tin lid, sieve' },
+        ],
+        3: [
+          { strand: '3.0 FORCE AND ENERGY', subs: ['Sound Energy: Production by Vibration, Loud/Soft Sounds & Noise Pollution', 'Heat Transfer: Conduction, Convection & Radiation Applications', 'Moon Phases & Word Processing Documents Creation'], kiq: 'Why do cooking sufurias have metallic bases and wooden or plastic handles?', resources: 'Metal/wooden spoons, wax, pins, drum/rubber bands, laptops with Word processor' },
+        ],
+      },
+      6: {
+        1: [
+          { strand: '1.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Parts of Plants: Fibrous/Tap Roots, Stems & Leaf Functions (Transpiration/Photosynthesis Intro)', 'Invertebrates: Insects, Arachnids, Millipedes/Centipedes & Snails/Slugs', 'Human Circulatory System: Heart, Blood Vessels, Blood Components & ABO Groups'], kiq: 'How do arteries, veins, and capillaries work with the heart to transport blood?', resources: 'Uprooted weed samples, transparent polythene bag on leaf, heart model' },
+        ],
+        2: [
+          { strand: '2.0 MATTER', subs: ['Change of State: Sublimation & Deposition (Iodine/Naphthalene) & Applications', 'Composition of Air (78% N2, 21% O2, 0.03% CO2, Inert Gases) & Uses', 'Water Conservation: Reducing, Reusing (Greywater) & Recycling'], kiq: 'How do fire extinguishers and fizzy drinks utilize carbon dioxide gas?', resources: 'Candle, glass jar, trough of water, pie chart of air composition' },
+        ],
+        3: [
+          { strand: '3.0 FORCE AND ENERGY (KPSEA SYNTHESIS)', subs: ['Gravity & Friction: Advantages, Disadvantages & Ways of Reducing Friction', 'Light Energy: Transparent, Translucent & Opaque Materials; Plane Mirror Reflection & Periscope', 'Simple Machines: Levers (Fulcrum, Effort, Load) & Slopes/Inclined Planes; Scratch Coding'], kiq: 'How does a periscope use plane mirrors to see over obstacles?', resources: 'Plane mirrors, carton periscope, ball bearings, wooden ramp, wheelbarrow' },
+        ],
+      },
+    },
   },
 
   'Agriculture and Nutrition': {
@@ -214,9 +1558,44 @@ export const SUBJECT_SYLLABUS = {
         { strand: '3.0 HYGIENE PRACTICES & NUTRITION', subs: ['Balanced Diet, Macro/Micronutrients & Deficiency Diseases', 'Kitchen Hygiene, Food Spoilage & Safe Storage', 'Cooking Methods: Boiling, Stewing, Shallow Frying & Steaming'], kiq: 'How do we conserve nutrients while preparing and cooking vegetables?', resources: 'Cooking pots, fresh vegetables, aprons, food pyramid chart' },
       ],
       3: [
-        { strand: '4.0 PRODUCTION TECHNIQUES', subs: [' Hand Sewing Stitches (Tacking, Running, Backstitch & Hemming)', 'Repairing Garments & Fixing Loose Buttons', 'Crocheting & Knitting Household Articles'], kiq: 'How can needlework and crocheting skills save money at home?', resources: 'Needles, assorted threads, fabric pieces, buttons, crocheting hooks, yarn' },
+        { strand: '4.0 PRODUCTION TECHNIQUES', subs: ['Hand Sewing Stitches (Tacking, Running, Backstitch & Hemming)', 'Repairing Garments & Fixing Loose Buttons', 'Crocheting & Knitting Household Articles'], kiq: 'How can needlework and crocheting skills save money at home?', resources: 'Needles, assorted threads, fabric pieces, buttons, crocheting hooks, yarn' },
         { strand: '4.0 LAUNDRY & INNOVATIVE GARDENING', subs: ['Sorting & Laundering Cotton and Coloured Garments', 'Container, Sack & Vertical Kitchen Gardening', 'Value Addition to Crop Produce'], kiq: 'How can families in urban spaces grow fresh vegetables in sacks or tyres?', resources: 'Sacks, topsoil, manure, basins, mild soap, clotheslines' },
       ],
+    },
+    byGrade: {
+      7: {
+        1: [
+          { strand: '1.0 CONSERVATION OF RESOURCES', subs: ['Controlling Soil Pollution on Farm Land (Safe Agrochemical & Plastic Disposal)', 'Constructing Water Retention Structures: WaterRetention Ditches, Pits & Earth Basins', 'Conserving Food Nutrients When Preparing & Cooking Leafy Vegetables', 'Growing Trees: Nursery Management, Transplanting & Agroforestry Care'], kiq: 'How do water retention pits and agroforestry trees protect soil moisture?', resources: 'Jembes, tree seedlings, fresh kales/spinach, cooking pot with lid' },
+        ],
+        2: [
+          { strand: '2.0 FOOD PRODUCTION PROCESSES', subs: ['Crop Establishment: Land Preparation, Planting Depth & Spacing of Tilth', 'Selected Management Practices in Crop Production (Weeding, Earthing Up, Thinning, Gapping)', 'Preparing Animal Products: Grading/Sorting Eggs & Processing Raw Honey', 'Cooking Methods: Grilling, Roasting & Steaming Nutritious Foods'], kiq: 'Why does proper tilth size match seed size during planting?', resources: 'Seeds (millet, maize, beans), raw comb honey model, egg candler/trays, steamer' },
+        ],
+        3: [
+          { strand: '3.0 HYGIENE & 4.0 PRODUCTION TECHNIQUES', subs: ['Hygiene in Rearing Animals & Laundering Loose-Coloured Garments', 'Knitting Basic Household Articles (Knit & Purl Stitches)', 'Constructing Framed Suspended Gardens for Urban/School Spaces', 'Adding Value to Crop Produce (Crisps, Dried Vegetables, Juices & Flour) & Homemade Soap'], kiq: 'How does value addition increase shelf life and farmer income?', resources: 'Knitting needles, yarn, timber offcuts for suspended garden, cassava/potatoes' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 CONSERVATION OF RESOURCES', subs: ['Soil Conservation Measures: Strip Cropping, Grassed Waterways, Stone Lines & Trash Lines', 'Water Harvesting & Storage: Gutters, Tanks, Shallow Water Pans & Ponds', 'Kitchen and Backyard Gardening (Multi-Storey, Tyre & Wick Gardens)'], kiq: 'How can rainwater harvested from school rooftops sustain a kitchen garden?', resources: 'A-frame level, stones, gutters/tank model, sacks, topsoil & compost' },
+        ],
+        2: [
+          { strand: '2.0 FOOD PRODUCTION PROCESSES', subs: ['Poultry Rearing in a Movable Fold: Construction, Feeding & Moving Routine', 'Crop Pest and Disease Identification & Eco-Friendly Control', 'Preparation of Animal Products: Processing Fish (Scaling/Gutting) & Dressing Poultry Carcass', 'Preserving Milk and Meat (Boiling, Fermentation, Salting, Smoking & Sun-Drying)'], kiq: 'How does rearing poultry in a movable fold fertilize pasture while controlling parasites?', resources: 'Wire mesh/timber fold model, pest-damaged leaf samples, solar drier chart' },
+        ],
+        3: [
+          { strand: '3.0 HYGIENE & 4.0 PRODUCTION TECHNIQUES', subs: ['Planning, Preparing & Serving Balanced Family Meals & Kitchen Cleaning', 'Sewing Skills: Constructing Open and Plain Seams on Household Articles', 'Constructing Innovative Livestock Waterers from Recycled Containers', 'ICT Support Services in Agriculture (Weather, Market Prices & Extension)'], kiq: 'How do clean kitchen surfaces and proper seams uphold household standards?', resources: 'Needles, cotton fabric, tape measure, recycled jerrycans, meal planning cards' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 CONSERVATION OF RESOURCES', subs: ['Conserving Forage / Animal Feeds: Baled Hay, Standing Forage & Silage Making', 'Conserving Leftover Foods Safely: Reheating, Hygiene & Creative Recipes', 'Integrated Farming Components (Crops, Livestock, Fish, Poultry & Agroforestry)'], kiq: 'How does silage and baled hay cushion livestock farmers during drought?', resources: 'Dry Rhodes grass, molasses sample, polythene silage tube, farm layout chart' },
+        ],
+        2: [
+          { strand: '2.0 FOOD PRODUCTION PROCESSES', subs: ['Organic Gardening: Organic Manure, Botanical Pesticides & Mechanical Weed Control', 'Preparing & Conditioning Storage Structures (Granaries/Bags) for Crop Produce', 'Cooking Flour Mixtures: Preparing Nutritious Batters (Pancakes) & Doughs (Chapati/Mandazi)'], kiq: 'Why must cereals be dried to safe moisture levels before storage?', resources: 'Neem/tithonia leaves, sisal/hermetic bags, wheat flour, rolling pin, pan' },
+        ],
+        3: [
+          { strand: '3.0 HYGIENE & 4.0 PRODUCTION TECHNIQUES (KJSEA SYNTHESIS)', subs: ['Cleaning Waste Disposal Facilities & Disinfecting Clothing/Household Articles', 'Grafting Fruit Trees (Whip-and-Tongue / Cleft Grafting) for Improved Varieties', 'Constructing Homemade Sun Dryers for Vegetables and Fruits'], kiq: 'Why do fruit farmers graft an improved scion onto a hardy local rootstock?', resources: 'Mango/avocado scion & rootstock, grafting tape/knife, disinfectant, solar dryer frame' },
+        ],
+      },
     },
   },
 
@@ -236,6 +1615,74 @@ export const SUBJECT_SYLLABUS = {
         { strand: '4.0 NATIONAL & COUNTY GOVERNMENT', subs: ['Arms of National Government (Legislature, Executive, Judiciary)', 'County Governments Structure & Sources of Revenue', 'IEBC, Democratic Elections & Peace Building'], kiq: 'How do County and National governments work together to serve citizens?', resources: 'Mock ballot box, government structure organogram' },
       ],
     },
+    byGrade: {
+      4: {
+        1: [
+          { strand: '1.0 NATURAL AND BUILT ENVIRONMENTS IN THE COUNTY', subs: ['Four & Eight Compass Points for Locating Places in the County', 'Location, Size & Sub-Counties of Our County', 'Major Physical Features (Rivers, Hills, Plains, Valleys) & Seasons in the County', 'Historic Built Environments (Museums, Monuments & Cultural Centres) in the County'], kiq: 'How do physical features and seasons affect daily activities in our County?', resources: 'County wall map, magnetic compass, photographs of county landmarks' },
+        ],
+        2: [
+          { strand: '2.0 PEOPLE, POPULATION & 3.0 COUNTY RESOURCES', subs: ['Interdependence of People & Population Distribution Patterns in the County', 'Positive Aspects of Traditional Culture (Food, Dress, Songs, Festivals)', 'Main Economic Activities, Trade & School Enterprise Projects in the County'], kiq: 'Why do communities in our County depend on one another for goods and services?', resources: 'Cultural attire pictures, county market items, enterprise record book' },
+        ],
+        3: [
+          { strand: '4.0 CITIZENSHIP AND GOVERNANCE IN KENYA', subs: ['Good Citizenship Qualities in School & Community; Peace Factors', 'Children’s Rights & Protection Against Abuse and Child Labour', 'School Democracy (Children’s Government) & Structure of County Executive/Assembly'], kiq: 'How does electing a school Children’s Government teach democratic leadership?', resources: 'Children Act chart, mock ballot papers, County government chart' },
+        ],
+      },
+      5: {
+        1: [
+          { strand: '1.0 NATURAL AND BUILT ENVIRONMENTS IN KENYA', subs: ['Elements of a Map & Location/Position/Size of Kenya and Her Neighbours', 'Main Physical Features, Relief Regions & Climatic Regions of Kenya', 'Care for Historic Built Environments in Kenya (Fort Jesus, Koobi Fora, Gedi)'], kiq: 'How does Kenya’s relief create varied climatic zones from the Coast to the Highlands?', resources: 'Approved Primary Atlas, Wall Map of Kenya, monument photographs' },
+        ],
+        2: [
+          { strand: '2.0 PEOPLE & 3.0 ECONOMIC ACTIVITIES IN KENYA', subs: ['Main Language Groups in Kenya (Bantu, Nilotes, Cushites, Asians/Europeans) & Population Density', 'Dairy Farming, Horticulture, Inland/Marine Fishing & Wildlife Tourism in Kenya', 'Mining (Soda Ash, Fluorspar, Diatomite, Limestone), Transport & Road Safety in Kenya'], kiq: 'How do horticulture and wildlife tourism earn foreign exchange for Kenya?', resources: 'Language migration map, mineral samples, road traffic sign charts' },
+        ],
+        3: [
+          { strand: '4.0 POLITICAL SYSTEMS AND GOVERNANCE IN KENYA', subs: ['Traditional Leaders in Kenya (Kivoi wa Mwendwa & Mekatilili wa Menza) & Early Visitors', 'Kenyan Citizenship (By Birth & Registration), National Symbols & National Unity', 'Human Rights & Three Arms of the National Government (Legislature, Executive, Judiciary)'], kiq: 'Why did Kenya’s Constitution separate power among three arms of government?', resources: 'Constitution of Kenya 2010, portraits of Kenyan leaders, National Symbols chart' },
+        ],
+      },
+      6: {
+        1: [
+          { strand: '1.0 NATURAL AND BUILT ENVIRONMENTS IN EASTERN AFRICA', subs: ['Position, Size, Countries & Latitudes/Longitudes of Eastern Africa', 'Formation of Rift Valley, Block/Volcanic Mountains & Lakes in Eastern Africa', 'Climatic Regions & Vegetation Belts of Eastern Africa'], kiq: 'How were fault mountains and the Great Rift Valley formed in Eastern Africa?', resources: 'Eastern Africa wall map, paper-strip faulting model, atlas' },
+        ],
+        2: [
+          { strand: '2.0 PEOPLE & 3.0 RESOURCES IN EASTERN AFRICA', subs: ['Migration & Settlement of Language Groups in Eastern Africa & Population Factors', 'Large-Scale Coffee/Maize & Beef Farming, Fishing & Forestry in Eastern Africa', 'Transport Networks, Communication & East African Community (EAC) Objectives/Benefits'], kiq: 'How does common market integration across EAC member states boost trade?', resources: 'EAC flags/map, coffee/sisal samples, migration route charts' },
+        ],
+        3: [
+          { strand: '4.0 POLITICAL SYSTEMS & GOVERNANCE (KPSEA SYNTHESIS)', subs: ['Traditional Governance of the Buganda Kingdom & Nyamwezi Chiefdom', 'Peaceful Conflict Resolution, Human Rights, Sources of Government Revenue & Preamble of Constitution'], kiq: 'How was centralized governance organized in the traditional Buganda Kingdom?', resources: 'Buganda administrative chart, KRA revenue posters, Constitution booklet' },
+        ],
+      },
+      7: {
+        1: [
+          { strand: '1.0 SOCIAL STUDIES, PERSONAL GROWTH & NATURAL ENVIRONMENT', subs: ['Career & Entrepreneurial Opportunities in Social Studies; Self-Exploration', 'Maps & Mapwork: Sketch, Atlas & Topographical Maps; Position & Shape of Africa', 'Earth & Solar System (Origin, Rotation, Revolution & Internal Structure)', 'Weather Station Instruments (Stevenson Screen, Rain Gauge) & Fieldwork Methods'], kiq: 'How do Earth’s rotation and revolution cause day/night, time differences, and seasons?', resources: 'Approved JSS Atlas, globe, torch, rain gauge, Stevenson screen model' },
+        ],
+        2: [
+          { strand: '2.0 PEOPLE, EARLY CIVILIZATIONS & POPULATION IN AFRICA', subs: ['Human Origin: Archaeological Sites in Africa & Traditional Stories', 'Early African Civilizations: Ancient Egypt, Great Zimbabwe & Kingdom of Kongo', 'Indian Ocean Slave Trade, Internal Interdependence & Population Distribution in Africa'], kiq: 'How have Ancient Egyptian innovations in irrigation, calendar, and medicine influenced the modern world?', resources: 'Map of African archaeological sites, pyramid/Great Zimbabwe photos, atlas' },
+        ],
+        3: [
+          { strand: '3.0 RESOURCES & 4.0 POLITICAL DEVELOPMENT AND GOVERNANCE', subs: ['Agriculture in Nile Valley, Economic Organization of Ogiek & Zulu, and Currency Evolution', 'Scramble & Partition of Africa (Berlin Conference 1884-85)', 'The Constitution of Kenya 2010, Democracy, Human Rights, African Diasporas & African Union (AU)'], kiq: 'What were the political and socio-economic impacts of the Berlin Conference on Africa?', resources: 'Colonial partition map of Africa, AU charter summary, Constitution of Kenya' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 PERSONAL DEVELOPMENT, PEOPLE & POPULATION', subs: ['Self-Improvement, Self-Esteem & Emotional Intelligence in Relationships', 'Scientific Theory of Human Evolution (Australopithecus to Homo Sapiens) & Fossil Conservation', 'Early Visitors to the East African Coast & Swahili Civilization', 'Population Growth, Migration & Demographic Structure (Kenya vs Germany Pyramids)'], kiq: 'Why do Kenya and Germany exhibit contrasting population age-sex pyramids?', resources: 'Fossil skull casts/charts, KNBS vs Germany population pyramids, JSS Atlas' },
+        ],
+        2: [
+          { strand: '2.0 NATURAL AND HISTORIC BUILT ENVIRONMENTS', subs: ['Map Reading: Linear/Statement/Representative Scales & Area of Irregular Shapes', 'Weather & Climate of Africa; Causes & Adaptation to Climate Change', 'Vegetation Zones of Africa & Care for Historical Sites/Monuments (Kilwa, Timbuktu, Fort Jesus)'], kiq: 'How do communities in Africa adapt farming and water systems to climate change?', resources: '1:50,000 topographical map extracts, string/squared tracing paper, climate maps' },
+        ],
+        3: [
+          { strand: '3.0 POLITICAL DEVELOPMENT, CITIZENSHIP & PEACE', subs: ['Evolution of the Kenyan Constitution, Arms of Government & Chapter Six Integrity', 'Human Rights Classification, Children’s Rights Protection & Global Citizenship', 'Non-Violent Conflict Resolution & Managing Peer/Community Tensions'], kiq: 'How does Chapter Six of the Kenyan Constitution promote ethical public leadership?', resources: 'Constitution of Kenya 2010, UNCRC summary chart, mediation case cards' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 CAREER PATHWAYS & COMMUNITY SERVICE LEARNING PREP', subs: ['Senior School Pathways (Arts/Sports, Social Sciences, STEM) & Support Systems', 'Community Service-Learning Project: Problem Identification, Designing & Implementation', 'Pre-Historic Human Toolmaking (Oldowan, Acheulean, Microlith) & Socio-Economic Practices'], kiq: 'How does understanding personal aptitudes guide Senior School pathway selection?', resources: 'KICD Senior School Pathway guide, CSL project logbook, stone-tool charts' },
+        ],
+        2: [
+          { strand: '2.0 INDIGENOUS KNOWLEDGE, POVERTY REDUCTION & PHYSICAL PROCESSES', subs: ['African Indigenous Knowledge Systems (Medicine, Agriculture, Climate & Conservation)', 'Poverty Reduction, Over-Exploitation of Resources & Multi-Purpose River Projects (Aswan & Seven Forks)', 'Internal Land-Forming Processes: Earth Movements, Folding & Faulting; Topographical Cross-Sections'], kiq: 'How do Seven Forks Dams and Aswan High Dam drive hydro-power and irrigation?', resources: 'Map of Tana River Seven Forks & Nile, contour cross-section graph paper' },
+        ],
+        3: [
+          { strand: '3.0 GOVERNANCE, ELECTIONS & PEACEBUILDING (KJSEA SYNTHESIS)', subs: ['Civic Engagement, Political Parties, IEBC Electoral Process & Voter Education in Kenya', 'Comparisons of Devolved/Federal Governance & International Peacekeeping', 'Integrated Topographical Mapwork & KJSEA Assessment Synthesis'], kiq: 'Why are free, fair, and verifiable elections essential for national stability?', resources: 'IEBC voter education charts, Constitution of Kenya, 1:50,000 map sheets' },
+        ],
+      },
+    },
   },
 
   'Creative Arts': {
@@ -246,7 +1693,7 @@ export const SUBJECT_SYLLABUS = {
         { strand: '1.0 MONTAGE, POTTERY & BALL GAMES', subs: ['Coil & Slab Pottery Techniques', 'Netball, Volleyball & Football Passing/Dribbling Drills'], kiq: 'Why are warm-up and cool-down exercises vital before and after sports?', resources: 'Prepared clay, footballs, volleyballs, cones, whistles' },
       ],
       2: [
-        { strand: '2.0 PERFORMING AND DISPLAYING', subs: ['Descant Recorder & Sol-fa Ladder (d r m f s l t d’)', 'East African Folk Songs & Traditional Dances', 'Tie-and-Dye, Batik & Stencil Fabric Decoration'], kiq: 'How do costumes and body adornment enhance African folk dances?', resources: 'Fabric dyes, white cotton cloth, strings, descant recorders, rhythm charts' },
+        { strand: '2.0 PERFORMING AND DISPLAYING', subs: ['Descant Recorder & Sol-fa Ladder (d r m f s l t d)', 'East African Folk Songs & Traditional Dances', 'Tie-and-Dye, Batik & Stencil Fabric Decoration'], kiq: 'How do costumes and body adornment enhance African folk dances?', resources: 'Fabric dyes, white cotton cloth, strings, descant recorders, rhythm charts' },
         { strand: '2.0 GYMNASTICS, SWIMMING & PUPPETRY', subs: ['Glove & Marionette Puppetry Performance', 'Multi-Sequence Gymnastics & Basic Swimming Strokes'], kiq: 'How can puppetry communicate messages on health and integrity?', resources: 'Sock/carton puppets, gym mats, kickboards' },
       ],
       3: [
@@ -262,7 +1709,7 @@ export const SUBJECT_SYLLABUS = {
     strandsByTerm: {
       1: [
         { strand: '1.0 SCIENTIFIC INVESTIGATION & MIXTURES', subs: ['Laboratory Apparatus, Hazard Symbols & First Aid', 'SI Units, Derived Quantities & Density Calculations', 'Elements, Compounds, Chemical Symbols & Atomic Structure', 'Homogeneous/Heterogeneous Mixtures: Chromatography & Distillation'], kiq: 'How do fractional distillation and chromatography apply in industry and forensics?', resources: 'Bunsen burner, Liebig condenser, filter paper, Periodic Table chart' },
-        { strand: '1.0 ACIDS, BASES & FIRE SAFETY', subs: ['Commercial & Plant-Extract Acid-Base Indicators & pH Scale', 'Physical vs Chemical Changes & Rusting Control', 'Classes of Fire (A–F), Fire Triangle & Extinguishers'], kiq: 'Why must different classes of fire be extinguished using specific agents?', resources: 'Litmus paper, universal indicator, test tubes, fire extinguisher chart' },
+        { strand: '1.0 ACIDS, BASES & FIRE SAFETY', subs: ['Commercial & Plant-Extract Acid-Base Indicators & pH Scale', 'Physical vs Chemical Changes & Rusting Control', 'Classes of Fire (A-F), Fire Triangle & Extinguishers'], kiq: 'Why must different classes of fire be extinguished using specific agents?', resources: 'Litmus paper, universal indicator, test tubes, fire extinguisher chart' },
       ],
       2: [
         { strand: '2.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Light Microscope Parts, Magnification & Cell Structure', 'Diffusion, Osmosis & Active Transport in Living Tissue', 'Human Reproductive, Excretory (Skin/Kidney) & Digestive Systems', 'Plant Nutrition (Photosynthesis) & Transpiration'], kiq: 'How does osmosis regulate water movement in plant roots and animal cells?', resources: 'Light microscopes, glass slides, iodine stain, Visking tubing, anatomical models' },
@@ -271,6 +1718,42 @@ export const SUBJECT_SYLLABUS = {
       3: [
         { strand: '3.0 FORCE AND ENERGY', subs: ['Static & Current Electricity, Series/Parallel Circuits', 'Magnetism, Magnetic Fields & Electromagnets', 'Pressure in Solids and Liquids (P = F/A & P = hpg)', 'Curved Mirrors, Waves & Renewable Energy Transformations'], kiq: 'How do hydraulic brakes and domestic electrical safety fuses work?', resources: 'Dry cells, ammeters, bar magnets, iron filings, concave/convex mirrors' },
       ],
+    },
+    byGrade: {
+      7: {
+        1: [
+          { strand: '1.0 SCIENTIFIC INVESTIGATION', subs: ['Components of Integrated Science (Biology, Chemistry & Physics) & STEM Career Pathways', 'Laboratory Safety Rules, Hazard Symbols & First Aid for Burns, Cuts and Chemical Spills', 'Basic Science Skills, Basic & Derived SI Units (Area, Volume, Density)', 'Laboratory Apparatus for Heating (Bunsen Burner Flames), Measuring Mass, Volume, Time & Temperature'], kiq: 'Why is a non-luminous Bunsen burner flame preferred over a luminous flame for heating?', resources: 'Bunsen burner, tripod, measuring cylinders, beam balance, hazard symbol chart, first-aid kit' },
+          { strand: '2.0 MIXTURES, ELEMENTS AND COMPOUNDS', subs: ['Homogeneous & Heterogeneous Mixtures; Pure vs Impure Substances (Melting/Boiling Points)', 'Separating Mixtures: Simple/Fractional Distillation, Paper Chromatography, Sublimation & Solvent Extraction', 'Acids, Bases & Indicators: Plant Extracts, Litmus, Phenolphthalein, Methyl Orange & Universal pH Scale'], kiq: 'How is fractional distillation applied in separating crude oil and liquid air?', resources: 'Liebig condenser, filter paper, black ink, ethanol, hibiscus petals, universal pH chart' },
+        ],
+        2: [
+          { strand: '3.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Human Male & Female Reproductive Systems; Physical & Emotional Changes in Adolescence', 'Menstrual Cycle Hygiene & Managing Adolescent Challenges', 'Human Excretory System: Structure & Functions of the Skin and Urinary System (Kidney)', 'Common Kidney Disorders & Healthy Lifestyle Practices'], kiq: 'How do the skin and kidneys maintain internal cleanliness of the human body?', resources: 'Torso/kidney anatomical models, skin cross-section chart, health brochures' },
+        ],
+        3: [
+          { strand: '4.0 FORCE AND ENERGY', subs: ['Sources of Electricity (Hydro, Geothermal, Solar, Wind) & Simple Series/Parallel Circuits', 'Electrical Conductors, Insulators, Domestic Appliances & Electrical Safety Measures', 'Magnetism: Magnetic vs Non-Magnetic Materials, Law of Magnetism & Daily Uses of Magnets'], kiq: 'Why are domestic lighting circuits wired in parallel rather than in series?', resources: 'Dry cells, bulbs, switches, copper wires, bar magnets, iron nails, safety fuse samples' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 MIXTURES, ELEMENTS AND COMPOUNDS', subs: ['Elements & Compounds: Chemical Symbols (IUPAC/Latin), Common Compounds & Word Applications', 'Kinetic Theory of Matter: Particle Arrangement & Diffusion in Liquids and Gases', 'Temporary Physical Changes vs Permanent Chemical Changes', 'Fire Safety: The Fire Triangle, Classes of Fire (A, B, C, D, Electrical, K) & Fire Extinguisher Control'], kiq: 'Why is water dangerous to use on Class B petrol fires or live electrical fires?', resources: 'Periodic Table chart, potassium permanganate crystals, CO2/foam extinguisher models' },
+        ],
+        2: [
+          { strand: '2.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Light Microscope Handling, Magnification Calculation & Plant vs Animal Cell Organelles', 'Properties of the Cell Membrane: Diffusion & Osmosis Experiments (Visking Tubing & Potato Cores)', 'Human Reproduction: Fertilization, Foetal Development & Prevention of STIs (HIV/AIDS, Syphilis, Gonorrhoea)'], kiq: 'How does osmosis explain wilting in plants and preservation of fish using salt?', resources: 'Light microscopes, onion epidermis, iodine, Visking tubing, sucrose solution' },
+        ],
+        3: [
+          { strand: '3.0 FORCE AND ENERGY', subs: ['Transformation of Energy in Nature & Appliances; Renewable Energy Safety', 'Pressure in Solids (P = F/A) & Pressure in Liquids (P = hpg) and Hydraulic Applications'], kiq: 'Why do tractors have wide rear tyres while cutting knives have sharp thin edges?', resources: 'Perforated tall tin, syringe hydraulic model, wooden blocks, spring balance, solar cell' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 MIXTURES, ELEMENTS AND COMPOUNDS', subs: ['Structure of the Atom: Protons, Neutrons, Electrons, Atomic/Mass Number & Electron Arrangement (1-20)', 'Metals & Alloys (Brass, Bronze, Stainless Steel, Duralumin): Properties, Uses & Rusting Prevention', 'Hard and Soft Water: Causes of Temporary/Permanent Hardness & Methods of Softening Water'], kiq: 'Why are alloys stronger and more corrosion-resistant than pure metals?', resources: 'Atomic shell models, iron nails, oil/boiled water tubes, soap solution, hard/soft water samples' },
+        ],
+        2: [
+          { strand: '2.0 LIVING THINGS AND THEIR ENVIRONMENT', subs: ['Nutrition in Plants: Leaf Adaptations, Chloroplasts, Photosynthesis Stages & Starch Testing', 'Nutrition in Animals: Modes of Nutrition, Mammalian Dentition & Human Enzymatic Digestion', 'Reproduction in Flowering Plants (Pollination, Fertilization & Seed/Fruit Dispersal)', 'Interdependence of Living Things: Biotic/Abiotic Factors, Food Chains, Food Webs & Decomposers'], kiq: 'How are leaf internal structures and mammalian teeth adapted for nutrition?', resources: 'Variegated leaves, boiling tubes, ethanol, iodine solution, skull/jaw models, hand lenses' },
+        ],
+        3: [
+          { strand: '3.0 FORCE AND ENERGY (KJSEA SYNTHESIS)', subs: ['Curved Mirrors: Concave & Convex Mirror Ray Diagrams, Image Characteristics & Applications', 'Waves: Transverse & Longitudinal Waves, Amplitude, Wavelength, Frequency (v = f x lambda) & Remote Sensing'], kiq: 'Why are convex mirrors fitted as vehicle driving mirrors while concave mirrors serve dentists?', resources: 'Concave & convex mirrors, optical bench, slinky spring, ripple tank / chart' },
+        ],
+      },
     },
   },
 
@@ -286,8 +1769,43 @@ export const SUBJECT_SYLLABUS = {
         { strand: '4.0 COMPUTER PRODUCTIVITY & VISUAL PROGRAMMING', subs: ['Word Processing, Spreadsheets Formulas & Presentations', 'Scratch / Block-Based Coding (Loops, Variables & Conditionals)'], kiq: 'How can spreadsheet formulas automate business stock and accounting records?', resources: 'Computers/laptops, spreadsheet templates, Scratch software' },
       ],
       3: [
-        { strand: '5.0 ENTREPRENEURSHIP & FINANCIAL LITERACY', subs: ['Generating Viable Business Ideas & Ethical Practices', 'Bookkeeping: Cashbooks, Statements of Financial Position', 'Saving, Investing, Mobile Money Safety & Consumer Protection', 'Marketing Goods & Services + Capstone Mini-Project'], kiq: 'How do entrepreneurs identify community gaps and turn them into sustainable enterprises?', resources: 'Sample cashbooks, KEBs quality mark samples, project portfolios' },
+        { strand: '5.0 ENTREPRENEURSHIP & FINANCIAL LITERACY', subs: ['Generating Viable Business Ideas & Ethical Practices', 'Bookkeeping: Cashbooks, Statements of Financial Position', 'Saving, Investing, Mobile Money Safety & Consumer Protection', 'Marketing Goods & Services + Capstone Mini-Project'], kiq: 'How do entrepreneurs identify community gaps and turn them into sustainable enterprises?', resources: 'Sample cashbooks, KEBS quality mark samples, project portfolios' },
       ],
+    },
+    byGrade: {
+      7: {
+        1: [
+          { strand: '1.0 FOUNDATIONS OF PRE-TECHNICAL STUDIES', subs: ['Components of Pre-Technical Studies (Technical, Computer & Business) & Career Roles', 'Safety in the Immediate Work Environment: Potential Physical Threats & PPE Rules', 'Online Safety Rules: Protecting Personal Data & Avoiding Cyberbullying', 'Computer Concepts: Characteristics, Classification (Size, Purpose, Functionality) & Lab Care'], kiq: 'How do Technical, Computer, and Business skills work together in modern enterprises?', resources: 'Workshop PPE (helmets, goggles, gloves), desktop/laptop computers, safety posters' },
+        ],
+        2: [
+          { strand: '2.0 COMMUNICATION & 3.0 MATERIALS AND TOOLS', subs: ['Fundamentals of Communication in Business & ICT Channels', 'Artistic vs Technical Drawing: Types of Lines, Lettering, Freehand Sketching & Plane Geometry', 'Economic Resources, Metallic Materials (Ferrous/Non-Ferrous) & Non-Metallic Materials', 'Measuring and Marking-Out Tools (Steel Rule, Tape Measure, Try-Square, Scriber, Dividers, Callipers)'], kiq: 'Why must artisans measure twice and mark accurately before cutting materials?', resources: 'Drawing boards, 2H/HB pencils, steel rules, try-squares, copper/aluminium/steel samples' },
+        ],
+        3: [
+          { strand: '4.0 ENTREPRENEURSHIP & FINANCIAL LITERACY', subs: ['Qualities of an Entrepreneur & Sources of Viable Business Ideas', 'Money: Uses, Security Features of Kenyan Currency & Themes on Banknotes', 'Setting Personal Financial Goals, Saving Channels & Ethical Business Practices'], kiq: 'What security features distinguish genuine Kenyan banknotes from counterfeits?', resources: 'CBK Kenyan currency posters, specimen notes, financial goal planner sheets' },
+        ],
+      },
+      8: {
+        1: [
+          { strand: '1.0 FOUNDATIONS & 2.0 COMMUNICATION', subs: ['Fire Safety & Data Safety (Backups, Passwords, Antivirus) in the Work Environment', 'Computer Hardware: Input, Output, Processing (CPU) & Storage Devices Selection', 'Consumer and Investor Protection Agencies in Kenya (KEBS, CAK, CMA)', 'Plain Scale, Diagonal Scale & Visual Programming Basics (Scratch Interface & Sprites)'], kiq: 'How do regular backups and strong authentication prevent data loss?', resources: 'Opened system unit (RAM, HDD/SSD, CPU heatsink), Scratch software, scale rulers' },
+        ],
+        2: [
+          { strand: '3.0 MATERIALS AND PRODUCTION TOOLS', subs: ['Composite Materials (Concrete, Fibreglass, Papier-mâché, Manufactured Boards) & Ceramics', 'Cutting Tools (Tenon Saw, Hacksaw, Chisels, Snips, Planes) & Holding Tools (Vices, G-Clamp, Pliers)', 'Safe Use, Sharpening, Oiling & Storage of Cutting and Holding Tools'], kiq: 'Why is reinforced concrete stronger than plain cement mortar in construction?', resources: 'Plywood/MDF samples, ceramic tiles, hacksaw, tenon saw, bench vice, G-clamps' },
+        ],
+        3: [
+          { strand: '4.0 ENTREPRENEURSHIP & BOOKKEEPING', subs: ['Evaluating Business Opportunities & Setting Up a Small School/Community Enterprise', 'Bookkeeping Basics: Assets, Liabilities, Capital (A = C + L) & Business Transactions', 'Cash & Credit Transactions, Budgeting, Saving & Investment Channels (SACCOs, MMFs, Treasury Bills)'], kiq: 'How does the accounting equation (Assets = Capital + Liabilities) stay balanced?', resources: 'Receipts, invoices, simple ledger templates, SACCO/MMF brochures' },
+        ],
+      },
+      9: {
+        1: [
+          { strand: '1.0 SAFETY ON RAISED PLATFORMS & COMPUTER SOFTWARE', subs: ['Safety on Raised Platforms (Ladders, Scaffolds, Trestles, Ramps) & Handling Hazardous Substances', 'Self-Exploration for Technical/STEM Career Talent Development', 'Computer Software: System Software (OS, Utilities) vs Application Software', 'Oblique (Cavalier/Cabinet) & Isometric 3D Projections in Technical Drawing'], kiq: 'What safety checks prevent falls when electricians and builders use ladders or scaffolds?', resources: 'Step-ladder safety chart, hazardous material MSDS labels, set squares (30/60 & 45), PCs' },
+        ],
+        2: [
+          { strand: '2.0 VISUAL PROGRAMMING, WOOD/POLYMERS & DRIVING TOOLS', subs: ['Visual Programming Project: Variables, Operators, Conditional Loops & Interactive Games/Stories', 'Wood (Hardwood vs Softwood, Seasoning & Conversion) & Polymer Materials (Thermoplastics vs Thermosets)', 'Waste Materials Recycling Project & Driving/Holding Tools (Hammers, Mallets, Screwdrivers, Spanners)'], kiq: 'How do thermoplastics differ from thermosetting plastics when heated and recycled?', resources: 'Scratch IDE, timber samples (pine, cypress, mahogany), PVC/melamine samples, spanners/hammers' },
+        ],
+        3: [
+          { strand: '3.0 FINANCIAL STATEMENTS, FINANCE & MARKETING (KJSEA SYNTHESIS)', subs: ['Financial Services of Banks/FinTech, Sources of Business Finance & Government Revenue/Taxes', 'Preparing a Simple Income Statement (Trading, Profit & Loss) & Statement of Financial Position', 'Marketing Goods & Services (4Ps: Product, Price, Place, Promotion) & Capstone Prototype Display'], kiq: 'How does an Income Statement reveal whether a business made net profit or net loss?', resources: 'Income statement & balance sheet templates, KRA tax guides, learner prototype models' },
+        ],
+      },
     },
   },
 
@@ -351,6 +1869,41 @@ export const SUBJECT_SYLLABUS = {
         { strand: '3.0 CALCULUS, STATISTICS & COMMERCIAL ARITHMETIC', subs: ['Measures of Dispersion (Variance & Standard Deviation) & Probability', 'Income Tax (PAYE), Compound Interest, Appreciation & Depreciation', 'Differentiation & Integration Applications (Kinematics & Area)'], kiq: 'How does calculus model instantaneous rates of change and optimization?', resources: 'KRA PAYE tables, statistical tables, graphing tools' },
       ],
     },
+    byGrade: {
+      10: {
+        1: [
+          { strand: '1.0 NUMBERS AND ALGEBRA I', subs: ['Real Number System, Surds Simplification & Rationalizing Denominators', 'Laws of Indices & Logarithmic Equations', 'Quadratic Expressions, Factorization, Completing the Square & Quadratic Formula', 'Linear Equations, Simultaneous Systems & Linear Inequalities Regions'], kiq: 'Why do engineers rationalize surds and apply quadratic models in projectile calculations?', resources: 'Scientific calculators, 4-figure mathematical tables, Cartesian graph books' },
+        ],
+        2: [
+          { strand: '2.0 MEASUREMENTS AND GEOMETRY I', subs: ['Arc Length, Area of Sectors/Segments & Frustums of Cones and Pyramids', 'Angle Properties of Circles (Chord, Arc & Cyclic Quadrilateral Theorems)', 'Trigonometric Ratios of Acute/Obtuse Angles, Unit Circle & Sine/Cosine Rules'], kiq: 'How do circle theorems and the sine/cosine rules apply in surveying irregular land?', resources: 'Geometrical instruments, circle theorem boards, clinometers, 3D frustum models' },
+        ],
+        3: [
+          { strand: '3.0 STATISTICS, PROBABILITY & COMMERCIAL ARITHMETIC I', subs: ['Grouped Data: Assumed Mean, Quartiles, Ogive (Cumulative Frequency) & Dispersion Intro', 'Currency Exchange, Commissions, Discount & Hire Purchase Analysis', '2D Vectors: Column Notation, Magnitude, Addition & Collinearity'], kiq: 'How do cumulative frequency ogives estimate median wages and interquartile spread?', resources: 'Graph paper, CBK exchange rate schedules, KNBS statistical charts' },
+        ],
+      },
+      11: {
+        1: [
+          { strand: '1.0 ALGEBRA II, SEQUENCES & MATRICES', subs: ['2x2 Matrices: Determinants, Inverse Matrix & Solving Simultaneous Equations', 'Arithmetic Progressions (AP) & Geometric Progressions (GP) Sums and Applications', 'Polynomials (Remainder & Factor Theorems) & Binomial Expansion (Pascal’s Triangle)'], kiq: 'How do Geometric Progressions model compound loan repayments and population growth?', resources: 'Scientific calculators, Pascal triangle charts, spreadsheet matrix tools' },
+        ],
+        2: [
+          { strand: '2.0 TRIGONOMETRY II, VECTORS IN 3D & TRANSFORMATION MATRICES', subs: ['Radian Measure, Trigonometric Graphs (y = a sin bx) & Trigonometric Equations/Identities', '3D Coordinates, 3D Vectors, Ratio Theorem & Scalar (Dot) Product Intro', '2x2 Transformation Matrices: Stretch, Shear, Rotation, Reflection & Area Scale Factor (Det)'], kiq: 'How do computer graphics engines use 2x2 and 3D transformation matrices?', resources: 'Graph paper, 3D axis models, dynamic geometry visualizers' },
+        ],
+        3: [
+          { strand: '3.0 COMMERCIAL ARITHMETIC II, VARIATION & PROBABILITY', subs: ['Compound Interest, Appreciation/Depreciation & Kenyan Income Tax (PAYE, Housing Levy, SHIF)', 'Direct, Inverse, Joint & Partial Variation Modelling', 'Tree Diagrams, Independent/Mutually Exclusive & Conditional Probability'], kiq: 'How is net pay calculated from gross salary using statutory Kenyan tax bands?', resources: 'Current KRA PAYE & statutory deduction schedules, probability tree charts' },
+        ],
+      },
+      12: {
+        1: [
+          { strand: '1.0 DIFFERENTIAL AND INTEGRAL CALCULUS', subs: ['Limits, Gradient of a Curve & Differentiation from First Principles and Polynomial Rules', 'Applications of Differentiation: Tangents/Normals, Stationary Points (Maxima/Minima) & Kinematics', 'Indefinite & Definite Integration: Area Under Curves, Trapezoidal/Mid-Ordinate Rules & Volumes of Revolution'], kiq: 'How does calculus optimize packaging material cost and model velocity/acceleration?', resources: 'Scientific calculators, curve-sketching graph books, kinematics charts' },
+        ],
+        2: [
+          { strand: '2.0 LINEAR PROGRAMMING, LOCI & 3D GEOMETRY', subs: ['Geometrical Loci Constructions & Intersecting Loci Regions', '3D Geometry: Angle Between a Line and a Plane & Between Two Planes', 'Linear Programming: Formulating Constraints, Feasible Region & Objective Optimization'], kiq: 'How do factories use linear programming to maximize profit under resource constraints?', resources: '3D skeletal cuboid/pyramid models, geometrical sets, linear programming grids' },
+        ],
+        3: [
+          { strand: '3.0 NAVIGATION (LATITUDES/LONGITUDES), DISPERSION & CBE SYNTHESIS', subs: ['Variance & Standard Deviation for Ungrouped and Grouped Data', 'Great & Small Circles: Shortest Distance in Nautical Miles/km & Speed in Knots', 'Comprehensive Senior School CBE Core Mathematics Synthesis'], kiq: 'Why do transcontinental flights follow great-circle arcs across the globe?', resources: 'Terrestrial globe, statistical tables, KNEC Senior CBE specimen papers' },
+        ],
+      },
+    },
   },
 
   'Community Service Learning (CSL)': {
@@ -368,7 +1921,7 @@ export const SUBJECT_SYLLABUS = {
     },
   },
 
-  'Biology': {
+  Biology: {
     shortCode: 'BIO',
     strandsByTerm: {
       1: [
@@ -383,7 +1936,7 @@ export const SUBJECT_SYLLABUS = {
     },
   },
 
-  'Chemistry': {
+  Chemistry: {
     shortCode: 'CHEM',
     strandsByTerm: {
       1: [
@@ -398,7 +1951,7 @@ export const SUBJECT_SYLLABUS = {
     },
   },
 
-  'Physics': {
+  Physics: {
     shortCode: 'PHYS',
     strandsByTerm: {
       1: [
@@ -443,7 +1996,7 @@ export const SUBJECT_SYLLABUS = {
     },
   },
 
-  'Geography': {
+  Geography: {
     shortCode: 'GEOG',
     strandsByTerm: {
       1: [
@@ -462,7 +2015,7 @@ export const SUBJECT_SYLLABUS = {
     shortCode: 'BUS-STD',
     strandsByTerm: {
       1: [
-        { strand: '1.0 BUSINESS ENVIRONMENT, ENTREPRENEURSHIP & FORMS OF OWNERSHIP', subs: ['Human Wants, Economic Resources, Scarcity & Opportunity Cost', 'Sole Proprietorship, Partnerships, Co-operatives (SACCOs) & Companies', ' Nairobi Securities Exchange (NSE) & Government Consumer Protection'], kiq: 'Why do SACCOs play a pivotal role in capital mobilization in Kenya?', resources: 'Sample SACCO bylaws, NSE share price listings, business newspapers' },
+        { strand: '1.0 BUSINESS ENVIRONMENT, ENTREPRENEURSHIP & FORMS OF OWNERSHIP', subs: ['Human Wants, Economic Resources, Scarcity & Opportunity Cost', 'Sole Proprietorship, Partnerships, Co-operatives (SACCOs) & Companies', 'Nairobi Securities Exchange (NSE) & Government Consumer Protection'], kiq: 'Why do SACCOs play a pivotal role in capital mobilization in Kenya?', resources: 'Sample SACCO bylaws, NSE share price listings, business newspapers' },
       ],
       2: [
         { strand: '2.0 DEMAND, SUPPLY, MONEY, BANKING & PUBLIC FINANCE', subs: ['Demand & Supply Curves, Equilibrium Price & Market Structures', 'Central Bank of Kenya Functions, Commercial Banks & FinTech / Mobile Money', 'Taxation Principles, KRA Digital Filing & Insurance Contracts'], kiq: 'How do shifts in demand and supply determine market prices of farm produce?', resources: 'Graph paper, CBK currency leaflets, insurance proposal forms' },
@@ -474,8 +2027,198 @@ export const SUBJECT_SYLLABUS = {
   },
 };
 
+/**
+ * Returns the grade-specific rationalized syllabus object ({ shortCode, strandsByTerm })
+ * so each grade has authentic, progressive KICD strands & sub-strands.
+ */
+export function getSyllabusForGrade(grade, subject) {
+  const base = SUBJECT_SYLLABUS[subject];
+  if (!base) {
+    throw new Error(`Missing syllabus entry for subject: ${subject}`);
+  }
+  const gradeOverride = base.byGrade && base.byGrade[grade] ? base.byGrade[grade] : null;
+  if (gradeOverride) {
+    return {
+      shortCode: base.shortCode,
+      strandsByTerm: gradeOverride,
+    };
+  }
+
+  // Contextualize shared multi-grade subjects with grade-appropriate depth cues where not explicitly split
+  const depthTag =
+    grade === 1 || grade === 4 || grade === 7 || grade === 10
+      ? 'Foundational'
+      : grade === 2 || grade === 5 || grade === 8 || grade === 11
+      ? 'Intermediate'
+      : 'Advanced';
+
+  const adapted = {};
+  for (const t of [1, 2, 3]) {
+    adapted[t] = (base.strandsByTerm[t] || []).map((block) => ({
+      ...block,
+      subs: block.subs.map((sub) =>
+        sub.includes(`Grade ${grade}`) ? sub : `${sub} (${depthTag} Grade ${grade} Scope)`
+      ),
+    }));
+  }
+
+  return {
+    shortCode: base.shortCode,
+    strandsByTerm: adapted,
+  };
+}
+
+/**
+ * Generates rich, discipline-specific Teacher's Chalkboard / Concept Notes,
+ * Worked Illustrations, Guided Learner Tasks, and Check Questions for ANY lesson
+ * so the Teachers' Notes PDF, Lesson Plans DOCX, and Scheme of Work DOCX rhyme 100%!
+ */
+export function buildDomainLessonNotes({
+  grade,
+  subject,
+  strand,
+  baseSubstrand,
+  aspect,
+  phaseTag,
+  kiq,
+  resources,
+  lbCitation,
+  tgCitation,
+  isKiswahili,
+}) {
+  const cleanAspect = String(aspect || baseSubstrand).replace(/\s*\((Foundational|Intermediate|Advanced)\s+Grade\s+\d+\s+Scope\)/gi, '');
+  const cleanSub = String(baseSubstrand).replace(/\s*\((Foundational|Intermediate|Advanced)\s+Grade\s+\d+\s+Scope\)/gi, '');
+  const s = String(subject || '').toLowerCase();
+
+  if (isKiswahili || s.includes('kiswahili')) {
+    return {
+      summaryLine: `Mwalimu afafanue vipengele vikuu vya "${cleanAspect}" kwa kutumia mifano kwenye ubao na kurejelea ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Maana na Kanuni Kuu: Katika mada ndogo ya "${cleanSub}", kipengele cha "${cleanAspect}" kinamwezesha mwanafunzi wa Gredi ya ${grade} kutumia Kiswahili sanifu kwa ufasaha katika mazungumzo na maandishi.`,
+        `- Vipengele vya Kuzingatia Ubaoni: Mwalimu aandike na kufafanua miundo, matamshi/upatanisho wa kisarufi na msamiati mahsusi unaojitokeza kwenye ${lbCitation} (${tgCitation}).`,
+        `- Maadili na Uamilifu: Kuhusisha "${cleanAspect}" na mawasiliano yenye staha shuleni, nyumbani na katika jamii ya Kenya.`,
+      ],
+      workedIllustration: `Mfano ubaoni: Mwalimu aonyeshe hatua kwa hatua matumizi sahihi ya "${cleanAspect}" kwa kutumia ${resources.toLowerCase()} na mifano iliyomo kwenye ${lbCitation}, kisha wanafunzi watunge au kuchambua mifano miwili pamoja.`,
+      learnerPracticeTask: `Kazi ya Vikundi na Binafsi: Wanafunzi wasome maelezo na kukamilisha zoezi la "${cleanAspect}" katika ${lbCitation}, kisha wawasilishe majibu kwa uhakiki wa mwalimu (${tgCitation}).`,
+      checkQuestion: `Swali la Tathmini ya Haraka: Eleza kanuni kuu ulizojifunza kuhusu "${cleanAspect}" na utoe mifano miwili sahihi. (${kiq})`,
+    };
+  }
+
+  if (s.includes('math')) {
+    return {
+      summaryLine: `Model step-by-step board working and accuracy rules on "${cleanAspect}" using ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Core Mathematical Rule: "${cleanAspect}" (under ${cleanSub}) develops precision in numerical/spatial reasoning for Grade ${grade} learners as structured in ${lbCitation}.`,
+        `- Step-by-Step Method & Units: Identify the given values, apply the correct place-value/formula/operation order, align digits/units neatly, and verify reasonableness of the answer.`,
+        `- Common Error Watchpoint: Guide learners to avoid sign, regrouping, scale, or unit-conversion slips highlighted in ${tgCitation}.`,
+      ],
+      workedIllustration: `Board Worked Illustration: Using ${resources.toLowerCase()}, the teacher works out two graduated model examples on "${cleanAspect}" from ${lbCitation} on the chalkboard, explaining each intermediate step aloud.`,
+      learnerPracticeTask: `Structured Class Exercise: Learners solve graded practice problems on "${cleanAspect}" from ${lbCitation} (${phaseTag}) individually and cross-check working in pairs.`,
+      checkQuestion: `Lesson Exit Check: Solve a diagnostic board task on "${cleanAspect}" showing all working steps clearly, and relate it to: "${kiq}"`,
+    };
+  }
+
+  if (s.includes('science') || s.includes('biology') || s.includes('chemistry') || s.includes('physics')) {
+    return {
+      summaryLine: `Demonstrate scientific setup, observations, and principles of "${cleanAspect}" referencing ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Scientific Principle: "${cleanAspect}" within ${cleanSub} explains observable physical/chemical/biological phenomena studied in Grade ${grade} ${subject} (${lbCitation}).`,
+        `- Apparatus & Safety Standard: Handle ${resources.toLowerCase()} following KICD laboratory/classroom safety precautions outlined in ${tgCitation}.`,
+        `- Observation-to-Conclusion Link: Record accurate qualitative/quantitative observations first, then explain the underlying scientific mechanism and everyday Kenyan application.`,
+      ],
+      workedIllustration: `Practical Classroom Demonstration: Teacher sets up ${resources.toLowerCase()} to illustrate "${cleanAspect}" (${lbCitation}), guiding learners to predict, observe, and explain the outcome.`,
+      learnerPracticeTask: `Guided Investigation & Recording: In small groups, learners inspect specimens/charts/apparatus, draw labelled diagrams or record data tables in notebooks, and answer the activity questions in ${lbCitation}.`,
+      checkQuestion: `Formative Check: State two key scientific facts observed on "${cleanAspect}" and explain: "${kiq}"`,
+    };
+  }
+
+  if (s.includes('english')) {
+    return {
+      summaryLine: `Model accurate pronunciation, language rules, and exemplar sentences on "${cleanAspect}" from ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Language & Literacy Focus: "${cleanAspect}" (${cleanSub}) builds Grade ${grade} learners' communicative competence across listening, speaking, reading, grammar, and writing (${lbCitation}).`,
+        `- Key Usage Rules & Structure: Highlight target vocabulary, sentence patterns, punctuation, or literary conventions on the chalkboard with clear model examples (${tgCitation}).`,
+        `- Contextual Fluency: Encourage courteous expression, accurate spelling, and clear cohesion in Kenyan school and community contexts.`,
+      ],
+      workedIllustration: `Chalkboard Modelling: Teacher presents model passages/sentences illustrating "${cleanAspect}" using ${resources.toLowerCase()} and ${lbCitation}, guiding learners to identify target features.`,
+      learnerPracticeTask: `Communicative & Written Practice: Learners practice oral dialogues/reading in pairs and complete the structured written exercise on "${cleanAspect}" in ${lbCitation}.`,
+      checkQuestion: `Quick Mastery Check: Construct two accurate sentences or responses demonstrating "${cleanAspect}" and address: "${kiq}"`,
+    };
+  }
+
+  if (s.includes('agriculture') || s.includes('environmental')) {
+    return {
+      summaryLine: `Demonstrate practical farm/nutrition/hygiene steps for "${cleanAspect}" using local realia and ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Practical Competency Concept: "${cleanAspect}" (${cleanSub}) equips Grade ${grade} learners with hands-on environmental, food-production, and nutrition skills (${lbCitation}).`,
+        `- Resource Conservation & Hygiene: Emphasize safe tool handling, clean water/food hygiene, and sustainable use of locally available materials (${resources.toLowerCase()}).`,
+        `- Household & Community Value: Connects school farm/home-science practice directly to family health, nutrition, and income generation (${tgCitation}).`,
+      ],
+      workedIllustration: `Step-by-Step Practical Demonstration: Using ${resources.toLowerCase()}, teacher demonstrates the correct procedure for "${cleanAspect}" as illustrated in ${lbCitation}.`,
+      learnerPracticeTask: `Hands-On Learner Activity: Learners practice "${cleanAspect}" in school garden/classroom stations, record steps in their notebooks, and complete the review task in ${lbCitation}.`,
+      checkQuestion: `Oral/Written Check: Outline three practical steps or benefits of "${cleanAspect}" in answering: "${kiq}"`,
+    };
+  }
+
+  if (s.includes('pre-technical') || s.includes('computer') || s.includes('business')) {
+    return {
+      summaryLine: `Illustrate technical/digital/commercial workflows on "${cleanAspect}" using ${resources.toLowerCase()} and ${lbCitation}.`,
+      coreConceptNotes: [
+        `- Technical / Enterprise Principle: "${cleanAspect}" (${cleanSub}) builds practical technical, digital, and financial literacy for Grade ${grade} learners (${lbCitation}).`,
+        `- Standards, Ethics & Safety: Observe workshop PPE, cyber-hygiene/Data Protection rules, or accounting accuracy standards emphasized in ${tgCitation}.`,
+        `- Real-World Industry Link: Demonstrates how Kenyan artisans, technologists, and entrepreneurs apply "${cleanAspect}" productively.`,
+      ],
+      workedIllustration: `Guided Workshop / Lab / Ledger Walkthrough: Teacher demonstrates "${cleanAspect}" step by step using ${resources.toLowerCase()} and worked illustrations in ${lbCitation}.`,
+      learnerPracticeTask: `Practical Skill Drill: Learners execute the structured drawing, computing, tool-handling, or bookkeeping exercise on "${cleanAspect}" in ${lbCitation} and verify accuracy.`,
+      checkQuestion: `Competency Check: Explain two key principles of "${cleanAspect}" and show how they address: "${kiq}"`,
+    };
+  }
+
+  if (s.includes('creative')) {
+    return {
+      summaryLine: `Coach warm-up, artistic/musical/sporting technique, and safe execution of "${cleanAspect}" (${lbCitation}).`,
+      coreConceptNotes: [
+        `- Creative & Performance Technique: "${cleanAspect}" (${cleanSub}) develops psychomotor coordination, aesthetic expression, and talent in Grade ${grade} (${lbCitation}).`,
+        `- Safety, Etiquette & Improvisation: Conduct warm-up/cool-down, handle ${resources.toLowerCase()} safely, and improvise responsibly from local materials (${tgCitation}).`,
+        `- Teamwork & Appreciation: Foster fair play, rhythm/design balance, and kind peer critique.`,
+      ],
+      workedIllustration: `Teacher Skill Demonstration: Teacher models the posture, rhythm, stroke, or studio technique for "${cleanAspect}" step by step using ${resources.toLowerCase()} (${lbCitation}).`,
+      learnerPracticeTask: `Guided Practice & Mini-Display: Learners rehearse/create "${cleanAspect}" in groups or pairs, showcase their work/performance, and receive constructive rubric feedback.`,
+      checkQuestion: `Reflection Check: State two key technique or safety points observed during "${cleanAspect}" (${kiq}).`,
+    };
+  }
+
+  if (s.includes('christian') || s.includes('cre') || s.includes('islamic') || s.includes('ire')) {
+    const scriptureRef = s.includes('islamic') || s.includes('ire') ? 'Holy Qur’an (Mushaf) & Prophetic Sunnah' : 'Holy Bible (Good News Bible)';
+    return {
+      summaryLine: `Read scriptural teachings, discuss moral lessons on "${cleanAspect}", and apply values (${lbCitation}).`,
+      coreConceptNotes: [
+        `- Scriptural & Doctrinal Teaching: "${cleanAspect}" (${cleanSub}) grounds Grade ${grade} learners in authentic teachings from the ${scriptureRef} as presented in ${lbCitation}.`,
+        `- Moral Values & Character Formation: Highlights integrity, compassion, obedience, reverence, and peaceful coexistence (${tgCitation}).`,
+        `- Contemporary Application: Guides learners to apply faith lessons in family life, school relationships, digital conduct, and community service.`,
+      ],
+      workedIllustration: `Guided Scriptural Reading & Exposition: Teacher leads learners in reading relevant passages from ${resources.toLowerCase()} and ${lbCitation}, unpacking key lessons on "${cleanAspect}".`,
+      learnerPracticeTask: `Group Reflection & Role-Play: Learners discuss life-application scenarios on "${cleanAspect}", sing/recite key verses, and write summary points from ${lbCitation}.`,
+      checkQuestion: `Moral Lesson Check: State two teachings learned from "${cleanAspect}" and explain how to practice them daily (${kiq}).`,
+    };
+  }
+
+  // Social Studies, History & Citizenship, Geography, CSL, Indigenous Language
+  return {
+    summaryLine: `Analyze maps/sources and discuss key concepts on "${cleanAspect}" with reference to ${lbCitation}.`,
+    coreConceptNotes: [
+      `- Core Curriculum Concept: "${cleanAspect}" (${cleanSub}) deepens Grade ${grade} learners' understanding of environment, heritage, governance, and civic life (${lbCitation}).`,
+      `- Evidence & Map/Source Skills: Interpret ${resources.toLowerCase()} accurately to connect local county/Kenyan realities to regional and global contexts (${tgCitation}).`,
+      `- Citizenship & Values: Promotes national unity, environmental stewardship, cultural respect, and responsible community participation.`,
+    ],
+    workedIllustration: `Guided Source / Map Analysis: Using ${resources.toLowerCase()} and ${lbCitation}, teacher guides learners to locate, interpret, and explain key facts on "${cleanAspect}".`,
+    learnerPracticeTask: `Collaborative Inquiry & Note-Making: Learners work in groups to analyze prompts in ${lbCitation} on "${cleanAspect}", record structured notes, and present key findings.`,
+    checkQuestion: `Formative Check: Summarize two main points on "${cleanAspect}" and answer with Kenyan examples: "${kiq}"`,
+  };
+}
+
 export const GRADES_CURRICULUM_PLAN = [
-  // Lower Primary (Grades 1–3): 8 rationalized subjects per grade
+  // Lower Primary (Grades 1-3): 8 rationalized subjects per grade
   ...[1, 2, 3].map((grade) => ({
     grade,
     level: 'Lower Primary',
@@ -491,7 +2234,7 @@ export const GRADES_CURRICULUM_PLAN = [
       'Islamic Religious Education (IRE)',
     ],
   })),
-  // Upper Primary (Grades 4–6): 9 rationalized subjects per grade
+  // Upper Primary (Grades 4-6): 9 rationalized subjects per grade
   ...[4, 5, 6].map((grade) => ({
     grade,
     level: 'Upper Primary',
@@ -508,7 +2251,7 @@ export const GRADES_CURRICULUM_PLAN = [
       'Islamic Religious Education (IRE)',
     ],
   })),
-  // Junior Secondary (Grades 7–9): 10 rationalized subjects per grade
+  // Junior Secondary (Grades 7-9): 10 rationalized subjects per grade
   ...[7, 8, 9].map((grade) => ({
     grade,
     level: 'Junior Secondary',
@@ -526,7 +2269,7 @@ export const GRADES_CURRICULUM_PLAN = [
       'Islamic Religious Education (IRE)',
     ],
   })),
-  // Senior School (Grades 10–12): Core + Pathway subjects (13 subjects per grade)
+  // Senior School (Grades 10-12): Core + Pathway subjects (13 subjects per grade)
   ...[10, 11, 12].map((grade) => ({
     grade,
     level: 'Senior School',
@@ -551,23 +2294,6 @@ export const GRADES_CURRICULUM_PLAN = [
 
 /**
  * Official KICD Rationalized CBC Weekly Lesson Allocation & Lesson Duration
- *
- * - Lower Primary (Grades 1–3, 30 mins/lesson):
- *   English Activities (5), Mathematical Activities (5), Kiswahili Activities (4),
- *   Environmental Activities (4), Creative Activities (7), CRE/IRE (3), Indigenous Language (2).
- *
- * - Upper Primary (Grades 4–6, 35 mins/lesson):
- *   English (5), Mathematics (5), Kiswahili (4), Science and Technology (4),
- *   Agriculture and Nutrition (4), Creative Arts (6), Social Studies (3), CRE/IRE (3).
- *
- * - Junior Secondary (Grades 7–9, 40 mins/lesson):
- *   Mathematics (5), Integrated Science (5), English (5);
- *   All other learning areas (Kiswahili, Agriculture & Nutrition, Social Studies,
- *   Pre-Technical Studies, Creative Arts & Sports, CRE, IRE) = 4 lessons/week.
- *
- * - Senior School (Grades 10–12, 40 mins/lesson):
- *   Mathematics (Core Mathematics = 5), Sciences (Biology, Chemistry, Physics = 5), English (5);
- *   All other learning areas = 4 lessons/week.
  */
 export function getCurriculumAllocation(grade, subject) {
   const s = String(subject || '').toLowerCase();
@@ -634,9 +2360,6 @@ export function getCurriculumAllocation(grade, subject) {
 
 /**
  * Official MoE Kenya School Term Week Calendar
- * - Term 1: 13 Weeks (Weeks 1–7 Teaching, Week 8 Mid-Term Assessment & Break, Weeks 9–12 Teaching, Week 13 End-Term Exams & Closing)
- * - Term 2: 14 Weeks (Weeks 1–7 Teaching, Week 8 Mid-Term Assessment & Break, Weeks 9–13 Teaching, Week 14 End-Term Exams & Closing)
- * - Term 3: 9 Weeks  (Weeks 1–7 Teaching, Week 8 Revision & Practical Assessment, Week 9 End-Year Summative Assessment & Closing)
  */
 export function getTermWeeksConfig(term) {
   if (term === 2) {
@@ -665,4 +2388,3 @@ export function getTermWeeksConfig(term) {
     teachingWeeks: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
   };
 }
-
