@@ -21,7 +21,28 @@ import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
 import ResourceCard, { type ResourceItem } from '@/components/ResourceCard';
 import PreviewModal from '@/components/PreviewModal';
 import WelcomeAnimation from '@/components/WelcomeAnimation';
-import { getLevelForGrade, normalizeCategory } from '@/lib/material-utils';
+import EducationUpdatesHub from '@/components/EducationUpdatesHub';
+import {
+  ALL_GRADE_KEYS,
+  formatGradeLabel,
+  getGradeSortRank,
+  getLevelForGrade,
+  getResourceGradeKey,
+  matchesExamSubFilter,
+  normalizeCategory,
+  type ExamSubFilter,
+} from '@/lib/material-utils';
+
+const EXAM_FILTER_OPTIONS: Array<{ key: ExamSubFilter; label: string }> = [
+  { key: 'ALL', label: 'All Assessments' },
+  { key: 'OPENER', label: 'Opener Exams' },
+  { key: 'MIDTERM', label: 'Mid-Term Exams' },
+  { key: 'ENDTERM', label: 'End-Term Exams' },
+  { key: 'KPSEA', label: 'KPSEA (Grade 6 Past & Trials)' },
+  { key: 'KJSEA', label: 'KJSEA (Grade 9 Past & Trials)' },
+  { key: 'KEYA', label: 'KEYA (Grade 3 SBA)' },
+  { key: 'SENIOR_TRIAL', label: 'Senior School Trials' },
+];
 
 const PAGE_SIZE = 36;
 const DEFAULT_GROUP_PREVIEW = 8;
@@ -51,6 +72,7 @@ export default function HomePage() {
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTerm, setSelectedTerm] = useState('All');
+  const [examSubFilter, setExamSubFilter] = useState<ExamSubFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
@@ -76,6 +98,8 @@ export default function HomePage() {
   const [checkoutMessage, setCheckoutMessage] = useState('');
   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [docxDownloadUrl, setDocxDownloadUrl] = useState<string | null>(null);
+  const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<
     'IDLE' | 'PENDING' | 'COMPLETED' | 'FAILED'
   >('IDLE');
@@ -139,13 +163,13 @@ export default function HomePage() {
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
     setExpandedAreaCounts({});
-  }, [selectedGrade, selectedSubject, selectedCategory, selectedTerm, searchQuery]);
+  }, [selectedGrade, selectedSubject, selectedCategory, selectedTerm, examSubFilter, searchQuery]);
 
   // Dynamic subject options scoped to selected Grade
   const availableSubjects = useMemo(() => {
     const set = new Set<string>();
     for (const r of resources) {
-      if (selectedGrade === 'All' || r.grade.toString() === selectedGrade) {
+      if (selectedGrade === 'All' || getResourceGradeKey(r) === selectedGrade) {
         if (r.subject) set.add(r.subject);
       }
     }
@@ -177,8 +201,10 @@ export default function HomePage() {
           if (data.status === 'COMPLETED' && data.downloadUrl) {
             setPaymentStatus('COMPLETED');
             setDownloadUrl(data.downloadUrl);
+            setDocxDownloadUrl(data.docxDownloadUrl || data.downloadUrl);
+            setPdfDownloadUrl(data.pdfDownloadUrl || data.downloadUrl);
             setCheckoutMessage(
-              'Payment verified! Click below to download your curriculum document.'
+              'Payment verified! Download BOTH your Editable Word (.DOCX) and Print-Ready (.PDF) copies below.'
             );
             clearInterval(interval);
           } else if (data.status === 'FAILED') {
@@ -202,8 +228,9 @@ export default function HomePage() {
     const q = searchQuery.trim().toLowerCase();
     return resources
       .filter((item) => {
+        const gKey = getResourceGradeKey(item);
         const matchGrade =
-          selectedGrade === 'All' || item.grade.toString() === selectedGrade;
+          selectedGrade === 'All' || gKey === selectedGrade;
         const matchSubj =
           selectedSubject === 'All' || item.subject === selectedSubject;
         const matchTerm =
@@ -211,6 +238,7 @@ export default function HomePage() {
         const matchSearch =
           !q ||
           item.title.toLowerCase().includes(q) ||
+          gKey.toLowerCase().includes(q) ||
           (item.subject || '').toLowerCase().includes(q) ||
           (item.category || '').toLowerCase().includes(q);
         return matchGrade && matchSubj && matchTerm && matchSearch;
@@ -220,7 +248,9 @@ export default function HomePage() {
         const aIsDesign = a.term === 0 ? 1 : 0;
         const bIsDesign = b.term === 0 ? 1 : 0;
         if (aIsDesign !== bIsDesign) return aIsDesign - bIsDesign;
-        if (a.grade !== b.grade) return a.grade - b.grade;
+        const rankA = getGradeSortRank(getResourceGradeKey(a));
+        const rankB = getGradeSortRank(getResourceGradeKey(b));
+        if (rankA !== rankB) return rankA - rankB;
         const subjCmp = (a.subject || '').localeCompare(b.subject || '');
         if (subjCmp !== 0) return subjCmp;
         return (a.term || 0) - (b.term || 0);
@@ -228,31 +258,40 @@ export default function HomePage() {
   }, [resources, selectedGrade, selectedSubject, selectedTerm, searchQuery]);
 
   const filteredItems = useMemo(() => {
-    if (selectedCategory === 'All') return baseFilteredItems;
-    return baseFilteredItems.filter(
-      (item) => normalizeCategory(item.category) === selectedCategory
-    );
-  }, [baseFilteredItems, selectedCategory]);
+    return baseFilteredItems.filter((item) => {
+      const matchCat =
+        selectedCategory === 'All' ||
+        normalizeCategory(item.category) === selectedCategory;
+      const matchExam = matchesExamSubFilter(item, examSubFilter);
+      return matchCat && matchExam;
+    });
+  }, [baseFilteredItems, selectedCategory, examSubFilter]);
 
   const groupedAreas = useMemo(() => {
     return MATERIAL_AREAS.map((area) => {
       const items = baseFilteredItems.filter(
-        (r) => normalizeCategory(r.category) === area.filterCategory
+        (r) =>
+          normalizeCategory(r.category) === area.filterCategory &&
+          (area.filterCategory !== 'Revision Papers & Exams' ||
+            matchesExamSubFilter(r, examSubFilter))
       );
       return { area, items };
     });
-  }, [baseFilteredItems]);
+  }, [baseFilteredItems, examSubFilter]);
 
   const displayedItems = filteredItems.slice(0, visibleCount);
 
   const singleAreaByGrade = useMemo(() => {
-    const map = new Map<number, ResourceItem[]>();
+    const map = new Map<string, ResourceItem[]>();
     for (const item of displayedItems) {
-      const list = map.get(item.grade) || [];
+      const gKey = getResourceGradeKey(item);
+      const list = map.get(gKey) || [];
       list.push(item);
-      map.set(item.grade, list);
+      map.set(gKey, list);
     }
-    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
+    return Array.from(map.entries()).sort(
+      (a, b) => getGradeSortRank(a[0]) - getGradeSortRank(b[0])
+    );
   }, [displayedItems]);
 
   const buildOrderWhatsAppHref = (receipt: string) => {
@@ -372,6 +411,8 @@ export default function HomePage() {
     setCheckoutMessage('');
     setCheckoutRequestId(null);
     setDownloadUrl(null);
+    setDocxDownloadUrl(null);
+    setPdfDownloadUrl(null);
     setPaymentStatus('IDLE');
     setCheckoutTab('STK');
   };
@@ -384,6 +425,8 @@ export default function HomePage() {
     setCheckoutMessage('');
     setCheckoutRequestId(null);
     setDownloadUrl(null);
+    setDocxDownloadUrl(null);
+    setPdfDownloadUrl(null);
     setPaymentStatus('IDLE');
   };
 
@@ -405,8 +448,8 @@ export default function HomePage() {
               CBC Kenya Resource Hub
             </h1>
             <p className="text-emerald-100 text-sm mt-1">
-              Rationalized Schemes of Work, Lesson Plans, Notes, Exams, Records
-              of Work &amp; Designs (Grade 1–12 • Terms 1, 2 &amp; 3)
+              Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term
+              Exams, KPSEA/KJSEA Trials &amp; Designs (PP1–Grade 12 • Editable DOCX + PDF)
             </p>
           </div>
           <div className="flex items-center gap-2.5">
@@ -434,14 +477,27 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
+        <EducationUpdatesHub
+          onQuickJump={({ grade, term, category, examSubFilter: exFilter }) => {
+            if (grade !== undefined) setSelectedGrade(grade);
+            if (term !== undefined) setSelectedTerm(term);
+            if (category !== undefined) setSelectedCategory(category);
+            if (exFilter !== undefined) setExamSubFilter(exFilter);
+          }}
+        />
+
         {/* 1. Category Cards Showcase with Live Counts */}
         <CategoryGrid
           resources={resources}
           selectedCategory={selectedCategory}
-          onSelectCategory={(cat) => setSelectedCategory(cat)}
+          onSelectCategory={(cat) => {
+            setSelectedCategory(cat);
+            if (cat !== 'Revision Papers & Exams') setExamSubFilter('ALL');
+          }}
         />
 
-        {/* 2. Quick Grade Selector Pills (Schemes.co.ke style) */}
+        {/* 2. Quick Grade Selector Pills (PP1, PP2 & Grades 1–12) */}
         <div
           id="materials-Catalog"
           className="flex items-center gap-2 overflow-x-auto pb-2 mt-6 no-scrollbar"
@@ -455,9 +511,9 @@ export default function HomePage() {
                 : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-400'
             }`}
           >
-            All Grades (1–12)
+            All Levels (PP1–G12)
           </button>
-          {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((g) => (
+          {ALL_GRADE_KEYS.map((g) => (
             <button
               key={g}
               type="button"
@@ -468,7 +524,7 @@ export default function HomePage() {
                   : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-400'
               }`}
             >
-              Grade {g}
+              {formatGradeLabel(g)}
             </button>
           ))}
         </div>
@@ -501,11 +557,15 @@ export default function HomePage() {
                 onChange={(e) => setSelectedGrade(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="All">All Grades (1 to 12)</option>
+                <option value="All">All Levels (PP1 to Grade 12)</option>
+                <optgroup label="Pre-Primary (ECDE)">
+                  <option value="PP1">PP1 (Pre-Primary 1)</option>
+                  <option value="PP2">PP2 (Pre-Primary 2)</option>
+                </optgroup>
                 <optgroup label="Lower Primary">
                   <option value="1">Grade 1</option>
                   <option value="2">Grade 2</option>
-                  <option value="3">Grade 3</option>
+                  <option value="3">Grade 3 (KEYA)</option>
                 </optgroup>
                 <optgroup label="Upper Primary">
                   <option value="4">Grade 4</option>
@@ -590,7 +650,10 @@ export default function HomePage() {
           <div className="pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
             <button
               type="button"
-              onClick={() => setSelectedCategory('All')}
+              onClick={() => {
+                setSelectedCategory('All');
+                setExamSubFilter('ALL');
+              }}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
                 selectedCategory === 'All'
                   ? 'bg-slate-900 text-white shadow-sm'
@@ -605,9 +668,13 @@ export default function HomePage() {
                 <button
                   key={area.id}
                   type="button"
-                  onClick={() =>
-                    setSelectedCategory(isSelected ? 'All' : area.filterCategory)
-                  }
+                  onClick={() => {
+                    const nextCat = isSelected ? 'All' : area.filterCategory;
+                    setSelectedCategory(nextCat);
+                    if (nextCat !== 'Revision Papers & Exams') {
+                      setExamSubFilter('ALL');
+                    }
+                  }}
                   className="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition"
                   style={
                     isSelected
@@ -628,6 +695,45 @@ export default function HomePage() {
               );
             })}
           </div>
+
+          {/* Assessment & National Trials Sub-Filter Strip (Opener, Mid-Term, End-Term, KPSEA, KJSEA) */}
+          <div className="pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-700 shrink-0">
+              Exams &amp; Trials:
+            </span>
+            {EXAM_FILTER_OPTIONS.map((opt) => {
+              const active =
+                selectedCategory === 'Revision Papers & Exams' &&
+                examSubFilter === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => {
+                    if (opt.key === 'ALL' && selectedCategory !== 'Revision Papers & Exams') {
+                      setSelectedCategory('Revision Papers & Exams');
+                      setExamSubFilter('ALL');
+                    } else if (active && opt.key !== 'ALL') {
+                      setExamSubFilter('ALL');
+                    } else {
+                      setSelectedCategory('Revision Papers & Exams');
+                      setExamSubFilter(opt.key);
+                      if (opt.key === 'KPSEA') setSelectedGrade('6');
+                      if (opt.key === 'KJSEA') setSelectedGrade('9');
+                      if (opt.key === 'KEYA') setSelectedGrade('3');
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap border transition ${
+                    active
+                      ? 'bg-rose-600 border-rose-600 text-white shadow-xs'
+                      : 'bg-rose-50/70 border-rose-200 text-rose-800 hover:bg-rose-100'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         {/* 4. Section Divider & Header */}
@@ -643,8 +749,8 @@ export default function HomePage() {
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               {selectedCategory === 'All'
-                ? 'Schemes of Work, Lesson Plans, Teachers’ Notes, Records of Work, Exams & Holiday/Curriculum Designs neatly organized in their respective sections'
-                : 'Organized sequentially from Grade 1 to Grade 12 across Terms 1, 2 & 3'}
+                ? 'PP1, PP2 & Grades 1–12 Schemes, Lesson Plans, Notes, Records of Work, Exams & Designs — all delivered in Editable DOCX + Print PDF'
+                : 'Organized sequentially from PP1 & PP2 through Grade 12 across Terms 1, 2 & 3'}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -652,6 +758,7 @@ export default function HomePage() {
               selectedSubject !== 'All' ||
               selectedCategory !== 'All' ||
               selectedTerm !== 'All' ||
+              examSubFilter !== 'ALL' ||
               searchQuery !== '') && (
               <button
                 type="button"
@@ -660,6 +767,7 @@ export default function HomePage() {
                   setSelectedSubject('All');
                   setSelectedCategory('All');
                   setSelectedTerm('All');
+                  setExamSubFilter('ALL');
                   setSearchQuery('');
                 }}
                 className="text-xs font-bold text-emerald-700 hover:underline"
@@ -678,7 +786,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
             <p className="text-sm font-medium">
-              Loading Grade 1–12 CBC materials from Supabase...
+              Loading PP1–Grade 12 CBC materials from Supabase...
             </p>
           </div>
         ) : filteredItems.length === 0 ? (
@@ -693,6 +801,7 @@ export default function HomePage() {
                 setSelectedSubject('All');
                 setSelectedCategory('All');
                 setSelectedTerm('All');
+                setExamSubFilter('ALL');
                 setSearchQuery('');
               }}
               className="text-xs font-bold text-emerald-700 hover:underline"
@@ -856,18 +965,18 @@ export default function HomePage() {
             })()}
 
             {/* Grade-Grouped Sections inside the Selected Area */}
-            {singleAreaByGrade.map(([gradeNum, gradeItems]) => (
+            {singleAreaByGrade.map(([gradeKey, gradeItems]) => (
               <section
-                key={gradeNum}
+                key={gradeKey}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4"
               >
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <span className="bg-emerald-700 text-white text-xs font-black px-2.5 py-1 rounded-lg">
-                      Grade {gradeNum}
+                      {formatGradeLabel(gradeKey)}
                     </span>
                     <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                      {getLevelForGrade(gradeNum)} • {selectedCategory}
+                      {getLevelForGrade(gradeKey)} • {selectedCategory}
                     </span>
                   </div>
                   <span className="text-xs font-semibold text-slate-400">
@@ -946,30 +1055,45 @@ export default function HomePage() {
 
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center mb-4">
               <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">
-                Pay Safaricom M-Pesa
+                Pay Safaricom M-Pesa • Unlocks DOCX + PDF
               </span>
               <p className="text-2xl font-black text-emerald-900">
                 KES {modalItem.price}
               </p>
+              <span className="text-[11px] font-semibold text-emerald-700">
+                Includes Editable Word (.DOCX) + Print-Ready (.PDF)
+              </span>
             </div>
 
             {paymentStatus === 'COMPLETED' && downloadUrl ? (
-              <div className="space-y-4 text-center">
+              <div className="space-y-3.5 text-center">
                 <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold text-sm">
                   <CheckCircle className="w-5 h-5" />
-                  <span>Payment Verified!</span>
+                  <span>Payment Verified! Both Formats Unlocked</span>
                 </div>
                 <p className="text-xs text-slate-600">{checkoutMessage}</p>
-                <a
-                  href={downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  download
-                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition"
-                >
-                  <Download className="w-4 h-4" />
-                  Download {modalItem.format} Document
-                </a>
+                <div className="space-y-2.5 pt-1">
+                  <a
+                    href={docxDownloadUrl || downloadUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition shadow-sm"
+                  >
+                    <Download className="w-4 h-4 shrink-0" />
+                    <span>Download Editable Word (.DOCX — Edit School Header)</span>
+                  </a>
+                  <a
+                    href={pdfDownloadUrl || downloadUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition shadow-sm"
+                  >
+                    <Download className="w-4 h-4 shrink-0" />
+                    <span>Download Print-Ready (.PDF — Instant Print / View)</span>
+                  </a>
+                </div>
               </div>
             ) : (
               <>

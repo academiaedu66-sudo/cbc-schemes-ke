@@ -28,6 +28,112 @@ export const JSS_SENIOR_PUBLISHERS = [
  * Titles, publishers, and authors match KICD's official approved lists verbatim.
  */
 export const KICD_APPROVED_COURSEBOOKS = {
+  // ================= PRE-PRIMARY (PP1 & PP2) =================
+  preprimary: {
+    'Language Activities': [
+      {
+        series: 'KLB Skillgrow Language Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood Curriculum Panel',
+      },
+      {
+        series: 'Longhorn Language Activities',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn ECDE Language Panel',
+      },
+      {
+        series: 'Oxford Little Explorers Language Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Oxford Early Years Literacy Panel',
+      },
+      {
+        series: 'Queenex Language Activities',
+        publisher: 'Queenex Publishers',
+        authors: 'Queenex Pre-Primary Authors',
+      },
+    ],
+    'Mathematical Activities': [
+      {
+        series: 'KLB Skillgrow Mathematical Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood Numeracy Panel',
+      },
+      {
+        series: 'Oxford Little Explorers Mathematical Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Oxford Early Years Numeracy Panel',
+      },
+      {
+        series: 'Longhorn Mathematical Activities',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn ECDE Mathematics Panel',
+      },
+      {
+        series: 'Moran Mathematical Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Moran Pre-Primary Panel',
+      },
+    ],
+    'Environmental Activities': [
+      {
+        series: 'KLB Skillgrow Environmental Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood Environmental Panel',
+      },
+      {
+        series: 'Longhorn Environmental Activities',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn ECDE Environmental Panel',
+      },
+      {
+        series: 'Oxford Little Explorers Environmental Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Oxford Early Years Panel',
+      },
+    ],
+    'Creative Activities': [
+      {
+        series: 'KLB Skillgrow Creative & Psychomotor Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood Creative Panel',
+      },
+      {
+        series: 'Hummingbird Creative Activities',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Catherine Simiyu & Naftali Korir',
+      },
+      {
+        series: 'Moran Creative Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Moran ECDE Creative Panel',
+      },
+    ],
+    'Christian Religious Education (CRE)': [
+      {
+        series: 'KLB Skillgrow CRE Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood CRE Panel',
+      },
+      {
+        series: 'Oxford Growing in Christ CRE Activities',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Oxford ECDE CRE Panel',
+      },
+    ],
+    'Islamic Religious Education (IRE)': [
+      {
+        series: 'KLB Skillgrow IRE Activities',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'KLB Early Childhood IRE Panel',
+      },
+      {
+        series: 'Atfaal IRE Activities',
+        publisher: 'Atfaal Publishers',
+        authors: 'Atfaal ECDE IRE Panel',
+      },
+    ],
+  },
+
   // ================= LOWER PRIMARY (GRADES 1 - 3) =================
   lower: {
     'Mathematical Activities': [
@@ -1006,7 +1112,21 @@ export const KICD_APPROVED_COURSEBOOKS = {
  * (grade, subject) cites the exact same KICD-approved books!
  */
 export function getApprovedCoursebook(grade, subject) {
-  const bandKey = grade <= 3 ? 'lower' : grade <= 6 ? 'upper' : grade <= 9 ? 'jss' : 'senior';
+  const isPP1 = grade === 'PP1' || grade === -1;
+  const isPP2 = grade === 'PP2' || grade === 0;
+  const isPrePrimary = isPP1 || isPP2;
+  const gradeLabel = isPP1 ? 'PP1' : isPP2 ? 'PP2' : `Grade ${grade}`;
+  const shortGradeLabel = isPP1 ? 'PP1' : isPP2 ? 'PP2' : `Grd ${grade}`;
+
+  const bandKey = isPrePrimary
+    ? 'preprimary'
+    : Number(grade) <= 3
+    ? 'lower'
+    : Number(grade) <= 6
+    ? 'upper'
+    : Number(grade) <= 9
+    ? 'jss'
+    : 'senior';
   const bandObj = KICD_APPROVED_COURSEBOOKS[bandKey] || {};
   const list = bandObj[subject] || [
     {
@@ -1017,33 +1137,34 @@ export function getApprovedCoursebook(grade, subject) {
   ];
 
   // Grade 3 KLB English Language Activities has exact title "KLB Lower Primary English Language Activities"
-  const primaryIdx = (grade - 1) % list.length;
+  const numericIdx = isPP1 ? 0 : isPP2 ? 1 : Math.max(0, Number(grade) - 1);
+  const primaryIdx = numericIdx % list.length;
   const rawPrimary = list[primaryIdx];
   const resolvedSeries =
-    grade === 3 && rawPrimary.series === 'KLB Visionary English Language Activities'
+    Number(grade) === 3 && rawPrimary.series === 'KLB Visionary English Language Activities'
       ? 'KLB Lower Primary English Language Activities'
       : rawPrimary.series.replace(' &实用 KICD Panel', '');
 
   const isKis = Boolean(rawPrimary.isKiswahili || String(subject).toLowerCase().includes('kiswahili'));
 
   const lbTitle = isKis
-    ? `${resolvedSeries} Kitabu cha Mwanafunzi Gredi ya ${grade}`
-    : `${resolvedSeries} Learner's Book Grade ${grade}`;
+    ? `${resolvedSeries} Kitabu cha Mwanafunzi ${isPrePrimary ? gradeLabel : `Gredi ya ${grade}`}`
+    : `${resolvedSeries} Learner's Book ${gradeLabel}`;
   const tgTitle = isKis
-    ? `${resolvedSeries} Mwongozo wa Mwalimu Gredi ya ${grade}`
-    : `${resolvedSeries} Teacher's Guide Grade ${grade}`;
+    ? `${resolvedSeries} Mwongozo wa Mwalimu ${isPrePrimary ? gradeLabel : `Gredi ya ${grade}`}`
+    : `${resolvedSeries} Teacher's Guide ${gradeLabel}`;
 
   const lbShort = isKis
-    ? `${resolvedSeries} Kitabu cha Mwanafunzi Grd ${grade}`
-    : `${resolvedSeries} LB Grd ${grade}`;
+    ? `${resolvedSeries} Kitabu cha Mwanafunzi ${shortGradeLabel}`
+    : `${resolvedSeries} LB ${shortGradeLabel}`;
   const tgShort = isKis
-    ? `${resolvedSeries} Mwongozo wa Mwalimu Grd ${grade}`
-    : `${resolvedSeries} TG Grd ${grade}`;
+    ? `${resolvedSeries} Mwongozo wa Mwalimu ${shortGradeLabel}`
+    : `${resolvedSeries} TG ${shortGradeLabel}`;
 
   const alternates = list
     .filter((_, idx) => idx !== primaryIdx)
     .slice(0, 2)
-    .map((alt) => `${alt.series} Grade ${grade} (${alt.publisher})`);
+    .map((alt) => `${alt.series} ${gradeLabel} (${alt.publisher})`);
 
   return {
     series: resolvedSeries,
@@ -1060,6 +1181,55 @@ export function getApprovedCoursebook(grade, subject) {
 }
 
 export const SUBJECT_SYLLABUS = {
+  // ================= PRE-PRIMARY (PP1 & PP2) =================
+  'Language Activities': {
+    shortCode: 'LANG-ACT',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 LISTENING AND SPEAKING', subs: ['Common Greetings & Polite Words (Please, Thank You, Excuse Me)', 'Naming Self, Family Members & Classroom Objects', 'Auditory Discrimination: Environmental & Animal Sounds'], kiq: 'How do we greet teachers, parents, and friends politely every day?', resources: 'Picture flashcards, puppets, rhyme charts, realia' },
+        { strand: '2.0 PRE-READING & 3.0 PRE-WRITING', subs: ['Book Handling, Left-to-Right Eye Tracking & Picture Reading', 'Letter Sounds (a–z) & Rhyming Action Songs', 'Proper Sitting Posture, Crayon/Pencil Grip & Scribbling/Tracing Lines'], kiq: 'How do we hold a picture book and crayon properly?', resources: 'Jumbo crayons, sand trays, alphabet sound cards, picture storybooks' },
+      ],
+      2: [
+        { strand: '1.0 ORAL EXPRESSION & VOCABULARY', subs: ['Passing Simple Oral Messages & Following Two-Step Instructions', 'Naming Body Parts, Clothes & Healthy Foods', 'News Telling & Short Storytelling Sessions'], kiq: 'Why should we listen attentively when someone is speaking?', resources: 'Body chart, fruit models, story picture sequence cards' },
+        { strand: '2.0 PHONICS & LETTER FORMATION', subs: ['Visual Discrimination: Matching Identical Pictures & Letter Shapes', 'Articulating Vowel Sounds (a, e, i, o, u) & Consonant Sounds', 'Modelling Letters With Clay & Tracing Lowercase Letters'], kiq: 'Which objects in our classroom begin with the same letter sound?', resources: 'Plasticine/clay, sandpaper letters, pocket chart, flashcards' },
+      ],
+      3: [
+        { strand: '2.0 EARLY READING READINESS', subs: ['Blending Two-Letter Syllables (ba, ma, ta, pa) & Three-Letter CVC Words', 'Reading Simple Picture Labels & Sight Words', 'Reciting Short Poems, Rhymes & Singing Games'], kiq: 'How do we join sounds together to read short words?', resources: 'Syllable wheels, CVC picture-word cards, graded ECDE readers' },
+        { strand: '3.0 WRITING READINESS', subs: ['Copying Lowercase & Capital Letters Neat & Clear', 'Drawing & Colouring Within Boundaries', 'Writing Own First Name & Copying Short Three-Letter Words'], kiq: 'How does neat colouring and tracing prepare our fingers for writing?', resources: 'Wide-ruled exercise books, stencils, name tags, coloured pencils' },
+      ],
+    },
+    byGrade: {
+      PP1: {
+        1: [
+          { strand: '1.0 LISTENING AND SPEAKING (GREETINGS & SELF)', subs: ['Time-Related Greetings (Good Morning, Good Afternoon, Goodbye)', 'Naming Self, Teacher & Friends Clearly', 'Listening to Environmental, Domestic Animal & Musical Sounds'], kiq: 'How do we greet our teacher and classmates warmly in the morning?', resources: 'Hand puppets, shakers, animal sound audio/charts, name badges' },
+          { strand: '2.0 PRE-READING & PRE-WRITING PLAY', subs: ['Turning Book Pages Gently & Picture Observation', 'Free Scribbling, Finger Painting & Sand-Tray Tracing', 'Singing Alphabet Rhymes & Recognizing Sounds a–m'], kiq: 'How do we turn pages carefully without tearing our picture books?', resources: 'Board books, sand trays, finger paints, jumbo crayons, sound charts' },
+        ],
+        2: [
+          { strand: '1.0 LISTENING, COURTESY & FAMILY', subs: ['Using Polite Words (Please, Sorry, Thank You, May I)', 'Naming Immediate Family Members & Home Utensils', 'Following Simple Classroom Action Commands'], kiq: 'When do we say "Please", "Sorry", and "Thank you" to others?', resources: 'Family picture charts, toy cups/plates, role-play corner' },
+          { strand: '2.0 VISUAL MATCHING & PATTERN TRACING', subs: ['Matching Identical Pictures, Colours & Big Shapes', 'Recognizing Sounds n–z With Picture Flashcards', 'Tracing Vertical, Horizontal, Curved & Zigzag Dotted Lines'], kiq: 'Which pictures on the chart look exactly the same?', resources: 'Matching domino cards, dotted tracing worksheets, plasticine' },
+        ],
+        3: [
+          { strand: '2.0 PICTURE STORYTELLING & VOWEL SOUNDS', subs: ['Telling Short Stories From Sequential Pictures', 'Sounding Out Vowels (a, e, i, o, u) With Songs', 'Naming Common Domestic Animals, Fruits & Colours'], kiq: 'What is happening in each picture of our classroom storybook?', resources: 'Big picture books, vowel flashcards, fruit realia, colour cards' },
+          { strand: '3.0 LETTER MODELLING & COLOURING', subs: ['Modelling Simple Letter Shapes Using Clay or Plasticine', 'Colouring Simple Everyday Shapes Within Outlines', 'Tracing & Copying Lowercase Letters Clearly'], kiq: 'How do we stay inside the lines when colouring a picture?', resources: 'Modelling clay, jumbo colouring booklets, beginner pencils' },
+        ],
+      },
+      PP2: {
+        1: [
+          { strand: '1.0 LISTENING, ETIQUETTE & NEWS TELLING', subs: ['Polite Greetings, Introductions & Classroom Turn-Taking', 'Weekend/Morning News Telling & Oral Question Answering', 'Discriminating Similar Letter Sounds & Initial Consonants'], kiq: 'How do we share news clearly while others listen politely?', resources: 'Talking stick, phonics sound wall, picture conversation posters' },
+          { strand: '2.0 PHONICS & SYLLABLES', subs: ['Articulating All Letter Sounds (a–z) Confidently', 'Joining Consonants and Vowels Into Open Syllables (ba, be, bi, bo, bu)', 'Correct Pencil Grip, Posture & Writing Lowercase Letters'], kiq: 'How do consonants and vowels join to form syllables?', resources: 'Syllable flip-charts, letter tiles, wide-ruled books, pencils' },
+        ],
+        2: [
+          { strand: '2.0 BLENDING THREE-LETTER (CVC) WORDS', subs: ['Blending & Reading Simple Three-Letter Words (cat, pot, sun, bed, pin)', 'Matching Three-Letter Words to Real Objects & Pictures', 'Vocabulary of Weather, Clothes, School & Safety'], kiq: 'How do we blend three sounds smoothly to read a word?', resources: 'CVC word-picture puzzles, pocket chart, real classroom objects' },
+          { strand: '3.0 LETTER FORMATION & COPYING WORDS', subs: ['Matching Capital Letters (A–Z) to Lowercase Letters (a–z)', 'Copying Simple Three-Letter Words With Neat Spacing', 'Drawing & Labelling Simple Familiar Items'], kiq: 'When do we write a capital letter at the start of our name?', resources: 'Upper/lowercase matching cards, name strips, ruled books' },
+        ],
+        3: [
+          { strand: '2.0 SHORT SENTENCE READING & RHYMES', subs: ['Reading Short Sight-Word Phrases & Three-Word Sentences', 'Picture Comprehension & Retelling Moral Stories in Order', 'Reciting Action Poems, Riddles & Tongue Twisters'], kiq: 'What moral lesson did we learn from today’s picture story?', resources: 'PP2 graded decodable readers, sentence strips, story props' },
+          { strand: '3.0 EARLY WRITING & GRADE 1 READINESS', subs: ['Writing Own Full First Name & Simple Dictated Syllables/CVC Words', 'Completing Simple Picture-Word Sentences', 'Neatness, Margin Alignment & Left-to-Right Writing Fluency'], kiq: 'How can we check that our words are neat and easy to read?', resources: 'Beginner exercise books, picture-word worksheets, pencils, erasers' },
+        ],
+      },
+    },
+  },
+
   // ================= LOWER PRIMARY (GRADES 1 - 3) =================
   'Mathematical Activities': {
     shortCode: 'MATH-ACT',
@@ -1078,6 +1248,34 @@ export const SUBJECT_SYLLABUS = {
       ],
     },
     byGrade: {
+      PP1: {
+        1: [
+          { strand: '1.0 CLASSIFICATION (SORTING & MATCHING)', subs: ['Sorting & Grouping Play Objects by Colour and Use', 'Matching & Pairing Everyday Objects One-to-One', 'Ordering Objects From Smallest to Largest'], kiq: 'How do we group play items of the same colour or shape together?', resources: 'Coloured bottle tops, blocks, beads, picture pairing cards' },
+          { strand: '2.0 NUMBERS (ROTE COUNTING & RECOGNITION 1–5)', subs: ['Rote Counting 1 to 10 With Action Songs', 'Counting Concrete Objects 1 to 5 Accurately', 'Recognizing & Tracing Number Symbols 1 to 5'], kiq: 'How many fingers are on one hand when we count together?', resources: 'Counting sticks, pebbles, jumbo number cards 1–5, sand trays' },
+        ],
+        2: [
+          { strand: '2.0 NUMBERS (COUNTING & VALUE 1–9)', subs: ['Rote Counting 1 to 20 With Clapping & Jumping', 'Counting & Matching Objects to Number Symbols 1 to 9', 'Making Simple Alternating Patterns With Two Colours/Shapes'], kiq: 'How do we match a group of counters to its correct number card?', resources: 'Bead strings, number flashcards 1–9, coloured blocks' },
+          { strand: '3.0 MEASUREMENT PLAY (SIDES, MASS & CAPACITY)', subs: ['Comparing Big/Small and Long/Short Concrete Objects', 'Heavy and Light Play Using Hands & See-Saw', 'Filling and Emptying Water/Sand Containers (Full & Empty)'], kiq: 'Which container holds more sand or water when we play?', resources: 'Plastic cups, small buckets, sand pit, sticks of varied lengths' },
+        ],
+        3: [
+          { strand: '3.0 DAILY ROUTINES, MONEY PLAY & SPACE', subs: ['Daily Activities: Morning, Lunchtime, Playtime & Bedtime', 'Observing Kenyan Coins in Classroom Shop Role-Play', 'Position Play: Inside/Outside, On/Under & In Front/Behind'], kiq: 'What activities do we do in the morning before coming to school?', resources: 'Daily routine charts, large coin cutouts, classroom shop corner' },
+          { strand: '4.0 SHAPES & MODELLING', subs: ['Identifying Circle, Triangle & Square Cutouts', 'Modelling Numbers 1–9 & Basic Shapes With Clay', 'Colouring & Pasting Simple Shape Collages'], kiq: 'Where can we see circles and squares around our classroom?', resources: 'Shape stencils, plasticine/clay, coloured paper cutouts, safe glue' },
+        ],
+      },
+      PP2: {
+        1: [
+          { strand: '1.0 CLASSIFICATION & PATTERNS', subs: ['Sorting & Grouping Objects by Two Attributes (Size, Shape & Colour)', 'Pairing, Matching & Ordering Up to 5 Graded Objects', 'Creating Repeating Patterns With Shapes, Beads & Colours'], kiq: 'How can we arrange objects neatly from shortest to tallest?', resources: 'Attribute blocks, sorting trays, coloured beads, strings' },
+          { strand: '2.0 NUMBERS (COUNTING, VALUE & WRITING 1–20)', subs: ['Rote Counting 1 to 50 & Counting Concrete Objects 1 to 20', 'Number Value & Matching Numerals 1 to 20', 'Writing Numerals 1 to 20 Neatly & Number Sequencing'], kiq: 'How do bundles of counters help us count up to 20 accurately?', resources: 'Counters, number line 1–20, flashcards, squared beginner books' },
+        ],
+        2: [
+          { strand: '2.0 PUTTING TOGETHER & TAKING AWAY (WITHIN 9)', subs: ['Putting Together Concrete Objects (Sums Up to 9)', 'Taking Away Concrete Objects Within 9', 'Simple Oral Picture Stories on Putting Together & Taking Away'], kiq: 'How many counters do we have altogether when we put two small groups together?', resources: 'Marbles, bottle tops, picture addition/take-away cards' },
+          { strand: '3.0 MEASUREMENT (LENGTH, MASS, CAPACITY & AREA)', subs: ['Measuring Length Using Handspans & Footsteps', 'Comparing Mass on a Simple Balance & Capacity by Counting Cups', 'Covering Surfaces Completely Using Cards/Books (Early Area)'], kiq: 'How many small cups of water fill one big jug?', resources: 'Simple beam balance, cups, jugs, flashcards for surface covering' },
+        ],
+        3: [
+          { strand: '3.0 TIME, KENYAN CURRENCY & GEOMETRY', subs: ['Days of the Week Song & Classroom Routine Sequencing', 'Identifying Kenyan Coins (Ksh 1, 5, 10, 20) & Shop Buying/Selling Play', 'Properties & Drawing of Circle, Triangle, Rectangle, Square & Oval'], kiq: 'Which Kenyan coins do we use to buy snacks or pencils at a shop?', resources: 'Kenyan coin specimens, shop corner items, days-of-week chart, shape cutouts' },
+          { strand: '2.0 GRADE 1 NUMERACY READINESS', subs: ['Counting & Ordering Numbers Up to 30/50', 'Mixed Put-Together and Take-Away Practice Within 9', 'Completing Number & Shape Puzzles'], kiq: 'How do numbers and shapes help us solve everyday puzzles?', resources: 'Number grids 1–50, jigsaw number cards, counters' },
+        ],
+      },
       1: {
         1: [
           { strand: '1.0 NUMBERS', subs: ['Sorting, Matching & Pairing Objects by Colour and Size', 'Counting & Reading Whole Numbers 1 to 100', 'Place Value of Tens and Ones Using Bundles of Sticks', 'Number Patterns Within 20'], kiq: 'How do we sort and count objects accurately from 1 to 100?', resources: 'Bottle tops, coloured blocks, bundles of 10 sticks, number chart 1-100' },
@@ -2032,15 +2230,33 @@ export const SUBJECT_SYLLABUS = {
  * so each grade has authentic, progressive KICD strands & sub-strands.
  */
 export function getSyllabusForGrade(grade, subject) {
+  const isPP1 = grade === 'PP1' || grade === -1;
+  const isPP2 = grade === 'PP2' || grade === 0;
+  const lookupKey = isPP1 ? 'PP1' : isPP2 ? 'PP2' : grade;
   const base = SUBJECT_SYLLABUS[subject];
   if (!base) {
     throw new Error(`Missing syllabus entry for subject: ${subject}`);
   }
-  const gradeOverride = base.byGrade && base.byGrade[grade] ? base.byGrade[grade] : null;
+  const gradeOverride = base.byGrade && base.byGrade[lookupKey] ? base.byGrade[lookupKey] : null;
   if (gradeOverride) {
     return {
       shortCode: base.shortCode,
       strandsByTerm: gradeOverride,
+    };
+  }
+
+  if (isPP1 || isPP2) {
+    const ppLabel = isPP1 ? 'PP1 Foundational Play' : 'PP2 School-Readiness';
+    const adaptedPP = {};
+    for (const t of [1, 2, 3]) {
+      adaptedPP[t] = (base.strandsByTerm[t] || []).map((block) => ({
+        ...block,
+        subs: block.subs.map((sub) => `${sub} (${ppLabel} Scope)`),
+      }));
+    }
+    return {
+      shortCode: base.shortCode,
+      strandsByTerm: adaptedPP,
     };
   }
 
@@ -2217,6 +2433,37 @@ export function buildDomainLessonNotes({
   };
 }
 
+export const PREPRIMARY_CURRICULUM_PLAN = [
+  {
+    gradeCode: 'PP1',
+    dbGrade: 1,
+    level: 'Pre-Primary 1 (PP1)',
+    examBadge: 'ECDE Play Assessment',
+    subjects: [
+      'Language Activities',
+      'Mathematical Activities',
+      'Environmental Activities',
+      'Creative Activities',
+      'Christian Religious Education (CRE)',
+      'Islamic Religious Education (IRE)',
+    ],
+  },
+  {
+    gradeCode: 'PP2',
+    dbGrade: 2,
+    level: 'Pre-Primary 2 (PP2)',
+    examBadge: 'ECDE Readiness Assessment',
+    subjects: [
+      'Language Activities',
+      'Mathematical Activities',
+      'Environmental Activities',
+      'Creative Activities',
+      'Christian Religious Education (CRE)',
+      'Islamic Religious Education (IRE)',
+    ],
+  },
+];
+
 export const GRADES_CURRICULUM_PLAN = [
   // Lower Primary (Grades 1-3): 8 rationalized subjects per grade
   ...[1, 2, 3].map((grade) => ({
@@ -2297,6 +2544,23 @@ export const GRADES_CURRICULUM_PLAN = [
  */
 export function getCurriculumAllocation(grade, subject) {
   const s = String(subject || '').toLowerCase();
+
+  // Pre-Primary: PP1 & PP2 (30 minutes per lesson; 25 lessons/week rationalized ECDE)
+  if (grade === 'PP1' || grade === 'PP2' || grade === -1 || grade === 0) {
+    let lessonsPerWeek = 5;
+    if (s.includes('creative')) {
+      lessonsPerWeek = 6;
+    } else if (s.includes('religious') || s.includes('cre') || s.includes('ire')) {
+      lessonsPerWeek = 3;
+    } else {
+      lessonsPerWeek = 5; // Language Activities (5), Mathematical Activities (5), Environmental Activities (5)
+    }
+    return {
+      lessonsPerWeek,
+      minutesPerLesson: 30,
+      stepTimings: { intro: 5, step1: 10, step2: 10, conclusion: 5 },
+    };
+  }
 
   // Lower Primary: Grades 1 - 3 (30 minutes per lesson)
   if (grade <= 3) {

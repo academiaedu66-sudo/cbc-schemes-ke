@@ -3,9 +3,11 @@ import mammoth from 'mammoth';
 import { PDFDocument } from 'pdf-lib';
 import { supabaseAdmin } from '@/lib/supabase';
 import {
+  formatGradeLabel,
   formatTermLabel,
   getCbcLessonAllocation,
   getKicdApprovedTextbook,
+  getResourceGradeKey,
   getTermTotalWeeks,
   normalizeCategory,
 } from '@/lib/material-utils';
@@ -28,79 +30,82 @@ function buildFallbackDetails(resource: {
   subject: string;
   term: number;
   format: string;
+  file_path?: string;
 }) {
   const cat = normalizeCategory(resource.category);
+  const gradeKey = getResourceGradeKey(resource);
+  const gradeLabel = formatGradeLabel(gradeKey);
   const termText = formatTermLabel(resource.term);
-  const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(resource.grade, resource.subject);
+  const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(gradeKey, resource.subject);
   const totalWeeks = getTermTotalWeeks(resource.term);
   const totalLessons = lessonsPerWeek * totalWeeks;
-  const book = getKicdApprovedTextbook(resource.grade, resource.subject);
+  const book = getKicdApprovedTextbook(gradeKey, resource.subject);
 
   let description = '';
   let strands: string[] = [];
 
   if (cat === 'Schemes of Work') {
-    description = `KICD-rationalized ${resource.subject} Schemes of Work for Grade ${resource.grade} (${resource.level}), ${termText} — aligned to ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Structured with ${lessonsPerWeek} lessons/week (${minutesPerLesson} mins each, ${totalLessons} individual lessons across Weeks 1–${totalWeeks}) and synchronized 1:1 with the CBC Lesson Plans, Teachers' Notes, and Record of Work.`;
+    description = `KICD-rationalized ${resource.subject} Schemes of Work for ${gradeLabel} (${resource.level}), ${termText} — aligned to ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Structured with ${lessonsPerWeek} lessons/week (${minutesPerLesson} mins each, ${totalLessons} individual lessons across Weeks 1–${totalWeeks}) and delivered in BOTH Editable Word (.DOCX) and Print-Ready (.PDF) formats.`;
     strands = [
       `KICD Orange Book Reference: ${book.lbTitle} & ${book.tgTitle}`,
       `Synchronized 1-for-1 (Week, Lesson, Topic & Pages) with Lesson Plans & Teachers' Notes`,
       `Official CBC Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins each, ${totalLessons} lessons total)`,
-      `Editable 10-column schemes.co.ke ${resource.format} layout`,
+      `Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)`,
     ];
   } else if (cat === 'Lesson Plans') {
-    description = `Complete ready-to-teach CBC Lesson Plans for Grade ${resource.grade} ${resource.subject} (${termText}) referencing ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Covers all ${lessonsPerWeek} lessons/week (${minutesPerLesson} mins/lesson, ${totalLessons} individual lesson plans across Weeks 1–${totalWeeks}) and rhymes lesson-for-lesson with the Scheme of Work and Teachers' Notes.`;
+    description = `Complete ready-to-teach CBC Lesson Plans for ${gradeLabel} ${resource.subject} (${termText}) referencing ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Covers all ${lessonsPerWeek} lessons/week (${minutesPerLesson} mins/lesson, ${totalLessons} individual lesson plans across Weeks 1–${totalWeeks}) with BOTH Editable Word (.DOCX) and Print-Ready (.PDF) downloads.`;
     strands = [
       `KICD Approved Coursebook: ${book.lbTitle} & ${book.tgTitle}`,
       `Rhymes 1:1 with the Term's Scheme of Work & Teachers' Notes (${totalLessons} lesson plans)`,
       `Exact ${minutesPerLesson}-minute CBC steps (Intro, Explore, Chalkboard Notes & Conclusion)`,
-      `Editable & printable ${resource.format} teacher booklet`,
+      `Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)`,
     ];
   } else if (cat === 'Records of Work') {
-    description = `Official TSC & KICD Lesson-by-Lesson Record of Work Covered & Rubric Tracker for Grade ${resource.grade} ${resource.subject} (${termText}), pre-mapped to ${book.lbTitle} (${book.publisher}) across all ${lessonsPerWeek} lessons/week (${totalLessons} lessons, Weeks 1–${totalWeeks}) and synced 1:1 with the Scheme of Work and Lesson Plans.`;
+    description = `Official TSC & KICD Lesson-by-Lesson Record of Work Covered & Rubric Tracker for ${gradeLabel} ${resource.subject} (${termText}), pre-mapped to ${book.lbTitle} (${book.publisher}) across all ${lessonsPerWeek} lessons/week (${totalLessons} lessons, Weeks 1–${totalWeeks}) in BOTH Editable Word (.DOCX) and Print-Ready (.PDF).`;
     strands = [
       `KICD Approved Coursebook Pages: ${book.lbTitle}`,
       `Synced lesson-by-lesson (LSN 1–${lessonsPerWeek}) with Scheme of Work & Lesson Plans`,
       'Built-in CBC Rubric Tracker columns (EE, ME, AE, BE) per lesson',
-      `Landscape editable ${resource.format} professional document`,
+      'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
     ];
   } else if (cat === 'Holiday Assignments & Designs') {
     description =
       resource.term === 0
-        ? `Complete KICD Rationalized Curriculum Design & Approved Orange Book Coursebook Matrix for Grade ${resource.grade} ${resource.subject} (${book.lbTitle} & ${book.tgTitle}, ${lessonsPerWeek} lessons/week, ${minutesPerLesson} mins each) covering Terms 1, 2, and 3.`
-        : `Structured Grade ${resource.grade} ${resource.subject} (${termText}) Holiday Revision Workbook & Home Competency Project synced directly to ${book.lbTitle} pages and the ${lessonsPerWeek}-lesson/week Scheme of Work & Notes.`;
+        ? `Complete KICD Rationalized Curriculum Design & Approved Orange Book Coursebook Matrix for ${gradeLabel} ${resource.subject} (${book.lbTitle} & ${book.tgTitle}, ${lessonsPerWeek} lessons/week, ${minutesPerLesson} mins each) covering Terms 1, 2, and 3 in Editable Word (.DOCX) + Print PDF.`
+        : `Structured ${gradeLabel} ${resource.subject} (${termText}) Holiday Revision Workbook & Home Competency Project synced directly to ${book.lbTitle} pages and delivered in Editable Word (.DOCX) + Print PDF.`;
     strands =
       resource.term === 0
         ? [
             `KICD Orange Book Coursebook: ${book.lbTitle} (${book.publisher})`,
             `Official Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins, ${lessonsPerWeek * 36} annual lessons)`,
             'Full-year Strand, Sub-strand & Textbook Page Matrix (Terms 1, 2 & 3)',
-            `Clean printable ${resource.format} curriculum reference guide`,
+            'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
           ]
         : [
             `Synced with ${book.lbTitle} pages & ${termText} Teachers' Notes`,
             `Covers all ${termText} sub-strands taught across ${lessonsPerWeek} lessons/week`,
             'Includes parent/guardian sign-off & home practical CBC project',
-            `Ready-to-print ${resource.format} learner workbook`,
+            'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
           ];
   } else if (cat === 'Revision Papers & Exams') {
-    description = `Competency-Based Grade ${resource.grade} ${resource.subject} (${termText}) Summative Assessment Paper & Marking Scheme aligned to ${book.lbTitle} (${book.publisher}) and weighted across the exact ${lessonsPerWeek}-lesson/week Scheme of Work and Teachers' Notes.`;
+    description = `Competency-Based ${gradeLabel} ${resource.subject} (${termText}) Assessment Paper & Official Marking Scheme aligned to ${book.lbTitle} (${book.publisher}) — includes BOTH Editable Word (.DOCX to customize your school header) and Print-Ready (.PDF).`;
     strands = [
       `Aligned to ${book.lbTitle} & ${termText} Scheme of Work lesson spans`,
       'Includes official CBC Rubric Grid (EE, ME, AE, BE)',
       'Complete step-by-step Marking Scheme citing exact KICD textbook pages',
-      'Ready to print for Mid-Term or End-of-Term summative assessment',
+      'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
     ];
   } else {
-    description = `Comprehensive Lesson-by-Lesson CBC Teachers' Notes for Grade ${resource.grade} ${resource.subject} (${resource.level}, ${termText}), aligned to ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Every single lesson (Week & Lesson Number, Topic, Chalkboard Concept Notes, Worked Illustration & Learner Activity) rhymes 1:1 with the Term's Scheme of Work and CBC Lesson Plans.`;
+    description = `Comprehensive Lesson-by-Lesson CBC Teachers' Notes for ${gradeLabel} ${resource.subject} (${resource.level}, ${termText}), aligned to ${book.lbTitle} & ${book.tgTitle} (${book.publisher}) — unlocked in BOTH Editable Word (.DOCX) and Print-Ready (.PDF).`;
     strands = [
       `KICD Approved Reference: ${book.lbTitle} & ${book.tgTitle}`,
       `Lesson-by-lesson notes (${lessonsPerWeek} Lessons/Week) synced 1:1 with Scheme & Lesson Plans`,
       'Includes Chalkboard Concept Notes, Worked Classroom Illustrations & Guided Tasks',
-      `Multi-page printable ${resource.format} teaching & revision booklet`,
+      'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
     ];
   }
 
-  return { description, strands, book };
+  return { description, strands, book, gradeLabel };
 }
 
 export async function GET(request: NextRequest) {
@@ -183,12 +188,12 @@ export async function GET(request: NextRequest) {
     if (!sampleExcerpt) {
       sampleExcerpt =
         `${resource.title.toUpperCase()}\n` +
-        `Level: ${resource.level} (Grade ${resource.grade})  |  Learning Area: ${resource.subject}  |  ${termText}\n` +
+        `Level: ${fallback.gradeLabel} (${resource.level})  |  Learning Area: ${resource.subject}  |  ${termText}\n` +
         `KICD Approved Coursebook: ${fallback.book.lbTitle} (${fallback.book.publisher})\n` +
-        `Format: Printable ${resource.format} Document${livePageCount ? ` (${livePageCount} Pages)` : ''}\n\n` +
+        `Formats Included: Editable Word (.DOCX) + Print-Ready (.PDF)${livePageCount ? ` (${livePageCount} Pages)` : ''}\n\n` +
         `Synchronized Highlights Inside:\n` +
         fallback.strands.map((s) => `• ${s}`).join('\n') +
-        `\n\n[... Complete M-Pesa Express Checkout (KES ${resource.price}) for instant full ${resource.format} download ...]`;
+        `\n\n[... Complete M-Pesa Express Checkout (KES ${resource.price}) for instant Editable DOCX + PDF download ...]`;
     }
 
     return NextResponse.json({

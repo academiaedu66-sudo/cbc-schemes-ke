@@ -29,6 +29,15 @@ const CONCURRENCY = 28;
 const ROMAN_TERM = { 1: 'I', 2: 'II', 3: 'III' };
 const HOLIDAY_NAME = { 1: 'April', 2: 'August', 3: 'December' };
 
+function fmtGrade(g) {
+  const s = String(g);
+  return s === 'PP1' || s === 'PP2' ? s : `Grade ${s}`;
+}
+
+function fmtGradeUpper(g) {
+  return fmtGrade(g).toUpperCase();
+}
+
 function toWinAnsiSafe(str) {
   return String(str)
     .replace(/√/g, 'sqrt')
@@ -941,7 +950,7 @@ async function generateSchemeBuffer({ grade, level, subject, term, coursebook, t
             spacing: { after: 45 },
             children: [
               new TextRun({
-                text: `${subject.toUpperCase()} RATIONALIZED SCHEMES OF WORK — GRADE ${grade} (${level.toUpperCase()})`,
+                text: `${subject.toUpperCase()} RATIONALIZED SCHEMES OF WORK — ${fmtGradeUpper(grade)} (${level.toUpperCase()})`,
                 bold: true,
                 size: 24,
                 font: 'Calibri',
@@ -1031,7 +1040,7 @@ async function generateLessonPlanBuffer({ grade, level, subject, term, courseboo
       spacing: { after: 55 },
       children: [
         new TextRun({
-          text: `${subject.toUpperCase()} RATIONALIZED CBC LESSON PLANS — GRADE ${grade} TERM ${ROMAN_TERM[term]}`,
+          text: `${subject.toUpperCase()} RATIONALIZED CBC LESSON PLANS — ${fmtGradeUpper(grade)} TERM ${ROMAN_TERM[term]}`,
           bold: true,
           size: 25,
           font: 'Calibri',
@@ -1279,7 +1288,7 @@ async function generateRecordOfWorkBuffer({ grade, level, subject, term, courseb
             spacing: { after: 45 },
             children: [
               new TextRun({
-                text: `TSC / KICD RECORD OF WORK COVERED & RUBRIC TRACKER — ${subject.toUpperCase()} GRADE ${grade}`,
+                text: `TSC / KICD RECORD OF WORK COVERED & RUBRIC TRACKER — ${subject.toUpperCase()} ${fmtGradeUpper(grade)}`,
                 bold: true,
                 size: 24,
                 font: 'Calibri',
@@ -1566,9 +1575,9 @@ async function generateNotesPdfBuffer({ grade, level, subject, term, coursebook,
 
   return renderPdf({
     bannerTag: `KICD APPROVED TEACHERS' NOTES - TERM ${term} (${coursebook.series.toUpperCase()})`,
-    title: `Grade ${grade} ${subject} Teachers' Notes - Term ${term}`,
+    title: `${fmtGrade(grade)} ${subject} Teachers' Notes - Term ${term}`,
     subtitle: `${level} | ${lessonsPerWeek} Lessons/Wk (${minutesPerLesson}m) | Synced 1:1 with Scheme of Work & Lesson Plans`,
-    footerLabel: `CBC Kenya Hub - Grade ${grade} ${subject} T${term} Notes (${coursebook.series})`,
+    footerLabel: `CBC Kenya Hub - ${fmtGrade(grade)} ${subject} T${term} Notes (${coursebook.series})`,
     sections: [overviewSection, ...unitSections, assessmentSection],
   });
 }
@@ -1578,7 +1587,15 @@ async function generateExamPdfBuffer({ grade, level, examBadge, subject, term, c
   const schedule = buildTermLessonSchedule({ grade, level, subject, term, coursebook, termBlocks });
   const { lessonsPerWeek, minutesPerLesson, subRanges, termLbSpan } = schedule;
   const examDuration =
-    grade <= 3 ? '1 Hour' : grade <= 6 ? '1 Hour 20 Minutes' : grade <= 9 ? '1 Hour 40 Minutes' : '2 Hours';
+    grade === 'PP1' || grade === 'PP2'
+      ? '40 Minutes (Play & Oral Observation)'
+      : Number(grade) <= 3
+      ? '1 Hour'
+      : Number(grade) <= 6
+      ? '1 Hour 20 Minutes'
+      : Number(grade) <= 9
+      ? '1 Hour 40 Minutes'
+      : '2 Hours';
 
   const qLines = [
     `LEARNER'S NAME: ____________________________________  ASSESSMENT NO: _______________`,
@@ -1615,9 +1632,9 @@ async function generateExamPdfBuffer({ grade, level, examBadge, subject, term, c
 
   return renderPdf({
     bannerTag: `KENYA COMPETENCY-BASED ASSESSMENT (${examBadge}) - TERM ${term} (${coursebook.series.toUpperCase()})`,
-    title: `Grade ${grade} ${subject} Term ${term} ${examBadge} Exam & Marking Scheme`,
+    title: `${fmtGrade(grade)} ${subject} Term ${term} ${examBadge} Exam & Marking Scheme`,
     subtitle: `${level} (${examDuration}) | Aligned to Term ${term} Scheme of Work, Lesson Plans & Notes`,
-    footerLabel: `CBC Kenya Hub - Grade ${grade} ${subject} Term ${term} Exam (${coursebook.series})`,
+    footerLabel: `CBC Kenya Hub - ${fmtGrade(grade)} ${subject} Term ${term} Exam (${coursebook.series})`,
     sections: [
       { heading: `SECTION A & B: ASSESSMENT QUESTIONS (TERM ${term})`, body: qLines.join('\n') },
       { heading: `OFFICIAL MARKING SCHEME & RUBRIC SCORING GUIDE`, body: mLines.join('\n\n') },
@@ -1632,7 +1649,7 @@ async function generateHolidayPdfBuffer({ grade, level, subject, term, courseboo
   const { lessonsPerWeek, minutesPerLesson, subRanges, termLbSpan } = schedule;
 
   const body = [
-    `LEARNER'S NAME: ____________________________________   GRADE ${grade} (${level})`,
+    `LEARNER'S NAME: ____________________________________   ${fmtGradeUpper(grade)} (${level})`,
     `PARENT / GUARDIAN SIGNATURE: _______________________   DATE COMPLETED: ______________`,
     `KICD APPROVED TEXTBOOK REFERENCE: ${coursebook.lbTitle} (${termLbSpan})`,
     `TERM ${term} COVERAGE RECAP: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins each)`,
@@ -1641,7 +1658,7 @@ async function generateHolidayPdfBuffer({ grade, level, subject, term, courseboo
     ...subRanges.map(
       (s, idx) =>
         `${idx + 1}. Topic: ${s.sub} (${s.strand} — Covered in ${s.spanLabel}, ${s.lbRangeLabel})\n` +
-        `   (a) Review your Term ${term} Teachers'/Class Notes and ${s.lbRangeLabel} on "${s.sub}", then write a clear five-point summary.\n` +
+        `   (a) Review your Term ${term} Teachers'/Class Notes and ${s.lbRangeLabel} on "${s.sub}", then complete the guided practice task.\n` +
         `   (b) Guided Inquiry Task: ${s.kiq}\n`
     ),
     `PART 2: HOME-BASED PRACTICAL / PARENTAL ENGAGEMENT PROJECT`,
@@ -1650,9 +1667,9 @@ async function generateHolidayPdfBuffer({ grade, level, subject, term, courseboo
 
   return renderPdf({
     bannerTag: `CBC ${holiday.toUpperCase()} HOLIDAY REVISION - TERM ${term} (${coursebook.series.toUpperCase()})`,
-    title: `Grade ${grade} ${subject} Term ${term} (${holiday}) Holiday Assignment`,
+    title: `${fmtGrade(grade)} ${subject} Term ${term} (${holiday}) Holiday Assignment`,
     subtitle: `${level} | Synced with Term ${term} Scheme of Work, Notes & ${coursebook.lbShort}`,
-    footerLabel: `CBC Kenya Hub - Grade ${grade} ${subject} ${holiday} Holiday Pack`,
+    footerLabel: `CBC Kenya Hub - ${fmtGrade(grade)} ${subject} ${holiday} Holiday Pack`,
     sections: [{ heading: `${holiday.toUpperCase()} HOLIDAY WORKBOOK — ${subject.toUpperCase()}`, body }],
   });
 }
@@ -1710,9 +1727,9 @@ async function generateCurriculumDesignPdfBuffer({ grade, level, subject, course
 
   return renderPdf({
     bannerTag: `KICD RATIONALIZED CURRICULUM DESIGN & ORANGE BOOK GUIDE (TERMS 1, 2 & 3)`,
-    title: `Grade ${grade} ${subject} Curriculum Design & Coursebook Matrix`,
+    title: `${fmtGrade(grade)} ${subject} Curriculum Design & Coursebook Matrix`,
     subtitle: `${level} | ${lessonsPerWeek} Lessons/Wk (${minutesPerLesson}m) | ${coursebook.series}`,
-    footerLabel: `CBC Kenya Hub - Grade ${grade} ${subject} Curriculum Design (${coursebook.series})`,
+    footerLabel: `CBC Kenya Hub - ${fmtGrade(grade)} ${subject} Curriculum Design (${coursebook.series})`,
     sections: [allocationOverview, ...termSections],
   });
 }
@@ -2005,7 +2022,24 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal catalog upload error:', err);
-  process.exit(1);
-});
+export {
+  buildTermLessonSchedule,
+  generateSchemeBuffer,
+  generateLessonPlanBuffer,
+  generateRecordOfWorkBuffer,
+  generateNotesPdfBuffer,
+  generateExamPdfBuffer,
+  generateHolidayPdfBuffer,
+  generateCurriculumDesignPdfBuffer,
+  renderPdf,
+  toWinAnsiSafe,
+  wrapLines,
+};
+
+import { fileURLToPath } from 'url';
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error('Fatal catalog upload error:', err);
+    process.exit(1);
+  });
+}

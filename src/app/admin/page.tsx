@@ -23,10 +23,13 @@ import {
   Zap,
 } from 'lucide-react';
 import {
+  ALL_GRADE_KEYS,
   MATERIAL_CATEGORIES,
   DEFAULT_PRICES,
+  formatGradeLabel,
   formatTermLabel,
-  getLevelForGrade,
+  getResourceGradeKey,
+  gradeKeyToDbFields,
   normalizeCategory,
   parseFilenameToMetadata,
   type MaterialCategory,
@@ -39,6 +42,7 @@ interface QueuedUpload {
   file: File;
   title: string;
   grade: number;
+  gradeKey: string;
   level: string;
   category: MaterialCategory;
   subject: string;
@@ -335,6 +339,7 @@ export default function AdminDashboardPage() {
         file,
         title: parsed.title,
         grade: parsed.grade,
+        gradeKey: parsed.gradeKey,
         level: parsed.level,
         category: parsed.category,
         subject: parsed.subject,
@@ -357,8 +362,10 @@ export default function AdminDashboardPage() {
       prev.map((item) => {
         if (item.uid !== uid) return item;
         const updated = { ...item, ...patch };
-        if (patch.grade !== undefined) {
-          updated.level = getLevelForGrade(patch.grade);
+        if (patch.gradeKey !== undefined) {
+          const dbFields = gradeKeyToDbFields(patch.gradeKey);
+          updated.grade = dbFields.grade;
+          updated.level = dbFields.level;
         }
         if (patch.category !== undefined && patch.price === undefined) {
           updated.price = DEFAULT_PRICES[patch.category];
@@ -1140,20 +1147,20 @@ export default function AdminDashboardPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase">
-                          Grade
+                          Level / Grade
                         </label>
                         <select
-                          value={item.grade}
+                          value={item.gradeKey}
                           onChange={(e) =>
                             updateQueuedItem(item.uid, {
-                              grade: Number(e.target.value),
+                              gradeKey: e.target.value,
                             })
                           }
                           className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs bg-white"
                         >
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <option key={i + 1} value={i + 1}>
-                              Grade {i + 1}
+                          {ALL_GRADE_KEYS.map((gk) => (
+                            <option key={gk} value={gk}>
+                              {formatGradeLabel(gk)}
                             </option>
                           ))}
                         </select>
@@ -1408,7 +1415,7 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
                           <td className="py-3 px-3 whitespace-nowrap">
-                            Grade {r.grade} • {formatTermLabel(r.term)}
+                            {formatGradeLabel(getResourceGradeKey(r))} • {formatTermLabel(r.term)}
                           </td>
                           <td className="py-3 px-3 whitespace-nowrap">
                             {normCat}

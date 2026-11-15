@@ -1,7 +1,12 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { formatTermLabel, getCbcLessonAllocation } from "@/lib/material-utils";
+import {
+  formatGradeLabel,
+  formatTermLabel,
+  getCbcLessonAllocation,
+  getResourceGradeKey,
+} from "@/lib/material-utils";
 
 export interface ResourceItem {
   id: string;
@@ -28,21 +33,46 @@ export default function ResourceCard({
   onPreview,
 }: ResourceProps) {
   const isDocx = resource.format.toLowerCase().includes("doc");
+  const gradeKey = getResourceGradeKey(resource);
+  const gradeBadge = formatGradeLabel(gradeKey);
+  const isPP = gradeKey === "PP1" || gradeKey === "PP2";
   const termText = formatTermLabel(resource.term);
   const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(
-    resource.grade,
+    gradeKey,
     resource.subject
   );
 
+  const lowerTitle = resource.title.toLowerCase();
+  const examTag = lowerTitle.includes("opener")
+    ? "Opener Exam"
+    : lowerTitle.includes("mid-term")
+    ? "Mid-Term Exam"
+    : lowerTitle.includes("kpsea") &&
+      (lowerTitle.includes("past") ||
+        lowerTitle.includes("trial") ||
+        lowerTitle.includes("mock"))
+    ? "KPSEA National"
+    : lowerTitle.includes("kjsea") &&
+      (lowerTitle.includes("past") ||
+        lowerTitle.includes("trial") ||
+        lowerTitle.includes("mock"))
+    ? "KJSEA National"
+    : null;
+
   return (
     <div className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-300 hover:shadow-md transition">
-      {/* File Badge Icon */}
+      {/* Dual-Format File Badge Icon */}
       <div
-        className={`w-11 h-11 rounded-lg flex items-center justify-center font-extrabold text-[11px] text-white shrink-0 ${
-          isDocx ? "bg-blue-600" : "bg-red-600"
+        className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center font-extrabold leading-tight text-white shrink-0 ${
+          isDocx
+            ? "bg-gradient-to-br from-blue-600 to-emerald-600"
+            : "bg-gradient-to-br from-red-600 to-blue-700"
         }`}
       >
-        {isDocx ? "DOCX" : "PDF"}
+        <span className="text-[10px]">{isDocx ? "DOCX" : "PDF"}</span>
+        <span className="text-[8px] opacity-90 border-t border-white/30 pt-0.5 mt-0.5">
+          +{isDocx ? "PDF" : "DOCX"}
+        </span>
       </div>
 
       {/* Details */}
@@ -55,12 +85,23 @@ export default function ResourceCard({
         </h4>
 
         <div className="flex flex-wrap items-center gap-1.5 mb-3 text-[11px] font-medium text-slate-600">
-          <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded font-semibold">
-            Grade {resource.grade}
+          <span
+            className={`px-2 py-0.5 rounded font-bold ${
+              isPP
+                ? "bg-purple-50 text-purple-800 border border-purple-200/80"
+                : "bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            {gradeBadge}
           </span>
           <span className="bg-amber-50 text-amber-800 border border-amber-200/70 px-2 py-0.5 rounded font-semibold">
             {termText}
           </span>
+          {examTag && (
+            <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-bold">
+              {examTag}
+            </span>
+          )}
           {resource.subject && (
             <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">
               {resource.subject}
@@ -69,17 +110,8 @@ export default function ResourceCard({
           <span className="bg-teal-50 text-teal-800 border border-teal-200/70 px-2 py-0.5 rounded font-semibold">
             {lessonsPerWeek} Lessons/Wk ({minutesPerLesson}m)
           </span>
-          <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-            {resource.category === "Teachers' Notes"
-              ? "Lesson Notes"
-              : resource.category}
-          </span>
-          <span
-            className={`px-1.5 py-0.5 rounded font-bold uppercase text-[10px] ${
-              isDocx ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-700"
-            }`}
-          >
-            {isDocx ? "DOCX" : "PDF"}
+          <span className="px-1.5 py-0.5 rounded font-bold uppercase text-[10px] bg-blue-50 text-blue-700 border border-blue-200/70">
+            DOCX + PDF
           </span>
         </div>
 

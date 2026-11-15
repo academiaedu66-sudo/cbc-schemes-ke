@@ -291,6 +291,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Resource missing' }, { status: 404 });
     }
 
+    const isStoredDocx =
+      Boolean(resource.file_path?.toLowerCase().endsWith('.docx')) ||
+      String(resource.format || '').toUpperCase() === 'DOCX';
+    const companionBase = `/api/resources/companion-download?checkoutRequestId=${encodeURIComponent(
+      idStr
+    )}`;
+
     if (resource.file_path && !resource.file_path.startsWith('http')) {
       const { data: signedData, error: signedErr } = await supabaseAdmin.storage
         .from(BUCKET_NAME)
@@ -302,6 +309,8 @@ export async function POST(req: Request) {
         return NextResponse.json({
           status: 'COMPLETED',
           downloadUrl: signedData.signedUrl,
+          docxDownloadUrl: isStoredDocx ? signedData.signedUrl : `${companionBase}&format=docx`,
+          pdfDownloadUrl: !isStoredDocx ? signedData.signedUrl : `${companionBase}&format=pdf`,
         });
       }
       console.error('Signed URL error:', signedErr?.message);
@@ -322,6 +331,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       status: 'COMPLETED',
       downloadUrl: fallbackUrl,
+      docxDownloadUrl: isStoredDocx ? fallbackUrl : `${companionBase}&format=docx`,
+      pdfDownloadUrl: !isStoredDocx ? fallbackUrl : `${companionBase}&format=pdf`,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unexpected server error';

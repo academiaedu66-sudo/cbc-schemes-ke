@@ -2,7 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, FileText, Lock, X } from "lucide-react";
-import { formatTermLabel, getCbcLessonAllocation } from "@/lib/material-utils";
+import {
+  formatGradeLabel,
+  formatTermLabel,
+  getCbcLessonAllocation,
+  getResourceGradeKey,
+} from "@/lib/material-utils";
 import type { ResourceItem } from "./ResourceCard";
 
 interface PreviewData {
@@ -66,9 +71,10 @@ export default function PreviewModal({
 
   if (!resource) return null;
 
-  const isDocx = resource.format.toLowerCase().includes("doc");
+  const gradeKey = getResourceGradeKey(resource);
+  const gradeLabel = formatGradeLabel(gradeKey);
   const { lessonsPerWeek, minutesPerLesson } = getCbcLessonAllocation(
-    resource.grade,
+    gradeKey,
     resource.subject
   );
 
@@ -79,15 +85,11 @@ export default function PreviewModal({
         <div className="px-6 py-4 bg-slate-900 text-white flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
-              <span
-                className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                  isDocx ? "bg-blue-600 text-white" : "bg-red-600 text-white"
-                }`}
-              >
-                {resource.format}
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gradient-to-r from-blue-600 to-emerald-600 text-white">
+                DOCX + PDF
               </span>
               <span className="text-xs text-emerald-300 font-semibold">
-                Grade {resource.grade} ({resource.level}) • {formatTermLabel(resource.term)} • {lessonsPerWeek} Lessons/Wk ({minutesPerLesson}m)
+                {gradeLabel} ({resource.level}) • {formatTermLabel(resource.term)} • {lessonsPerWeek} Lessons/Wk ({minutesPerLesson}m)
               </span>
               {preview?.fileSizeKb && (
                 <span className="text-xs text-slate-400">
@@ -169,7 +171,7 @@ export default function PreviewModal({
                   {preview?.sampleExcerpt}
                   <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent flex items-end justify-center pb-2">
                     <span className="text-[11px] font-bold text-slate-500">
-                      Full {resource.format} unlocked immediately after M-Pesa payment
+                      Editable Word (.DOCX) + Print-Ready (.PDF) unlocked immediately after M-Pesa payment
                     </span>
                   </div>
                 </div>
@@ -182,7 +184,7 @@ export default function PreviewModal({
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
             <span className="text-xs text-slate-500 block">
-              Instant M-Pesa Express Download
+              Instant M-Pesa Download (Editable DOCX + Print PDF)
             </span>
             <span className="text-xl font-black text-emerald-800">
               KES {resource.price}
@@ -204,7 +206,7 @@ export default function PreviewModal({
               }}
               className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition"
             >
-              Buy &amp; Download Full {resource.format} (KES {resource.price})
+              Buy &amp; Unlock DOCX + PDF (KES {resource.price})
             </button>
           </div>
         </div>

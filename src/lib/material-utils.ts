@@ -8,9 +8,37 @@ export type MaterialCategory =
 
 export type MaterialFormat = 'DOCX' | 'PDF';
 
+export type ExamSubFilter =
+  | 'ALL'
+  | 'OPENER'
+  | 'MIDTERM'
+  | 'ENDTERM'
+  | 'KPSEA'
+  | 'KJSEA'
+  | 'KEYA'
+  | 'SENIOR_TRIAL';
+
+export const ALL_GRADE_KEYS = [
+  'PP1',
+  'PP2',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '12',
+] as const;
+
 export interface ParsedMaterialMetadata {
   title: string;
   grade: number;
+  gradeKey: string;
   level: string;
   category: MaterialCategory;
   subject: string;
@@ -43,20 +71,125 @@ export function formatTermLabel(term?: number | null): string {
   return 'Term 1';
 }
 
-export function getLevelForGrade(grade: number): string {
-  if (grade <= 3) return 'Lower Primary';
-  if (grade <= 6) return 'Upper Primary';
-  if (grade <= 9) return 'Junior Secondary';
+export function getLevelForGrade(grade: number | string): string {
+  const s = String(grade).toUpperCase();
+  if (s === 'PP1' || s === '-1') return 'Pre-Primary 1 (PP1)';
+  if (s === 'PP2' || s === '0') return 'Pre-Primary 2 (PP2)';
+  const g = Number(grade);
+  if (g <= 3) return 'Lower Primary';
+  if (g <= 6) return 'Upper Primary';
+  if (g <= 9) return 'Junior Secondary';
   return 'Senior School';
 }
 
-export function getCbcLessonAllocation(grade: number, subject?: string | null): {
+export function getResourceGradeKey(item: {
+  grade: number;
+  level?: string | null;
+  title?: string | null;
+  file_path?: string | null;
+}): string {
+  const lvl = String(item.level || '');
+  const title = String(item.title || '');
+  const fp = String(item.file_path || '');
+  if (/\bPP1\b/i.test(lvl) || /^PP1\b/i.test(title) || /^PP1_/i.test(fp)) {
+    return 'PP1';
+  }
+  if (/\bPP2\b/i.test(lvl) || /^PP2\b/i.test(title) || /^PP2_/i.test(fp)) {
+    return 'PP2';
+  }
+  return String(item.grade);
+}
+
+export function getGradeSortRank(gradeKey: string): number {
+  const upper = String(gradeKey).toUpperCase();
+  if (upper === 'PP1') return -1;
+  if (upper === 'PP2') return 0;
+  const n = Number(gradeKey);
+  return Number.isFinite(n) ? n : 99;
+}
+
+export function formatGradeLabel(gradeOrKey: number | string): string {
+  const upper = String(gradeOrKey).toUpperCase();
+  if (upper === 'PP1' || upper === '-1') return 'PP1';
+  if (upper === 'PP2' || upper === '0') return 'PP2';
+  return `Grade ${gradeOrKey}`;
+}
+
+export function gradeKeyToDbFields(gradeKey: string): { grade: number; level: string } {
+  const upper = String(gradeKey).toUpperCase();
+  if (upper === 'PP1') return { grade: 1, level: 'Pre-Primary 1 (PP1)' };
+  if (upper === 'PP2') return { grade: 2, level: 'Pre-Primary 2 (PP2)' };
+  const g = Math.min(12, Math.max(1, parseInt(gradeKey, 10) || 7));
+  return { grade: g, level: getLevelForGrade(g) };
+}
+
+export function matchesExamSubFilter(
+  item: {
+    title?: string | null;
+    category?: string | null;
+    grade: number;
+    level?: string | null;
+    file_path?: string | null;
+  },
+  filter: ExamSubFilter
+): boolean {
+  if (filter === 'ALL') return true;
+  if (normalizeCategory(item.category) !== 'Revision Papers & Exams') return false;
+  const hay = `${item.title || ''} ${item.file_path || ''}`.toLowerCase();
+  const gKey = getResourceGradeKey(item);
+
+  switch (filter) {
+    case 'OPENER':
+      return hay.includes('opener');
+    case 'MIDTERM':
+      return hay.includes('mid-term') || hay.includes('mid_term') || hay.includes('midterm');
+    case 'ENDTERM':
+      return (
+        !hay.includes('opener') &&
+        !hay.includes('mid-term') &&
+        !hay.includes('mid_term') &&
+        !hay.includes('past paper') &&
+        !hay.includes('past_paper') &&
+        !hay.includes('prediction') &&
+        !hay.includes('mock set') &&
+        !hay.includes('trial set')
+      );
+    case 'KPSEA':
+      return gKey === '6' || hay.includes('kpsea');
+    case 'KJSEA':
+      return gKey === '9' || hay.includes('kjsea');
+    case 'KEYA':
+      return gKey === '3' || hay.includes('keya');
+    case 'SENIOR_TRIAL':
+      return (
+        (gKey === '10' || gKey === '11' || gKey === '12') &&
+        (hay.includes('trial') || hay.includes('mock') || hay.includes('cbe') || hay.includes('senior'))
+      );
+    default:
+      return true;
+  }
+}
+
+export function getCbcLessonAllocation(
+  grade: number | string,
+  subject?: string | null
+): {
   lessonsPerWeek: number;
   minutesPerLesson: number;
 } {
   const s = String(subject || '').toLowerCase();
+  const upperG = String(grade).toUpperCase();
 
-  if (grade <= 3) {
+  if (upperG === 'PP1' || upperG === 'PP2' || upperG === '-1' || upperG === '0') {
+    let lessonsPerWeek = 5;
+    if (s.includes('creative')) lessonsPerWeek = 6;
+    else if (s.includes('religious') || s.includes('cre') || s.includes('ire')) lessonsPerWeek = 3;
+    return { lessonsPerWeek, minutesPerLesson: 30 };
+  }
+
+  const gNum = Number(grade);
+
+  if (gNum <= 3) {
     let lessonsPerWeek = 4;
     if (s.includes('math') || s.includes('english')) lessonsPerWeek = 5;
     else if (s.includes('creative')) lessonsPerWeek = 7;
@@ -66,7 +199,7 @@ export function getCbcLessonAllocation(grade: number, subject?: string | null): 
     return { lessonsPerWeek, minutesPerLesson: 30 };
   }
 
-  if (grade <= 6) {
+  if (gNum <= 6) {
     let lessonsPerWeek = 4;
     if (s.includes('math') || s.includes('english')) lessonsPerWeek = 5;
     else if (s.includes('creative')) lessonsPerWeek = 6;
@@ -129,6 +262,7 @@ const KNOWN_SUBJECTS = [
   'Indigenous Language Activities',
   'English Language Activities',
   'Kiswahili Language Activities',
+  'Language Activities',
   'Mathematical Activities',
   'Environmental Activities',
   'Agriculture and Nutrition',
@@ -176,18 +310,29 @@ export function parseFilenameToMetadata(filename: string): ParsedMaterialMetadat
     .trim();
 
   let grade = 7;
+  let gradeKey = '7';
+  const ppMatch = clean.match(/\b(pp\s*[12]|pre\s*primary\s*[12])\b/i);
   const gradeMatch = clean.match(/\b(?:grade|g)\s*(\d{1,2})\b/i);
   const formMatch = clean.match(/\bform\s*([1-4])\b/i);
-  if (gradeMatch) {
+  if (ppMatch) {
+    const isPP1 = /1/.test(ppMatch[1]);
+    gradeKey = isPP1 ? 'PP1' : 'PP2';
+    grade = isPP1 ? 1 : 2;
+  } else if (gradeMatch) {
     grade = Math.min(12, Math.max(1, parseInt(gradeMatch[1], 10)));
+    gradeKey = String(grade);
   } else if (formMatch) {
     grade = 8 + parseInt(formMatch[1], 10);
+    gradeKey = String(grade);
   } else if (/\bkpsea\b/i.test(clean)) {
     grade = 6;
+    gradeKey = '6';
   } else if (/\bkjsea\b/i.test(clean)) {
     grade = 9;
+    gradeKey = '9';
   } else if (/\bkcse\b/i.test(clean)) {
     grade = 12;
+    gradeKey = '12';
   }
 
   let term = 1;
@@ -231,23 +376,31 @@ export function parseFilenameToMetadata(filename: string): ParsedMaterialMetadat
     .filter(Boolean)
     .map((w) => {
       const upper = w.toUpperCase();
-      if (['CBC', 'KPSEA', 'KJSEA', 'KEYA', 'KCSE', 'JSS', 'CRE', 'IRE', 'CSL', 'STEM', 'KICD'].includes(upper)) {
+      if (
+        ['PP1', 'PP2', 'ECDE', 'CBC', 'KPSEA', 'KJSEA', 'KEYA', 'KCSE', 'JSS', 'CRE', 'IRE', 'CSL', 'STEM', 'KICD', 'SBA'].includes(
+          upper
+        )
+      ) {
         return upper;
       }
       return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
     });
 
   let title = titleWords.join(' ');
-  if (!title.toLowerCase().includes('grade')) {
+  const isPP = gradeKey === 'PP1' || gradeKey === 'PP2';
+  if (isPP && !title.toUpperCase().includes(gradeKey)) {
+    title = `${gradeKey} ${title}`;
+  } else if (!isPP && !title.toLowerCase().includes('grade')) {
     title = `Grade ${grade} ${title}`;
   }
 
-  const level = getLevelForGrade(grade);
+  const level = getLevelForGrade(gradeKey);
   const price = DEFAULT_PRICES[category];
 
   return {
     title,
     grade,
+    gradeKey,
     level,
     category,
     subject,
@@ -258,9 +411,37 @@ export function parseFilenameToMetadata(filename: string): ParsedMaterialMetadat
 }
 
 const KICD_ORANGE_BOOK_MAP: Record<
-  'lower' | 'upper' | 'jss' | 'senior',
+  'preprimary' | 'lower' | 'upper' | 'jss' | 'senior',
   Record<string, Array<{ series: string; publisher: string; isKiswahili?: boolean }>>
 > = {
+  preprimary: {
+    'Language Activities': [
+      { series: 'KLB Skillgrow Language Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Longhorn Language Activities', publisher: 'Longhorn Publishers' },
+      { series: 'Oxford Little Explorers Language Activities', publisher: 'Oxford University Press (EA)' },
+    ],
+    'Mathematical Activities': [
+      { series: 'KLB Skillgrow Mathematical Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Oxford Little Explorers Mathematical Activities', publisher: 'Oxford University Press (EA)' },
+      { series: 'Longhorn Mathematical Activities', publisher: 'Longhorn Publishers' },
+    ],
+    'Environmental Activities': [
+      { series: 'KLB Skillgrow Environmental Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Longhorn Environmental Activities', publisher: 'Longhorn Publishers' },
+    ],
+    'Creative Activities': [
+      { series: 'KLB Skillgrow Creative & Psychomotor Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Hummingbird Creative Activities', publisher: 'Hummingbird Publishers' },
+    ],
+    'Christian Religious Education (CRE)': [
+      { series: 'KLB Skillgrow CRE Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Oxford Growing in Christ CRE Activities', publisher: 'Oxford University Press (EA)' },
+    ],
+    'Islamic Religious Education (IRE)': [
+      { series: 'KLB Skillgrow IRE Activities', publisher: 'Kenya Literature Bureau (KLB)' },
+      { series: 'Atfaal IRE Activities', publisher: 'Atfaal Publishers' },
+    ],
+  },
   lower: {
     'Mathematical Activities': [
       { series: 'KLB Visionary Mathematical Activities', publisher: 'Kenya Literature Bureau (KLB)' },
@@ -519,32 +700,52 @@ const KICD_ORANGE_BOOK_MAP: Record<
   },
 };
 
-export function getKicdApprovedTextbook(grade: number, subject?: string | null): {
+export function getKicdApprovedTextbook(
+  grade: number | string,
+  subject?: string | null
+): {
   series: string;
   publisher: string;
   lbTitle: string;
   tgTitle: string;
 } {
-  const band = grade <= 3 ? 'lower' : grade <= 6 ? 'upper' : grade <= 9 ? 'jss' : 'senior';
+  const upperG = String(grade).toUpperCase();
+  const isPP1 = upperG === 'PP1' || upperG === '-1';
+  const isPP2 = upperG === 'PP2' || upperG === '0';
+  const isPP = isPP1 || isPP2;
+  const gNum = Number(grade);
+
+  const band = isPP
+    ? 'preprimary'
+    : gNum <= 3
+    ? 'lower'
+    : gNum <= 6
+    ? 'upper'
+    : gNum <= 9
+    ? 'jss'
+    : 'senior';
   const subj = String(subject || '');
   const list = KICD_ORANGE_BOOK_MAP[band][subj] || [
     { series: `KLB Approved ${subj || 'CBC'}`, publisher: 'Kenya Literature Bureau (KLB)' },
   ];
-  const item = list[Math.max(0, grade - 1) % list.length];
+  const idx = isPP1 ? 0 : isPP2 ? 1 : Math.max(0, gNum - 1);
+  const item = list[idx % list.length];
   const resolvedSeries =
-    grade === 3 && item.series === 'KLB Visionary English Language Activities'
+    !isPP && gNum === 3 && item.series === 'KLB Visionary English Language Activities'
       ? 'KLB Lower Primary English Language Activities'
       : item.series;
   const isKis = Boolean(item.isKiswahili || subj.toLowerCase().includes('kiswahili'));
+  const gLabel = isPP1 ? 'PP1' : isPP2 ? 'PP2' : `Grade ${gNum}`;
+  const kisLabel = isPP1 ? 'PP1' : isPP2 ? 'PP2' : `Gredi ya ${gNum}`;
 
   return {
     series: resolvedSeries,
     publisher: item.publisher,
     lbTitle: isKis
-      ? `${resolvedSeries} Kitabu cha Mwanafunzi Gredi ya ${grade}`
-      : `${resolvedSeries} Learner's Book Grade ${grade}`,
+      ? `${resolvedSeries} Kitabu cha Mwanafunzi ${kisLabel}`
+      : `${resolvedSeries} Learner's Book ${gLabel}`,
     tgTitle: isKis
-      ? `${resolvedSeries} Mwongozo wa Mwalimu Gredi ya ${grade}`
-      : `${resolvedSeries} Teacher's Guide Grade ${grade}`,
+      ? `${resolvedSeries} Mwongozo wa Mwalimu ${kisLabel}`
+      : `${resolvedSeries} Teacher's Guide ${gLabel}`,
   };
 }

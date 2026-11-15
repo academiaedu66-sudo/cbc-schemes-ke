@@ -10,7 +10,8 @@
     "lint": "eslint",
     "materials:generate": "node scripts/generate-starter-materials.mjs",
     "materials:sync": "node --env-file=.env.local scripts/sync-materials.mjs",
-    "materials:upload-all": "node --env-file=.env.local scripts/upload-full-cbc-catalog.mjs"
+    "materials:upload-all": "node --env-file=.env.local scripts/upload-full-cbc-catalog.mjs",
+    "materials:upload-expanded": "node --env-file=.env.local scripts/upload-expanded-cbc-catalog.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
