@@ -17,12 +17,14 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import CategoryGrid from '@/components/CategoryGrid';
+import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
 import ResourceCard, { type ResourceItem } from '@/components/ResourceCard';
 import PreviewModal from '@/components/PreviewModal';
-import { normalizeCategory } from '@/lib/material-utils';
+import { getLevelForGrade, normalizeCategory } from '@/lib/material-utils';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 36;
+const DEFAULT_GROUP_PREVIEW = 8;
+const FILTERED_GROUP_PREVIEW = 18;
 // M-Pesa Payment Recipient: 254728595160 (0728595160)
 const DEFAULT_MERCHANT_INTL = '254728595160';
 const DEFAULT_MERCHANT_LOCAL = '0728595160';
@@ -50,6 +52,7 @@ export default function HomePage() {
   const [selectedTerm, setSelectedTerm] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
 
   // Payment & WhatsApp Configuration
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
@@ -134,6 +137,7 @@ export default function HomePage() {
   // Reset pagination whenever filters change
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
+    setExpandedAreaCounts({});
   }, [selectedGrade, selectedSubject, selectedCategory, selectedTerm, searchQuery]);
 
   // Dynamic subject options scoped to selected Grade
@@ -192,35 +196,63 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [checkoutRequestId, paymentStatus]);
 
-  const filteredItems = useMemo(() => {
+  // Matches grade, subject, term & search (used for per-area counts & grouped sections)
+  const baseFilteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return resources.filter((item) => {
-      const matchGrade =
-        selectedGrade === 'All' || item.grade.toString() === selectedGrade;
-      const matchSubj =
-        selectedSubject === 'All' || item.subject === selectedSubject;
-      const matchCat =
-        selectedCategory === 'All' ||
-        normalizeCategory(item.category) === selectedCategory;
-      const matchTerm =
-        selectedTerm === 'All' || String(item.term ?? 1) === selectedTerm;
-      const matchSearch =
-        !q ||
-        item.title.toLowerCase().includes(q) ||
-        (item.subject || '').toLowerCase().includes(q) ||
-        (item.category || '').toLowerCase().includes(q);
-      return matchGrade && matchSubj && matchCat && matchTerm && matchSearch;
+    return resources
+      .filter((item) => {
+        const matchGrade =
+          selectedGrade === 'All' || item.grade.toString() === selectedGrade;
+        const matchSubj =
+          selectedSubject === 'All' || item.subject === selectedSubject;
+        const matchTerm =
+          selectedTerm === 'All' || String(item.term ?? 1) === selectedTerm;
+        const matchSearch =
+          !q ||
+          item.title.toLowerCase().includes(q) ||
+          (item.subject || '').toLowerCase().includes(q) ||
+          (item.category || '').toLowerCase().includes(q);
+        return matchGrade && matchSubj && matchTerm && matchSearch;
+      })
+      .sort((a, b) => {
+        // Keep Holiday Assignments (term 1-3) grouped together and Curriculum Designs (term 0) grouped together
+        const aIsDesign = a.term === 0 ? 1 : 0;
+        const bIsDesign = b.term === 0 ? 1 : 0;
+        if (aIsDesign !== bIsDesign) return aIsDesign - bIsDesign;
+        if (a.grade !== b.grade) return a.grade - b.grade;
+        const subjCmp = (a.subject || '').localeCompare(b.subject || '');
+        if (subjCmp !== 0) return subjCmp;
+        return (a.term || 0) - (b.term || 0);
+      });
+  }, [resources, selectedGrade, selectedSubject, selectedTerm, searchQuery]);
+
+  const filteredItems = useMemo(() => {
+    if (selectedCategory === 'All') return baseFilteredItems;
+    return baseFilteredItems.filter(
+      (item) => normalizeCategory(item.category) === selectedCategory
+    );
+  }, [baseFilteredItems, selectedCategory]);
+
+  const groupedAreas = useMemo(() => {
+    return MATERIAL_AREAS.map((area) => {
+      const items = baseFilteredItems.filter(
+        (r) => normalizeCategory(r.category) === area.filterCategory
+      );
+      return { area, items };
     });
-  }, [
-    resources,
-    selectedGrade,
-    selectedSubject,
-    selectedCategory,
-    selectedTerm,
-    searchQuery,
-  ]);
+  }, [baseFilteredItems]);
 
   const displayedItems = filteredItems.slice(0, visibleCount);
+
+  const singleAreaByGrade = useMemo(() => {
+    const map = new Map<number, ResourceItem[]>();
+    for (const item of displayedItems) {
+      const list = map.get(item.grade) || [];
+      list.push(item);
+      map.set(item.grade, list);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
+  }, [displayedItems]);
 
   const buildOrderWhatsAppHref = (receipt: string) => {
     if (!modalItem) return `https://wa.me/${whatsappPhone}`;
@@ -509,22 +541,22 @@ export default function HomePage() {
 
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                Material Type
+                Material Area
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="All">All Categories</option>
+                <option value="All">All Areas (Grouped Together)</option>
                 <option value="Schemes of Work">Schemes of Work</option>
-                <option value="Lesson Plans">Lesson Plans</option>
-                <option value="Teachers' Notes">Lesson Notes &amp; Booklets</option>
-                <option value="Revision Papers & Exams">
-                  Exams &amp; Marking Schemes
-                </option>
+                <option value="Lesson Plans">CBC Lesson Plans</option>
+                <option value="Teachers' Notes">Teachers&apos; &amp; Lesson Notes</option>
                 <option value="Records of Work">
                   Records of Work &amp; Rubrics
+                </option>
+                <option value="Revision Papers & Exams">
+                  Exams &amp; Marking Schemes
                 </option>
                 <option value="Holiday Assignments & Designs">
                   Holiday Packs &amp; Designs
@@ -549,13 +581,68 @@ export default function HomePage() {
               </select>
             </div>
           </div>
+
+          {/* Quick Material Area Tabs */}
+          <div className="pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('All')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                selectedCategory === 'All'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              All Areas Grouped ({baseFilteredItems.length.toLocaleString()})
+            </button>
+            {groupedAreas.map(({ area, items }) => {
+              const isSelected = selectedCategory === area.filterCategory;
+              return (
+                <button
+                  key={area.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCategory(isSelected ? 'All' : area.filterCategory)
+                  }
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition"
+                  style={
+                    isSelected
+                      ? {
+                          backgroundColor: area.color,
+                          borderColor: area.color,
+                          color: '#ffffff',
+                        }
+                      : {
+                          backgroundColor: area.bg,
+                          borderColor: area.borderColor,
+                          color: area.color,
+                        }
+                  }
+                >
+                  {area.shortTitle} ({items.length.toLocaleString()})
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         {/* 4. Section Divider & Header */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-6 pb-2 border-b border-slate-200">
-          <h2 className="text-lg font-black tracking-tight text-slate-900 uppercase">
-            Available Curriculum Materials
-          </h2>
+          <div>
+            <h2 className="text-lg font-black tracking-tight text-slate-900 uppercase">
+              {selectedCategory === 'All'
+                ? 'Curriculum Materials Grouped by Area'
+                : `${
+                    MATERIAL_AREAS.find((a) => a.filterCategory === selectedCategory)
+                      ?.title || selectedCategory
+                  }`}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {selectedCategory === 'All'
+                ? 'Schemes of Work, Lesson Plans, Teachers’ Notes, Records of Work, Exams & Holiday/Curriculum Designs neatly organized in their respective sections'
+                : 'Organized sequentially from Grade 1 to Grade 12 across Terms 1, 2 & 3'}
+            </p>
+          </div>
           <div className="flex items-center gap-3">
             {(selectedGrade !== 'All' ||
               selectedSubject !== 'All' ||
@@ -577,13 +664,12 @@ export default function HomePage() {
               </button>
             )}
             <span className="text-xs font-bold text-slate-500">
-              Showing {displayedItems.length.toLocaleString()} of{' '}
-              {filteredItems.length.toLocaleString()} resources
+              {filteredItems.length.toLocaleString()} matching materials
             </span>
           </div>
         </div>
 
-        {/* 5. Paginated Dynamic Resource Grid */}
+        {/* 5. Grouped Curriculum Areas Display */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
@@ -610,18 +696,193 @@ export default function HomePage() {
               Clear all filters
             </button>
           </div>
+        ) : selectedCategory === 'All' ? (
+          <div className="space-y-8">
+            {groupedAreas
+              .filter(({ items }) => items.length > 0)
+              .map(({ area, items }) => {
+                const defaultSlice =
+                  selectedGrade !== 'All' || selectedSubject !== 'All'
+                    ? FILTERED_GROUP_PREVIEW
+                    : DEFAULT_GROUP_PREVIEW;
+                const currentLimit =
+                  expandedAreaCounts[area.filterCategory] || defaultSlice;
+                const visibleSlice = items.slice(0, currentLimit);
+                const remainingInArea = items.length - visibleSlice.length;
+
+                return (
+                  <section
+                    key={area.id}
+                    id={area.id}
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                  >
+                    {/* Area Group Header */}
+                    <div
+                      className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      style={{
+                        backgroundColor: area.bg,
+                        borderColor: area.borderColor,
+                      }}
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3
+                            className="text-base font-black uppercase tracking-wide"
+                            style={{ color: area.color }}
+                          >
+                            {area.title}
+                          </h3>
+                          <span
+                            className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-white border"
+                            style={{
+                              color: area.color,
+                              borderColor: area.borderColor,
+                            }}
+                          >
+                            {items.length.toLocaleString()}{' '}
+                            {items.length === 1 ? 'Material' : 'Materials'}
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-600 bg-white/80 px-2 py-0.5 rounded">
+                            {area.badgeText}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1">
+                          {area.subtitle}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCategory(area.filterCategory)}
+                        className="self-start sm:self-center px-3.5 py-2 rounded-xl text-xs font-bold bg-white border shadow-xs hover:shadow transition whitespace-nowrap"
+                        style={{
+                          color: area.color,
+                          borderColor: area.borderColor,
+                        }}
+                      >
+                        Open All {items.length.toLocaleString()} {area.shortTitle} →
+                      </button>
+                    </div>
+
+                    {/* Grouped Cards Grid */}
+                    <div className="p-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {visibleSlice.map((item) => (
+                          <ResourceCard
+                            key={item.id}
+                            resource={item}
+                            onPreview={(res) => setPreviewItem(res)}
+                            onBuy={(res) => openCheckoutFor(res)}
+                          />
+                        ))}
+                      </div>
+
+                      {remainingInArea > 0 && (
+                        <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedAreaCounts((prev) => ({
+                                ...prev,
+                                [area.filterCategory]: currentLimit + 18,
+                              }))
+                            }
+                            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold border bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200 transition"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                            Show More {area.shortTitle} (
+                            {remainingInArea.toLocaleString()} more)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory(area.filterCategory)}
+                            className="px-4 py-2.5 rounded-xl text-xs font-bold transition hover:underline"
+                            style={{ color: area.color }}
+                          >
+                            View Dedicated {area.shortTitle} Page →
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+          </div>
         ) : (
-          <>
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {displayedItems.map((item) => (
-                <ResourceCard
-                  key={item.id}
-                  resource={item}
-                  onPreview={(res) => setPreviewItem(res)}
-                  onBuy={(res) => openCheckoutFor(res)}
-                />
-              ))}
-            </section>
+          <div className="space-y-6">
+            {/* Active Single Area Banner */}
+            {(() => {
+              const activeArea = MATERIAL_AREAS.find(
+                (a) => a.filterCategory === selectedCategory
+              );
+              if (!activeArea) return null;
+              return (
+                <div
+                  className="p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  style={{
+                    backgroundColor: activeArea.bg,
+                    borderColor: activeArea.borderColor,
+                  }}
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3
+                        className="text-base font-black uppercase"
+                        style={{ color: activeArea.color }}
+                      >
+                        {activeArea.title}
+                      </h3>
+                      <span className="text-xs font-bold bg-white px-2.5 py-0.5 rounded-full text-slate-700">
+                        {filteredItems.length.toLocaleString()} Materials
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1">
+                      {activeArea.subtitle}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory('All')}
+                    className="self-start sm:self-center bg-white px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition whitespace-nowrap"
+                  >
+                    ← Back to All Grouped Areas
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Grade-Grouped Sections inside the Selected Area */}
+            {singleAreaByGrade.map(([gradeNum, gradeItems]) => (
+              <section
+                key={gradeNum}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4"
+              >
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-emerald-700 text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                      Grade {gradeNum}
+                    </span>
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                      {getLevelForGrade(gradeNum)} • {selectedCategory}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-400">
+                    {gradeItems.length}{' '}
+                    {gradeItems.length === 1 ? 'document' : 'documents'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {gradeItems.map((item) => (
+                    <ResourceCard
+                      key={item.id}
+                      resource={item}
+                      onPreview={(res) => setPreviewItem(res)}
+                      onBuy={(res) => openCheckoutFor(res)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
 
             {visibleCount < filteredItems.length && (
               <div className="mt-8 flex justify-center">
@@ -631,13 +892,13 @@ export default function HomePage() {
                   className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-800 font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition"
                 >
                   <ChevronDown className="w-4 h-4" />
-                  Load More Materials (
+                  Load More {selectedCategory} (
                   {(filteredItems.length - visibleCount).toLocaleString()}{' '}
                   remaining)
                 </button>
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
 

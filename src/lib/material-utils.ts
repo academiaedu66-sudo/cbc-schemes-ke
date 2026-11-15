@@ -23,8 +23,8 @@ export const MATERIAL_CATEGORIES: MaterialCategory[] = [
   'Schemes of Work',
   'Lesson Plans',
   "Teachers' Notes",
-  'Revision Papers & Exams',
   'Records of Work',
+  'Revision Papers & Exams',
   'Holiday Assignments & Designs',
 ];
 

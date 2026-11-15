@@ -27,6 +27,7 @@ import {
   DEFAULT_PRICES,
   formatTermLabel,
   getLevelForGrade,
+  normalizeCategory,
   parseFilenameToMetadata,
   type MaterialCategory,
 } from '@/lib/material-utils';
@@ -108,6 +109,7 @@ export default function AdminDashboardPage() {
   const [storageCount, setStorageCount] = useState(0);
   const [isLoadingInv, setIsLoadingInv] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
+  const [adminCategoryFilter, setAdminCategoryFilter] = useState<string>('All');
   const [adminVisibleCount, setAdminVisibleCount] = useState(60);
 
   const [queue, setQueue] = useState<QueuedUpload[]>([]);
@@ -505,12 +507,31 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const filteredInventory = inventory.filter(
+  const baseSearchedInventory = inventory.filter(
     (r) =>
       r.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
       (r.subject || '').toLowerCase().includes(searchFilter.toLowerCase()) ||
       (r.category || '').toLowerCase().includes(searchFilter.toLowerCase())
   );
+
+  const filteredInventory = baseSearchedInventory
+    .filter(
+      (r) =>
+        adminCategoryFilter === 'All' ||
+        normalizeCategory(r.category) === adminCategoryFilter
+    )
+    .sort((a, b) => {
+      const catA = MATERIAL_CATEGORIES.indexOf(normalizeCategory(a.category));
+      const catB = MATERIAL_CATEGORIES.indexOf(normalizeCategory(b.category));
+      if (catA !== catB) return catA - catB;
+      const aDesign = a.term === 0 ? 1 : 0;
+      const bDesign = b.term === 0 ? 1 : 0;
+      if (aDesign !== bDesign) return aDesign - bDesign;
+      if (a.grade !== b.grade) return a.grade - b.grade;
+      const subj = (a.subject || '').localeCompare(b.subject || '');
+      if (subj !== 0) return subj;
+      return (a.term || 0) - (b.term || 0);
+    });
 
   const pendingQueueCount = queue.filter(
     (q) => q.status === 'READY' || q.status === 'ERROR'
@@ -1277,19 +1298,67 @@ export default function AdminDashboardPage() {
           )}
         </section>
 
-        {/* 2. Live Catalog Inventory */}
+        {/* 2. Live Catalog Inventory (Grouped by Material Area) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-base font-black text-slate-900 uppercase">
-              Published Catalog ({inventory.length})
-            </h2>
+            <div>
+              <h2 className="text-base font-black text-slate-900 uppercase">
+                Published Catalog Grouped by Area ({filteredInventory.length} / {inventory.length})
+              </h2>
+              <p className="text-xs text-slate-500">
+                Schemes of Work, Lesson Plans, Notes, Records of Work, Exams &amp; Holiday/Curriculum Designs grouped cleanly
+              </p>
+            </div>
             <input
               type="text"
               placeholder="Filter catalog..."
               value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
+              onChange={(e) => {
+                setSearchFilter(e.target.value);
+                setAdminVisibleCount(60);
+              }}
               className="px-3 py-1.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:w-64"
             />
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            <button
+              type="button"
+              onClick={() => {
+                setAdminCategoryFilter('All');
+                setAdminVisibleCount(60);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                adminCategoryFilter === 'All'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              All Grouped ({baseSearchedInventory.length})
+            </button>
+            {MATERIAL_CATEGORIES.map((cat) => {
+              const cnt = baseSearchedInventory.filter(
+                (r) => normalizeCategory(r.category) === cat
+              ).length;
+              const active = adminCategoryFilter === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setAdminCategoryFilter(active ? 'All' : cat);
+                    setAdminVisibleCount(60);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                    active
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                  }`}
+                >
+                  {cat} ({cnt})
+                </button>
+              );
+            })}
           </div>
 
           {isLoadingInv ? (
@@ -1303,73 +1372,95 @@ export default function AdminDashboardPage() {
                   <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px]">
                     <th className="py-2.5 pr-3">Title</th>
                     <th className="py-2.5 px-3">Grade / Term</th>
-                    <th className="py-2.5 px-3">Category</th>
+                    <th className="py-2.5 px-3">Category Area</th>
                     <th className="py-2.5 px-3">Price</th>
                     <th className="py-2.5 px-3">Storage File</th>
                     <th className="py-2.5 pl-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredInventory.slice(0, adminVisibleCount).map((r) => (
-                    <tr key={r.id} className="hover:bg-slate-50">
-                      <td className="py-3 pr-3 font-bold text-slate-900 max-w-xs">
-                        <div className="line-clamp-1">{r.title}</div>
-                        <div className="text-[11px] font-normal text-slate-500">
-                          {r.subject} • {r.format}
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        Grade {r.grade} • {formatTermLabel(r.term)}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        {r.category}
-                      </td>
-                      <td className="py-3 px-3 font-bold text-emerald-700 whitespace-nowrap">
-                        KES {r.price}
-                      </td>
-                      <td className="py-3 px-3">
-                        {r.hasStorageFile ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Linked
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                            <AlertTriangle className="w-3 h-3" />
-                            Missing File
-                          </span>
+                  {filteredInventory.slice(0, adminVisibleCount).map((r, idx, arr) => {
+                    const normCat = normalizeCategory(r.category);
+                    const prevCat =
+                      idx > 0 ? normalizeCategory(arr[idx - 1].category) : null;
+                    const showGroupBanner = normCat !== prevCat;
+                    const groupTotal = filteredInventory.filter(
+                      (x) => normalizeCategory(x.category) === normCat
+                    ).length;
+
+                    return (
+                      <React.Fragment key={r.id}>
+                        {showGroupBanner && (
+                          <tr className="bg-emerald-50/80 border-y border-emerald-200">
+                            <td
+                              colSpan={6}
+                              className="py-2 px-3 font-black uppercase tracking-wider text-[11px] text-emerald-900"
+                            >
+                              {normCat} — {groupTotal.toLocaleString()} Materials in Area
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td className="py-3 pl-3 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleAdminDownload(r)}
-                            className="p-1.5 text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50"
-                            title="Download File Directly"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPreviewItem(r)}
-                            className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-slate-100"
-                            title="Preview"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(r)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        <tr className="hover:bg-slate-50">
+                          <td className="py-3 pr-3 font-bold text-slate-900 max-w-xs">
+                            <div className="line-clamp-1">{r.title}</div>
+                            <div className="text-[11px] font-normal text-slate-500">
+                              {r.subject} • {r.format}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            Grade {r.grade} • {formatTermLabel(r.term)}
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            {normCat}
+                          </td>
+                          <td className="py-3 px-3 font-bold text-emerald-700 whitespace-nowrap">
+                            KES {r.price}
+                          </td>
+                          <td className="py-3 px-3">
+                            {r.hasStorageFile ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Linked
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                                <AlertTriangle className="w-3 h-3" />
+                                Missing File
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 pl-3 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleAdminDownload(r)}
+                                className="p-1.5 text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50"
+                                title="Download File Directly"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewItem(r)}
+                                className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-slate-100"
+                                title="Preview"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(r)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
               {adminVisibleCount < filteredInventory.length && (
