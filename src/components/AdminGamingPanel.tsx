@@ -61,7 +61,7 @@ export default function AdminGamingPanel({ password }: { password: string }) {
           </div>
           <div>
             <h2 className="text-base font-black text-slate-900 uppercase flex flex-wrap items-center gap-2">
-              CBC Subject Gaming Arena (KSh 10 / Hr • 1,000 Pts = KSh 5)
+              CBC Subject Gaming Arena (KSh 10 / 20 Mins • 1,000 Pts = KSh 5)
               <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
                 {activeSessionsCount} Live Now • {totalSessionsSold} Total Passes (KSh{' '}
                 {(totalSessionsSold * 10).toLocaleString()})
@@ -74,7 +74,7 @@ export default function AdminGamingPanel({ password }: { password: string }) {
               )}
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              1-hour auto-logout sessions, learner point balances &amp; 1,000-point (KSh
+              20-minute auto-logout sessions, learner point balances &amp; 1,000-point (KSh
               5) reward redemptions.
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function AdminGamingPanel({ password }: { password: string }) {
                 <th className="text-left px-4 py-2">Phone</th>
                 <th className="text-right px-4 py-2">Current Points</th>
                 <th className="text-right px-4 py-2">Lifetime Pts</th>
-                <th className="text-right px-4 py-2">1-Hr Passes</th>
+                <th className="text-right px-4 py-2">20-Min Passes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

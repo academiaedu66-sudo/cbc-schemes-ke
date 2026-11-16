@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         active: false,
         expired: true,
         player,
-        message: '1-hour gaming session ended — logged out automatically.',
+        message: '20-minute gaming session ended — logged out automatically.',
       });
     }
 
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
             {
               expired: true,
               error:
-                'This 1-hour gaming pass has already expired. Pay KSh 10 to start a new 1-hour session.',
+                'This 20-minute gaming pass has already expired. Pay KSh 10 to start a new 20-minute session.',
             },
             { status: 401 }
           );
@@ -226,7 +226,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Mint brand-new exact 1-hour (3,600s) session
+      // Mint brand-new exact 20-minute (1,200s) session
       const sessionId = `gs_${crypto.randomBytes(12).toString('hex')}`;
       const startedAt = now;
       const expiresAt = startedAt + GAMING_SESSION_MS;
@@ -261,14 +261,14 @@ export async function POST(req: NextRequest) {
         active: true,
         sessionId,
         expiresAt,
-        remainingSeconds: 3600,
+        remainingSeconds: 1200,
         player,
         sessionPoints: 0,
         question,
       });
     }
 
-    // 2. SUBMIT QUESTION ANSWER (+1 POINT IF CORRECT, ENFORCE 1-HOUR AUTO-LOGOUT)
+    // 2. SUBMIT QUESTION ANSWER (+1 POINT IF CORRECT, ENFORCE 20-MINUTE AUTO-LOGOUT)
     if (action === 'answer') {
       const sessionId = String(body.sessionId || '');
       const token = String(body.token || '');
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
             expired: true,
             player,
             error:
-              'Your 1-hour gaming session has expired! You have been logged out automatically. Your points are safely saved.',
+              'Your 20-minute gaming session has expired! You have been logged out automatically. Your points are safely saved.',
           },
           { status: 401 }
         );
@@ -367,7 +367,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             expired: true,
-            error: '1-hour session ended — logged out automatically.',
+            error: '20-minute session ended — logged out automatically.',
           },
           { status: 401 }
         );

@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       resource = {
         id: null,
         price: 10,
-        title: 'CBC Subject Gaming 1-Hour Pass (KSh 10)',
+        title: 'CBC Subject Gaming 20-Minute Pass (KSh 10)',
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

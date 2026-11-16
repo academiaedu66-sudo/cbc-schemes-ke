@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
         } else if (Number(o.amount) === 500) {
           fallbackTitle = 'Teacher Holiday / Personal Tuition Registration (KSh 500)';
         } else if (Number(o.amount) === 10) {
-          fallbackTitle = 'CBC Subject Gaming 1-Hour Pass (KSh 10)';
+          fallbackTitle = 'CBC Subject Gaming 20-Minute Pass (KSh 10)';
         }
       }
       return {

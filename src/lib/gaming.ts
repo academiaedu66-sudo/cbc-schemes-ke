@@ -5,8 +5,8 @@ import { getSyllabusForGrade } from '../../scripts/cbc-syllabus-data.mjs';
 const BUCKET_NAME = 'cbc-materials';
 const GAMING_STORAGE_PATH = '_system/gaming-ledger.json';
 
-export const GAMING_FEE_KES = 10; // KSh 10 ("10 bob") per 1-hour activation
-export const GAMING_SESSION_MS = 60 * 60 * 1000; // Exact 1 hour (3,600,000 ms)
+export const GAMING_FEE_KES = 10; // KSh 10 ("10 bob") per 20-minute activation
+export const GAMING_SESSION_MS = 20 * 60 * 1000; // Exact 20 minutes (1,200,000 ms)
 export const POINTS_PER_QUESTION = 1; // 1 point per correct question
 export const REDEEM_POINTS_REQUIRED = 1000; // 1,000 points
 export const REDEEM_KES_VALUE = 5; // KSh 5 ("5 bob") per 1,000 points

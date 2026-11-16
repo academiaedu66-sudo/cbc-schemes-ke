@@ -258,9 +258,9 @@ export default function SubjectGamingHub({
 
         if (dlData.status === 'COMPLETED') {
           window.clearInterval(timer);
-          setStatusMessage('Payment auto-confirmed! Unlocking your 1-hour gaming session...');
+          setStatusMessage('Payment auto-confirmed! Unlocking your 20-minute gaming session...');
 
-          // Step B: Mint verified 1-hour gaming session
+          // Step B: Mint verified 20-minute gaming session
           const actRes = await fetch('/api/gaming', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -351,7 +351,7 @@ export default function SubjectGamingHub({
       setCheckoutRequestId(data.checkoutRequestId);
       setStkWaitingPin(true);
       setStatusMessage(
-        `STK Prompt sent to ${phone}! Enter your M-Pesa PIN to pay KSh ${GAMING_FEE_KES} — your 1-hour session opens automatically once confirmed.`
+        `STK Prompt sent to ${phone}! Enter your M-Pesa PIN to pay KSh ${GAMING_FEE_KES} — your 20-minute session opens automatically once confirmed.`
       );
     } catch {
       setErrorMessage('Network error sending STK prompt. Please try again.');
@@ -509,14 +509,14 @@ export default function SubjectGamingHub({
                   Play &amp; Earn CBC Quiz Arena
                 </span>
                 <span className="text-[11px] font-bold text-emerald-300 bg-emerald-900/60 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
-                  1 Question = 1 Point • 1,000 Pts = KSh 5 • KSh 10 / 1-Hour Pass
+                  1 Question = 1 Point • 1,000 Pts = KSh 5 • KSh 10 / 20-Min Pass
                 </span>
               </div>
               <h2 className="text-base md:text-lg font-black tracking-tight text-white">
                 CBC Subject Gaming — Answer Questions Across Any Subject &amp; Earn Real M-Pesa Rewards!
               </h2>
               <p className="text-xs text-slate-300">
-                Tap any CBC subject below to activate a <strong>1-Hour Pass (KSh 10 STK Push)</strong>.
+                Tap any CBC subject below to activate a <strong>20-Minute Pass (KSh 10 STK Push)</strong>.
                 Earn <strong>1 point</strong> per correct question &amp; redeem{' '}
                 <strong>1,000 points for KSh 5</strong>!
               </p>
@@ -529,7 +529,7 @@ export default function SubjectGamingHub({
             className="shrink-0 inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-lg transition cursor-pointer"
           >
             <Gamepad2 className="w-4 h-4" />
-            <span>Launch Gaming Arena (KSh 10 / 1 Hr)</span>
+            <span>Launch Gaming Arena (KSh 10 / 20 Mins)</span>
           </button>
         </div>
 
@@ -581,11 +581,11 @@ export default function SubjectGamingHub({
                   <span>{currentPoints.toLocaleString()} pts</span>
                 </div>
 
-                {/* Live 1-Hour Countdown Badge (when playing) */}
+                {/* Live 20-Minute Countdown Badge (when playing) */}
                 {view === 'PLAYING' && (
                   <div
                     className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-mono font-black ${
-                      remainingSeconds <= 300
+                      remainingSeconds <= 120
                         ? 'bg-rose-600 text-white animate-pulse'
                         : 'bg-emerald-600 text-white'
                     }`}
@@ -682,9 +682,9 @@ export default function SubjectGamingHub({
                         auto-confirmed.
                       </li>
                       <li>
-                        • <strong>1-Hour Session:</strong> Play unlimited CBC questions
-                        across all subjects for <strong>60 minutes</strong> (auto-logs out
-                        after 1 hour; your points stay saved!).
+                        • <strong>20-Minute Session:</strong> Play unlimited CBC questions
+                        across all subjects for <strong>20 minutes</strong> (auto-logs out
+                        after 20 minutes; your points stay saved!).
                       </li>
                       <li>
                         • <strong>Earn &amp; Redeem:</strong> Every correct question ={' '}
@@ -796,12 +796,12 @@ export default function SubjectGamingHub({
                     )}
                     {stkWaitingPin
                       ? 'Waiting for M-Pesa PIN Auto-Confirmation...'
-                      : `Activate 1-Hour Gaming Pass (KSh ${GAMING_FEE_KES} STK Push)`}
+                      : `Activate 20-Minute Gaming Pass (KSh ${GAMING_FEE_KES} STK Push)`}
                   </button>
                 </form>
               )}
 
-              {/* VIEW 2: ACTIVE 1-HOUR LIVE GAMING ARENA */}
+              {/* VIEW 2: ACTIVE 20-MINUTE LIVE GAMING ARENA */}
               {view === 'PLAYING' && question && (
                 <div className="space-y-5">
                   {/* Subject Switcher + Progress Toward 1,000 Pts = KSh 5 */}
@@ -825,7 +825,7 @@ export default function SubjectGamingHub({
                       </div>
 
                       <span className="text-xs font-bold text-slate-600">
-                        This Hour: <strong className="text-emerald-700">+{sessionPoints} pts</strong>
+                        This Session: <strong className="text-emerald-700">+{sessionPoints} pts</strong>
                       </span>
                     </div>
 
@@ -955,7 +955,7 @@ export default function SubjectGamingHub({
                 </div>
               )}
 
-              {/* VIEW 3: AUTOMATICALLY LOGGED OUT AFTER 1 HOUR */}
+              {/* VIEW 3: AUTOMATICALLY LOGGED OUT AFTER 20 MINUTES */}
               {view === 'LOGGED_OUT' && (
                 <div className="text-center py-6 space-y-5">
                   <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
@@ -963,10 +963,10 @@ export default function SubjectGamingHub({
                   </div>
                   <div className="space-y-1.5">
                     <h4 className="text-lg font-black text-slate-900">
-                      1-Hour Gaming Session Complete — Automatically Logged Out
+                      20-Minute Gaming Session Complete — Automatically Logged Out
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                      Your 60-minute gaming pass has ended and you have been logged out
+                      Your 20-minute gaming pass has ended and you have been logged out
                       automatically. Your total balance of{' '}
                       <strong>{currentPoints.toLocaleString()} points</strong> is safely
                       saved under your phone number!
@@ -996,7 +996,7 @@ export default function SubjectGamingHub({
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm px-6 py-3.5 rounded-xl shadow transition cursor-pointer"
                   >
-                    Activate Another 1-Hour Session (KSh {GAMING_FEE_KES} STK Push)
+                    Activate Another 20-Minute Session (KSh {GAMING_FEE_KES} STK Push)
                   </button>
                 </div>
               )}
