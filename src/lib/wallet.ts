@@ -25,6 +25,7 @@ export interface WalletWithdrawalRecord {
   destination: string; // e.g. 0728595160 or Bank Acc
   status: 'COMPLETED' | 'PENDING_SETTLEMENT' | 'CANCELLED';
   gatewayDisbursed: boolean;
+  mpesaReceipt?: string;
   gatewayMessage: string;
   createdAt: string;
 }
@@ -46,6 +47,12 @@ export interface WalletOverview {
   availableTotalKes: number;
   completedOrdersCount: number;
   liveB2cReady: boolean;
+  payheroChannelId: string;
+  adNetworkConnected: boolean;
+  adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
+  adNetworkScriptUrl: string;
+  smartlinkUrl: string;
+  adsenseClientId: string;
   defaultMpesaPhone: string;
   withdrawals: WalletWithdrawalRecord[];
 }
@@ -169,6 +176,12 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     (payConfig.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim()
   );
 
+  const adNetworkConnected = Boolean(
+    (monConfig.adNetworkScriptUrl || '').trim() ||
+      (monConfig.smartlinkUrl || '').trim() ||
+      (monConfig.adsenseClientId || '').trim()
+  );
+
   const defaultMpesaPhone = toLocalKenyanFormat(
     payConfig.recipientMpesa || '254728595160'
   );
@@ -185,6 +198,12 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     availableTotalKes,
     completedOrdersCount: completedList.length,
     liveB2cReady: hasPayheroToken,
+    payheroChannelId: payConfig.payheroChannelId || '',
+    adNetworkConnected,
+    adNetworkProvider: monConfig.adNetworkProvider || 'monetag',
+    adNetworkScriptUrl: monConfig.adNetworkScriptUrl || '',
+    smartlinkUrl: monConfig.smartlinkUrl || '',
+    adsenseClientId: monConfig.adsenseClientId || '',
     defaultMpesaPhone,
     withdrawals: ledger.withdrawals,
   };
@@ -296,22 +315,33 @@ export async function createWalletWithdrawal(params: {
             network_code: '63902',
             channel: 'mobile',
             external_reference: refCode,
+            callback_url: 'https://cbc-schemes-ke.vercel.app/api/mpesa/callback',
           }),
           cache: 'no-store',
-          signal: AbortSignal.timeout(6000),
+          signal: AbortSignal.timeout(8000),
         });
+
+        const resJson = (await res.json().catch(() => ({}))) as {
+          reference?: string;
+          message?: string;
+          error_message?: string;
+        };
 
         if (res.ok) {
           gatewayDisbursed = true;
           status = 'COMPLETED';
-          gatewayMessage = `Instant M-Pesa B2C sent to ${toLocalKenyanFormat(
+          gatewayMessage = `Safaricom M-Pesa B2C Disbursed to ${toLocalKenyanFormat(
             intlMpesa
-          )}!`;
+          )}! Check your phone for the M-Pesa SMS notification (${
+            resJson.reference || refCode
+          }).`;
         } else {
           status = 'PENDING_SETTLEMENT';
-          gatewayMessage = `Logged (${refCode}) — awaiting PayHero wallet top-up / manual settlement to ${toLocalKenyanFormat(
-            intlMpesa
-          )}.`;
+          gatewayMessage = `PayHero B2C response (${refCode}): ${
+            resJson.error_message ||
+            resJson.message ||
+            'Ensure your PayHero Service Wallet has sufficient KES balance to send M-Pesa.'
+          }`;
         }
       } catch {
         status = 'PENDING_SETTLEMENT';
@@ -320,10 +350,10 @@ export async function createWalletWithdrawal(params: {
         )}.`;
       }
     } else {
-      status = 'COMPLETED';
-      gatewayMessage = `Withdrawn (${refCode}) to M-Pesa ${toLocalKenyanFormat(
+      status = 'PENDING_SETTLEMENT';
+      gatewayMessage = `Queued (${refCode}) — Connect your PayHero Basic Auth Token in "Link Real M-Pesa & Ad Payouts" below to send real KES automatically to ${toLocalKenyanFormat(
         intlMpesa
-      )} (Client KES ${fromClientPaymentsKes.toLocaleString()} + Monetization KES ${fromMonetizationKes.toLocaleString()}).`;
+      )}!`;
     }
   } else {
     status = 'PENDING_SETTLEMENT';
@@ -369,4 +399,34 @@ export async function updateWithdrawalStatus(
   );
   await saveWalletLedger(ledger);
   return computeWalletOverview();
+}
+
+export async function confirmWithdrawalCallback(params: {
+  referenceCode: string;
+  mpesaReceipt: string;
+  success: boolean;
+}): Promise<boolean> {
+  const cleanRef = params.referenceCode.replace(/^PAYOUT_/, '').trim();
+  const ledger = await getWalletLedger(true);
+  const idx = ledger.withdrawals.findIndex((w) => w.referenceCode === cleanRef);
+  if (idx === -1) return false;
+
+  if (params.success) {
+    ledger.withdrawals[idx] = {
+      ...ledger.withdrawals[idx],
+      status: 'COMPLETED',
+      gatewayDisbursed: true,
+      mpesaReceipt: params.mpesaReceipt,
+      gatewayMessage: `M-Pesa Confirmed! Safaricom Receipt: ${params.mpesaReceipt}`,
+    };
+  } else {
+    ledger.withdrawals[idx] = {
+      ...ledger.withdrawals[idx],
+      status: 'CANCELLED',
+      gatewayMessage: `M-Pesa B2C failed — amount refunded back to Wallet.`,
+    };
+  }
+
+  await saveWalletLedger(ledger);
+  return true;
 }

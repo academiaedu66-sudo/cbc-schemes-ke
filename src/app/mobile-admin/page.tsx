@@ -152,6 +152,12 @@ interface MobileWalletOverview {
   availableTotalKes: number;
   completedOrdersCount: number;
   liveB2cReady: boolean;
+  payheroChannelId: string;
+  adNetworkConnected: boolean;
+  adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
+  adNetworkScriptUrl: string;
+  smartlinkUrl: string;
+  adsenseClientId: string;
   defaultMpesaPhone: string;
   withdrawals: MobileWithdrawalRecord[];
 }
@@ -228,6 +234,18 @@ export default function MobileAdminAppPage() {
     ok: boolean;
     text: string;
   } | null>(null);
+  // In-App Real Money Linker (PayHero B2C + Monetag/Adsterra/AdSense)
+  const [showRealMoneyLinker, setShowRealMoneyLinker] = useState(false);
+  const [linkPayheroChannelId, setLinkPayheroChannelId] = useState('');
+  const [linkPayheroToken, setLinkPayheroToken] = useState('');
+  const [linkAdProvider, setLinkAdProvider] = useState<
+    'monetag' | 'adsterra' | 'custom'
+  >('monetag');
+  const [linkAdScriptUrl, setLinkAdScriptUrl] = useState('');
+  const [linkSmartlinkUrl, setLinkSmartlinkUrl] = useState('');
+  const [linkAdsenseId, setLinkAdsenseId] = useState('');
+  const [savingRealLinks, setSavingRealLinks] = useState(false);
+  const linkerHydratedRef = useRef<boolean>(false);
   const [voiceAlertEnabled, setVoiceAlertEnabled] = useState(true);
   const [resolvingChallengeId, setResolvingChallengeId] = useState<string | null>(
     null
@@ -266,7 +284,7 @@ export default function MobileAdminAppPage() {
             .webkitAudioContext;
         if (AudioCtx) {
           const ctx = new AudioCtx();
-          ctx.resume().catch(() => {});
+          ctx.resume().catch(() => { });
         }
         // Prime speechSynthesis & audio element silently
         if ('speechSynthesis' in window) {
@@ -275,7 +293,7 @@ export default function MobileAdminAppPage() {
         if (alertAudioRef.current) {
           alertAudioRef.current.load();
         }
-      } catch {}
+      } catch { }
     };
 
     window.addEventListener('pointerdown', unlockOnGesture, { passive: true });
@@ -304,7 +322,7 @@ export default function MobileAdminAppPage() {
           utter.volume = 1.0;
           window.speechSynthesis.speak(utter);
         }
-      } catch {}
+      } catch { }
     };
 
     try {
@@ -331,7 +349,7 @@ export default function MobileAdminAppPage() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/admin-sw.js', { scope: '/mobile-admin' })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     const onBeforeInstall = (e: Event) => {
@@ -419,8 +437,7 @@ export default function MobileAdminAppPage() {
               const latest = attJson.latestAttempt;
               if (latest) {
                 showToast(
-                  `Purchase Attempt: ${latest.itemTitle}${
-                    latest.amountKes ? ` (KES ${latest.amountKes})` : ''
+                  `Purchase Attempt: ${latest.itemTitle}${latest.amountKes ? ` (KES ${latest.amountKes})` : ''
                   }`
                 );
               }
@@ -487,6 +504,14 @@ export default function MobileAdminAppPage() {
           };
           if (walJson.overview) {
             setWalletOverview(walJson.overview);
+            if (!linkerHydratedRef.current) {
+              setLinkPayheroChannelId(walJson.overview.payheroChannelId || '');
+              setLinkAdProvider(walJson.overview.adNetworkProvider || 'monetag');
+              setLinkAdScriptUrl(walJson.overview.adNetworkScriptUrl || '');
+              setLinkSmartlinkUrl(walJson.overview.smartlinkUrl || '');
+              setLinkAdsenseId(walJson.overview.adsenseClientId || '');
+              linkerHydratedRef.current = true;
+            }
           }
         }
 
@@ -528,10 +553,10 @@ export default function MobileAdminAppPage() {
               sessionStorage.removeItem(STORAGE_AUTH_KEY);
             }
           })
-          .catch(() => {})
+          .catch(() => { })
           .finally(() => setCheckingAuth(false));
       }
-    } catch {}
+    } catch { }
   }, [fetchAllMobileData]);
 
   // Live 4-second auto-sync while authenticated (triggers Senior Counsel Pinchez voice alert!)
@@ -658,7 +683,7 @@ export default function MobileAdminAppPage() {
           );
           return;
         }
-      } catch {}
+      } catch { }
     }
 
     const msg = `Hello! Your M-Pesa payment (KES ${order.amount}) for "${order.resource_title}" (${order.mpesa_receipt_number || 'Confirmed'}) has been verified and approved ✅.`;
@@ -865,6 +890,65 @@ export default function MobileAdminAppPage() {
           ? 'Withdrawal cancelled & refunded back to Wallet!'
           : 'Withdrawal marked settled!'
       );
+    }
+  };
+
+  const handleSaveRealMoneyLinks = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingRealLinks(true);
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-admin-email': email.trim(),
+      'x-admin-password': password.trim(),
+    };
+
+    try {
+      const promises: Promise<Response>[] = [];
+
+      // 1. Save PayHero M-Pesa B2C & STK credentials if entered
+      if (linkPayheroChannelId.trim() || linkPayheroToken.trim()) {
+        promises.push(
+          fetch('/api/admin/payment-config', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              activeGateway: 'payhero',
+              recipientMpesa: '254728595160',
+              payheroChannelId: linkPayheroChannelId.trim(),
+              payheroAuthToken: linkPayheroToken.trim(),
+              payheroAutoWithdraw: true,
+            }),
+          })
+        );
+      }
+
+      // 2. Save Monetag / Adsterra / AdSense real paid ad links
+      promises.push(
+        fetch('/api/monetization/config', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            enabled: true,
+            adNetworkEnabled: Boolean(
+              linkAdScriptUrl.trim() || linkSmartlinkUrl.trim()
+            ),
+            adNetworkProvider: linkAdProvider,
+            adNetworkScriptUrl: linkAdScriptUrl.trim(),
+            smartlinkUrl: linkSmartlinkUrl.trim(),
+            adsenseEnabled: Boolean(linkAdsenseId.trim()),
+            adsenseClientId: linkAdsenseId.trim(),
+          }),
+        })
+      );
+
+      await Promise.all(promises);
+      setLinkPayheroToken('');
+      showToast('Real M-Pesa B2C & Paid Ad Network links saved live!');
+      await fetchAllMobileData(email, password);
+    } catch {
+      showToast('Failed to save links. Check your connection.');
+    } finally {
+      setSavingRealLinks(false);
     }
   };
 
@@ -1108,11 +1192,10 @@ export default function MobileAdminAppPage() {
                 }
               }}
               aria-label="Toggle voice alert"
-              className={`p-2 rounded-xl border active:scale-95 transition ${
-                voiceAlertEnabled
+              className={`p-2 rounded-xl border active:scale-95 transition ${voiceAlertEnabled
                   ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
                   : 'bg-slate-900 border-slate-800 text-slate-500'
-              }`}
+                }`}
             >
               {voiceAlertEnabled ? (
                 <Volume2 className="w-4 h-4" />
@@ -1221,11 +1304,10 @@ export default function MobileAdminAppPage() {
             <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-amber-950/40 border border-emerald-500/40 rounded-2xl p-3.5 flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    voiceAlertEnabled
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${voiceAlertEnabled
                       ? 'bg-emerald-500 text-slate-950'
                       : 'bg-slate-800 text-slate-400'
-                  }`}
+                    }`}
                 >
                   {voiceAlertEnabled ? (
                     <Volume2 className="w-4 h-4" />
@@ -1348,11 +1430,10 @@ export default function MobileAdminAppPage() {
                   key={tabItem.key}
                   type="button"
                   onClick={() => setOrderFilter(tabItem.key)}
-                  className={`py-2 rounded-xl text-[11px] font-black transition ${
-                    orderFilter === tabItem.key
+                  className={`py-2 rounded-xl text-[11px] font-black transition ${orderFilter === tabItem.key
                       ? 'bg-emerald-500 text-slate-950'
                       : 'text-slate-400'
-                  }`}
+                    }`}
                 >
                   {tabItem.label}
                 </button>
@@ -1367,8 +1448,8 @@ export default function MobileAdminAppPage() {
                   {verifySearch
                     ? `No transaction matches "${verifySearch.toUpperCase()}"`
                     : orderFilter === 'PENDING'
-                    ? 'All caught up! Zero pending approvals.'
-                    : 'No transactions in this tab yet.'}
+                      ? 'All caught up! Zero pending approvals.'
+                      : 'No transactions in this tab yet.'}
                 </p>
                 {orderFilter === 'PENDING' && orders.length > 0 && (
                   <button
@@ -1391,26 +1472,24 @@ export default function MobileAdminAppPage() {
                   return (
                     <div
                       key={order.id}
-                      className={`rounded-3xl border p-4 space-y-3 ${
-                        order.status === 'PENDING'
+                      className={`rounded-3xl border p-4 space-y-3 ${order.status === 'PENDING'
                           ? 'bg-slate-900 border-amber-400/50 shadow-lg'
                           : order.status === 'COMPLETED'
-                          ? 'bg-slate-900/70 border-emerald-500/30'
-                          : 'bg-slate-900/40 border-slate-800 opacity-75'
-                      }`}
+                            ? 'bg-slate-900/70 border-emerald-500/30'
+                            : 'bg-slate-900/40 border-slate-800 opacity-75'
+                        }`}
                     >
                       {/* Top Row: Receipt + Amount */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                                order.status === 'PENDING'
+                              className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${order.status === 'PENDING'
                                   ? 'bg-amber-400 text-slate-950'
                                   : order.status === 'COMPLETED'
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                  : 'bg-rose-500/20 text-rose-300'
-                              }`}
+                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                    : 'bg-rose-500/20 text-rose-300'
+                                }`}
                             >
                               {order.status}
                             </span>
@@ -1586,22 +1665,207 @@ export default function MobileAdminAppPage() {
               </div>
 
               {/* PRIMARY WITHDRAWAL BUTTON */}
-              <button
-                type="button"
-                onClick={() => {
-                  setWithdrawFeedback(null);
-                  setShowWithdrawForm((s) => !s);
-                }}
-                className="w-full bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
-              >
-                <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
-                <span>
-                  {showWithdrawForm
-                    ? 'Hide Withdrawal Panel'
-                    : 'Withdraw Money from Wallet'}
-                </span>
-              </button>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWithdrawFeedback(null);
+                    setShowWithdrawForm((s) => !s);
+                  }}
+                  className="w-full bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
+                  <span>
+                    {showWithdrawForm
+                      ? 'Hide Withdrawal Panel'
+                      : 'Withdraw Money from Wallet'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowRealMoneyLinker((v) => !v)}
+                  className="w-full bg-slate-950/70 hover:bg-slate-950 border border-white/20 text-white font-bold text-xs py-2.5 px-3 rounded-2xl flex items-center justify-between gap-2 transition cursor-pointer"
+                >
+                  <span className="truncate">
+                    🔗 Link Real M-Pesa B2C &amp; Ad Networks
+                  </span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/15 shrink-0">
+                    {walletOverview?.liveB2cReady &&
+                      walletOverview?.adNetworkConnected
+                      ? 'ALL LINKED ✓'
+                      : 'SETUP'}
+                  </span>
+                </button>
+              </div>
             </div>
+
+            {/* IN-APP REAL MONEY M-PESA & AD NETWORK LINKER WIZARD */}
+            {showRealMoneyLinker && (
+              <form
+                onSubmit={handleSaveRealMoneyLinks}
+                className="bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-4 space-y-4 shadow-2xl text-xs"
+              >
+                <div className="space-y-1">
+                  <span className="inline-block text-[10px] font-black uppercase bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-full">
+                    Real Money M-Pesa Linker
+                  </span>
+                  <h3 className="text-sm font-black text-white">
+                    Connect Both Streams Directly on Your Phone
+                  </h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    1) Link <strong>Monetag / Adsterra</strong> so real advertisers pay
+                    USD/KES for your views &amp; clicks, and 2) Link{' '}
+                    <strong>PayHero Kenya</strong> so tapping Withdraw sends real cash
+                    into your M-Pesa (<code>0728***160</code>).
+                  </p>
+                </div>
+
+                {/* PART A: MONETIZED COINS -> REAL PAID AD NETWORK */}
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-black text-amber-300 uppercase text-[11px]">
+                      Step A: Turn Ad Coins into Real Paid Cash
+                    </span>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full ${walletOverview?.adNetworkConnected
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : 'bg-amber-500/20 text-amber-300'
+                        }`}
+                    >
+                      {walletOverview?.adNetworkConnected ? 'LINKED ✓' : 'NOT LINKED'}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 leading-snug">
+                    Sign up free (5 mins, instant approval) and add{' '}
+                    <code className="text-slate-200">cbc-schemes-ke.vercel.app</code>:
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href="https://monetag.com/?utm_source=cbc_admin"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-amber-400/15 border border-amber-400/40 text-amber-300 font-black py-2 px-2.5 rounded-xl flex items-center justify-between"
+                    >
+                      <span>1. Monetag.com</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href="https://adsterra.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-purple-500/15 border border-purple-400/40 text-purple-300 font-black py-2 px-2.5 rounded-xl flex items-center justify-between"
+                    >
+                      <span>2. Adsterra.com</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                      Paste MultiTag / Banner Script URL (Monetag or Adsterra)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://... (from Monetag -> MultiTag)"
+                      value={linkAdScriptUrl}
+                      onChange={(e) => setLinkAdScriptUrl(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                      Paste Direct Smartlink URL (Pays per Click!)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://... (from Monetag -> Smartlink / Direct Link)"
+                      value={linkSmartlinkUrl}
+                      onChange={(e) => setLinkSmartlinkUrl(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                      Google AdSense Publisher ID (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+                      value={linkAdsenseId}
+                      onChange={(e) => setLinkAdsenseId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+
+                {/* PART B: PAYHERO LIVE M-PESA B2C DISBURSEMENT */}
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-black text-emerald-300 uppercase text-[11px]">
+                      Step B: Link Instant M-Pesa B2C Withdrawal
+                    </span>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full ${walletOverview?.liveB2cReady
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : 'bg-amber-500/20 text-amber-300'
+                        }`}
+                    >
+                      {walletOverview?.liveB2cReady ? 'LIVE B2C ✓' : 'NOT LINKED'}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 leading-snug">
+                    Open{' '}
+                    <a
+                      href="https://app.payhero.co.ke"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 font-black underline"
+                    >
+                      app.payhero.co.ke
+                    </a>
+                    , link your Kenyan ID &amp; M-Pesa (<code>0728***160</code>), then
+                    paste your Channel ID &amp; Basic Auth Token:
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-2">
+                    <input
+                      type="text"
+                      placeholder="PayHero Channel ID (e.g. 133)"
+                      value={linkPayheroChannelId}
+                      onChange={(e) => setLinkPayheroChannelId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                    />
+                    <input
+                      type="password"
+                      placeholder={
+                        walletOverview?.liveB2cReady
+                          ? 'Basic Auth Token Saved ✓ (Paste new to update)'
+                          : 'Paste PayHero Basic Auth Token...'
+                      }
+                      value={linkPayheroToken}
+                      onChange={(e) => setLinkPayheroToken(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingRealLinks}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-2xl shadow-lg cursor-pointer"
+                >
+                  {savingRealLinks
+                    ? 'Saving Live Connections...'
+                    : 'Save & Activate Real M-Pesa Payouts'}
+                </button>
+              </form>
+            )}
 
             {/* INTERACTIVE WITHDRAWAL DRAWER */}
             {showWithdrawForm && (
@@ -1617,6 +1881,27 @@ export default function MobileAdminAppPage() {
                     Min KES 10
                   </span>
                 </div>
+
+                {!walletOverview?.liveB2cReady && (
+                  <div className="bg-amber-500/15 border border-amber-400/50 rounded-2xl p-3 text-[11px] text-amber-200 space-y-1.5">
+                    <p className="font-black text-amber-300">
+                      ⚡ 1-Time Link Needed for Real Safaricom M-Pesa SMS:
+                    </p>
+                    <p className="text-slate-300 leading-snug">
+                      To receive the real Safaricom M-Pesa SMS notification on your
+                      phone when withdrawing, tap below to paste your{' '}
+                      <strong>PayHero Basic Auth Token</strong> +{' '}
+                      <strong>Monetag / Adsterra</strong> ad links!
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowRealMoneyLinker(true)}
+                      className="bg-amber-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-xl cursor-pointer"
+                    >
+                      Open Real M-Pesa &amp; Ad Linker Now &rarr;
+                    </button>
+                  </div>
+                )}
 
                 {/* 1. Select Wallet Source */}
                 <div>
@@ -1652,11 +1937,10 @@ export default function MobileAdminAppPage() {
                         key={src.key}
                         type="button"
                         onClick={() => setWithdrawSource(src.key)}
-                        className={`p-2 rounded-xl border text-left transition cursor-pointer ${
-                          withdrawSource === src.key
+                        className={`p-2 rounded-xl border text-left transition cursor-pointer ${withdrawSource === src.key
                             ? 'border-emerald-400 bg-emerald-500/15 text-white'
                             : 'border-slate-800 bg-slate-950 text-slate-400'
-                        }`}
+                          }`}
                       >
                         <span className="block text-[10px] font-black truncate">
                           {src.label}
@@ -1680,11 +1964,11 @@ export default function MobileAdminAppPage() {
                         const pool =
                           withdrawSource === 'CLIENT_PAYMENTS'
                             ? walletOverview?.availableClientPaymentsKes ??
-                              totalMpesaKes
+                            totalMpesaKes
                             : withdrawSource === 'MONETIZATION'
-                            ? walletOverview?.availableMonetizationKes ??
+                              ? walletOverview?.availableMonetizationKes ??
                               (monetization?.totalEstimatedKes || 0)
-                            : walletOverview?.availableTotalKes ?? combinedTotalKes;
+                              : walletOverview?.availableTotalKes ?? combinedTotalKes;
                         return (
                           <button
                             key={pct}
@@ -1728,11 +2012,10 @@ export default function MobileAdminAppPage() {
                           setWithdrawDest('0728595160');
                         }
                       }}
-                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${
-                        withdrawMethod === 'MPESA'
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${withdrawMethod === 'MPESA'
                           ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
                           : 'border-slate-800 bg-slate-950 text-slate-400'
-                      }`}
+                        }`}
                     >
                       M-Pesa Instant
                     </button>
@@ -1747,11 +2030,10 @@ export default function MobileAdminAppPage() {
                           setWithdrawDest('');
                         }
                       }}
-                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${
-                        withdrawMethod === 'BANK'
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${withdrawMethod === 'BANK'
                           ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
                           : 'border-slate-800 bg-slate-950 text-slate-400'
-                      }`}
+                        }`}
                     >
                       Bank / Paybill
                     </button>
@@ -1764,11 +2046,10 @@ export default function MobileAdminAppPage() {
                           key={ph}
                           type="button"
                           onClick={() => setWithdrawDest(ph)}
-                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${
-                            withdrawDest === ph
+                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${withdrawDest === ph
                               ? 'border-amber-400 bg-amber-400/20 text-amber-300'
                               : 'border-slate-800 bg-slate-950 text-slate-400'
-                          }`}
+                            }`}
                         >
                           Use {ph.slice(0, 4)}***{ph.slice(-3)}
                         </button>
@@ -1792,11 +2073,10 @@ export default function MobileAdminAppPage() {
 
                 {withdrawFeedback && (
                   <div
-                    className={`rounded-2xl p-3 text-xs font-bold ${
-                      withdrawFeedback.ok
+                    className={`rounded-2xl p-3 text-xs font-bold ${withdrawFeedback.ok
                         ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
                         : 'bg-rose-950/80 border border-rose-600 text-rose-200'
-                    }`}
+                      }`}
                   >
                     {withdrawFeedback.text}
                   </div>
@@ -1810,11 +2090,10 @@ export default function MobileAdminAppPage() {
                   <Check className="w-4 h-4 stroke-[3]" />
                   {withdrawing
                     ? 'Processing Withdrawal...'
-                    : `Confirm Withdrawal${
-                        Number(withdrawAmount) > 0
-                          ? ` (KES ${Number(withdrawAmount).toLocaleString()})`
-                          : ''
-                      }`}
+                    : `Confirm Withdrawal${Number(withdrawAmount) > 0
+                      ? ` (KES ${Number(withdrawAmount).toLocaleString()})`
+                      : ''
+                    }`}
                 </button>
               </form>
             )}
@@ -1883,13 +2162,12 @@ export default function MobileAdminAppPage() {
                           {w.referenceCode} • KES {w.amountKes.toLocaleString()}
                         </span>
                         <span
-                          className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            w.status === 'COMPLETED'
+                          className={`text-[10px] font-black px-2 py-0.5 rounded-full ${w.status === 'COMPLETED'
                               ? 'bg-emerald-500/20 text-emerald-300'
                               : w.status === 'CANCELLED'
-                              ? 'bg-slate-800 text-slate-400 line-through'
-                              : 'bg-amber-400/20 text-amber-300'
-                          }`}
+                                ? 'bg-slate-800 text-slate-400 line-through'
+                                : 'bg-amber-400/20 text-amber-300'
+                            }`}
                         >
                           {w.status === 'PENDING_SETTLEMENT'
                             ? 'QUEUED'
@@ -2039,11 +2317,10 @@ export default function MobileAdminAppPage() {
                     >
                       <div className="flex items-center justify-between">
                         <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            t.role === 'LEARNER'
+                          className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${t.role === 'LEARNER'
                               ? 'bg-amber-400 text-slate-950'
                               : 'bg-sky-400 text-slate-950'
-                          }`}
+                            }`}
                         >
                           {t.role === 'LEARNER' ? (
                             <GraduationCap className="w-3 h-3" />
@@ -2190,7 +2467,7 @@ export default function MobileAdminAppPage() {
                     if (!securityData?.authenticator.code) return;
                     navigator.clipboard
                       ?.writeText(securityData.authenticator.code)
-                      .catch(() => {});
+                      .catch(() => { });
                     setCopiedId('totp');
                     showToast('6-digit OTP copied!');
                   }}
@@ -2303,11 +2580,10 @@ export default function MobileAdminAppPage() {
           <button
             type="button"
             onClick={() => setActiveTab('APPROVE')}
-            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
-              activeTab === 'APPROVE'
+            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${activeTab === 'APPROVE'
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : 'text-slate-400'
-            }`}
+              }`}
           >
             <CheckCircle2 className="w-5 h-5" />
             <span className="text-[10px] font-black">Approve</span>
@@ -2321,11 +2597,10 @@ export default function MobileAdminAppPage() {
           <button
             type="button"
             onClick={() => setActiveTab('WALLET')}
-            className={`py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
-              activeTab === 'WALLET'
+            className={`py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${activeTab === 'WALLET'
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : 'text-slate-400'
-            }`}
+              }`}
           >
             <Wallet className="w-5 h-5" />
             <span className="text-[10px] font-black">Wallet</span>
@@ -2334,11 +2609,10 @@ export default function MobileAdminAppPage() {
           <button
             type="button"
             onClick={() => setActiveTab('LEADS')}
-            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
-              activeTab === 'LEADS'
+            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${activeTab === 'LEADS'
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : 'text-slate-400'
-            }`}
+              }`}
           >
             <Users className="w-5 h-5" />
             <span className="text-[10px] font-black">Leads</span>
@@ -2352,11 +2626,10 @@ export default function MobileAdminAppPage() {
           <button
             type="button"
             onClick={() => setActiveTab('TRAFFIC')}
-            className={`py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
-              activeTab === 'TRAFFIC'
+            className={`py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${activeTab === 'TRAFFIC'
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : 'text-slate-400'
-            }`}
+              }`}
           >
             <Coins className="w-5 h-5" />
             <span className="text-[10px] font-black">Traffic</span>
@@ -2365,11 +2638,10 @@ export default function MobileAdminAppPage() {
           <button
             type="button"
             onClick={() => setActiveTab('SECURITY')}
-            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
-              activeTab === 'SECURITY'
+            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${activeTab === 'SECURITY'
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : 'text-slate-400'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-5 h-5" />
             <span className="text-[10px] font-black">Security</span>

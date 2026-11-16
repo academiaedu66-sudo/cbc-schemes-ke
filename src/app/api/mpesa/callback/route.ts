@@ -6,6 +6,7 @@ import {
   triggerInstantPayHeroPayout,
 } from '@/lib/mpesa';
 import { getStoredPaymentConfig } from '@/lib/payment-config';
+import { confirmWithdrawalCallback } from '@/lib/wallet';
 
 export async function POST(req: Request) {
   try {
@@ -46,6 +47,16 @@ export async function POST(req: Request) {
         payheroRef ? `PAYHERO_${payheroRef}` : '',
         externalRef ? `PAYHERO_${externalRef}` : '',
       ].filter(Boolean);
+
+      // Handle PayHero B2C Wallet Withdrawal Callbacks ("WD-XXXXXX")
+      if (externalRef && String(externalRef).startsWith('WD-')) {
+        await confirmWithdrawalCallback({
+          referenceCode: String(externalRef),
+          mpesaReceipt: String(receipt),
+          success,
+        });
+        return NextResponse.json({ received: true });
+      }
 
       if (candidateIds.length > 0) {
         if (success) {

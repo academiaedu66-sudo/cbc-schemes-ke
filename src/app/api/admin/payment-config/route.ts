@@ -6,6 +6,7 @@ import {
   type StoredPaymentConfig,
 } from '@/lib/payment-config';
 import { resolveActiveGatewaySummary } from '@/lib/mpesa';
+import { triggerAutomaticBackup } from '@/lib/security';
 
 function maskSecret(val?: string): string {
   if (!val || val.trim().length < 6) return val ? '••••••' : '';
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
     }
 
     await saveStoredPaymentConfig(updated);
+    void triggerAutomaticBackup('Live M-Pesa gateway config updated');
     const summary = await resolveActiveGatewaySummary();
 
     return NextResponse.json({
