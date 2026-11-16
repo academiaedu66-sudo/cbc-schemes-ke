@@ -35,6 +35,7 @@ import {
   type MaterialCategory,
 } from '@/lib/material-utils';
 import PreviewModal from '@/components/PreviewModal';
+import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import type { ResourceItem } from '@/components/ResourceCard';
 
 interface QueuedUpload {
@@ -860,6 +861,9 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* SITE MONETIZATION, AD NETWORKS & CLICK / VIEW EARNINGS STUDIO */}
+        <AdminMonetizationPanel password={password} />
 
         {/* 0. M-Pesa Orders & Instant Payment Approvals (254728595160) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">

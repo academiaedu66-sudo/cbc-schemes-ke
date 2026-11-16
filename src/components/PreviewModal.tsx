@@ -8,6 +8,7 @@ import {
   getCbcLessonAllocation,
   getResourceGradeKey,
 } from "@/lib/material-utils";
+import { AdSlot, useMonetization } from "@/components/MonetizationEngine";
 import type { ResourceItem } from "./ResourceCard";
 
 interface PreviewData {
@@ -40,6 +41,7 @@ export default function PreviewModal({
 }: PreviewModalProps) {
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(false);
+  const { trackInteraction } = useMonetization();
 
   useEffect(() => {
     if (!resource) {
@@ -47,6 +49,7 @@ export default function PreviewModal({
       return;
     }
 
+    trackInteraction("preview_sample_open");
     let cancelled = false;
     setLoading(true);
 
@@ -176,6 +179,9 @@ export default function PreviewModal({
                   </div>
                 </div>
               </div>
+
+              {/* High-Engagement Preview Modal Monetization Slot */}
+              <AdSlot placement="preview_modal" />
             </>
           )}
         </div>

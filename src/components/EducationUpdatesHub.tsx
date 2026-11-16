@@ -11,6 +11,7 @@ import {
   Award,
 } from "lucide-react";
 import type { ExamSubFilter } from "@/lib/material-utils";
+import { useMonetization } from "@/components/MonetizationEngine";
 
 interface EducationUpdatesHubProps {
   onQuickJump: (opts: {
@@ -58,6 +59,7 @@ export default function EducationUpdatesHub({
   onQuickJump,
 }: EducationUpdatesHubProps) {
   const [expanded, setExpanded] = useState(false);
+  const { trackInteraction } = useMonetization();
 
   const jumpAndScroll = (opts: {
     grade?: string;
@@ -65,6 +67,7 @@ export default function EducationUpdatesHub({
     category?: string;
     examSubFilter?: ExamSubFilter;
   }) => {
+    trackInteraction("moe_hub_quickjump");
     onQuickJump(opts);
     document
       .getElementById("materials-Catalog")
@@ -278,6 +281,7 @@ export default function EducationUpdatesHub({
                     href="https://tpad2.tsc.go.ke/"
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => trackInteraction("portal_tsc_tpad2")}
                     className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-xs font-bold text-slate-700 transition"
                   >
                     <span>TSC TPAD 2 Portal</span>
@@ -287,6 +291,7 @@ export default function EducationUpdatesHub({
                     href="https://tpay.tsc.go.ke/"
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => trackInteraction("portal_tsc_tpay")}
                     className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-xs font-bold text-slate-700 transition"
                   >
                     <span>TSC T-PAY Payslips</span>
@@ -296,6 +301,7 @@ export default function EducationUpdatesHub({
                     href="https://cba.knec.ac.ke/"
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => trackInteraction("portal_knec_cba")}
                     className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-xs font-bold text-slate-700 transition"
                   >
                     <span>KNEC CBA Portal</span>
@@ -305,6 +311,7 @@ export default function EducationUpdatesHub({
                     href="https://kicd.ac.ke/cbc-materials/approved-cbc-course-materials/"
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => trackInteraction("portal_kicd_orangebook")}
                     className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-xs font-bold text-slate-700 transition"
                   >
                     <span>KICD Orange Book</span>

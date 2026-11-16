@@ -15,6 +15,7 @@ import {
   Check,
   Smartphone,
   MessageCircle,
+  Megaphone,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -22,6 +23,13 @@ import ResourceCard, { type ResourceItem } from '@/components/ResourceCard';
 import PreviewModal from '@/components/PreviewModal';
 import WelcomeAnimation from '@/components/WelcomeAnimation';
 import EducationUpdatesHub from '@/components/EducationUpdatesHub';
+import SiteFooter from '@/components/SiteFooter';
+import {
+  AdSlot,
+  PartnerBonusStrip,
+  StickyEarnerBar,
+  useMonetization,
+} from '@/components/MonetizationEngine';
 import {
   ALL_GRADE_KEYS,
   formatGradeLabel,
@@ -66,6 +74,7 @@ function extractCodeClient(raw: string): string | null {
 }
 
 export default function HomePage() {
+  const { trackInteraction } = useMonetization();
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGrade, setSelectedGrade] = useState('All');
@@ -452,7 +461,14 @@ export default function HomePage() {
               Exams, KPSEA/KJSEA Trials &amp; Designs (PP1–Grade 12 • Editable DOCX + PDF)
             </p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/advertise"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
+            >
+              <Megaphone className="w-4 h-4" />
+              Advertise
+            </Link>
             <Link
               href="/admin"
               className="bg-emerald-900/60 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
@@ -487,15 +503,22 @@ export default function HomePage() {
           }}
         />
 
+        {/* Top Leaderboard Ad & Sponsor Unit */}
+        <AdSlot placement="top_leaderboard" className="mb-6" />
+
         {/* 1. Category Cards Showcase with Live Counts */}
         <CategoryGrid
           resources={resources}
           selectedCategory={selectedCategory}
           onSelectCategory={(cat) => {
+            trackInteraction('category_card_select');
             setSelectedCategory(cat);
             if (cat !== 'Revision Papers & Exams') setExamSubFilter('ALL');
           }}
         />
+
+        {/* Interactive Partner / Smartlink Offer Strip */}
+        <PartnerBonusStrip />
 
         {/* 2. Quick Grade Selector Pills (PP1, PP2 & Grades 1–12) */}
         <div
@@ -504,7 +527,10 @@ export default function HomePage() {
         >
           <button
             type="button"
-            onClick={() => setSelectedGrade('All')}
+            onClick={() => {
+              trackInteraction('grade_pill_select');
+              setSelectedGrade('All');
+            }}
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
               selectedGrade === 'All'
                 ? 'bg-emerald-700 text-white shadow-sm'
@@ -517,7 +543,10 @@ export default function HomePage() {
             <button
               key={g}
               type="button"
-              onClick={() => setSelectedGrade(g)}
+              onClick={() => {
+                trackInteraction('grade_pill_select');
+                setSelectedGrade(g);
+              }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
                 selectedGrade === g
                   ? 'bg-emerald-700 text-white shadow-sm'
@@ -542,7 +571,10 @@ export default function HomePage() {
                   type="text"
                   placeholder="e.g. KPSEA, Science, CRE..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    trackInteraction('catalog_search');
+                    setSearchQuery(e.target.value);
+                  }}
                   className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -813,7 +845,7 @@ export default function HomePage() {
           <div className="space-y-8">
             {groupedAreas
               .filter(({ items }) => items.length > 0)
-              .map(({ area, items }) => {
+              .map(({ area, items }, areaIdx) => {
                 const defaultSlice =
                   selectedGrade !== 'All' || selectedSubject !== 'All'
                     ? FILTERED_GROUP_PREVIEW
@@ -824,8 +856,8 @@ export default function HomePage() {
                 const remainingInArea = items.length - visibleSlice.length;
 
                 return (
+                  <React.Fragment key={area.id}>
                   <section
-                    key={area.id}
                     id={area.id}
                     className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
                   >
@@ -918,6 +950,13 @@ export default function HomePage() {
                       )}
                     </div>
                   </section>
+                  {areaIdx % 2 === 0 && (
+                    <AdSlot
+                      placement="infeed_grid"
+                      variantIndex={areaIdx}
+                    />
+                  )}
+                  </React.Fragment>
                 );
               })}
           </div>
@@ -965,9 +1004,9 @@ export default function HomePage() {
             })()}
 
             {/* Grade-Grouped Sections inside the Selected Area */}
-            {singleAreaByGrade.map(([gradeKey, gradeItems]) => (
+            {singleAreaByGrade.map(([gradeKey, gradeItems], gIdx) => (
+              <React.Fragment key={gradeKey}>
               <section
-                key={gradeKey}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4"
               >
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
@@ -995,6 +1034,10 @@ export default function HomePage() {
                   ))}
                 </div>
               </section>
+              {gIdx % 2 === 1 && (
+                <AdSlot placement="infeed_grid" variantIndex={gIdx} />
+              )}
+              </React.Fragment>
             ))}
 
             {visibleCount < filteredItems.length && (
@@ -1014,6 +1057,12 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {/* SEO & AdSense Compliance Footer */}
+      <SiteFooter />
+
+      {/* Dismissible Sticky Bottom Monetization Bar */}
+      <StickyEarnerBar />
 
       {/* Floating WhatsApp Support Button -> 0705759072 (254705759072) */}
       <a
