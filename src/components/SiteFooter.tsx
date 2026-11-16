@@ -80,6 +80,11 @@ export default function SiteFooter() {
               </a>
             </li>
             <li>
+              <Link href="/mobile-admin" className="text-slate-400 hover:text-white transition">
+                Admin Mobile App
+              </Link>
+            </li>
+            <li>
               <Link href="/monetization" className="text-slate-400 hover:text-white transition">
                 Monetization &amp; Earnings Studio
               </Link>

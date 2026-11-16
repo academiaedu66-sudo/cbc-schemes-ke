@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/ads.txt', '/advertise', '/privacy-policy', '/terms'],
-        disallow: ['/admin', '/monetization', '/api/admin/'],
+        disallow: ['/admin', '/mobile-admin', '/monetization', '/api/admin/'],
       },
       {
         userAgent: 'Mediapartners-Google',

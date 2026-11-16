@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(60);
+      .limit(200);
 
     if (error) throw error;
 

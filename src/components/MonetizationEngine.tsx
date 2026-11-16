@@ -142,10 +142,11 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
 
     if (!viewRecordedRef.current) {
       viewRecordedRef.current = true;
-      // Record real page view (skip /admin and /monetization routes)
+      // Record real page view (skip /admin, /mobile-admin and /monetization routes)
       if (
         typeof window !== 'undefined' &&
         !window.location.pathname.startsWith('/admin') &&
+        !window.location.pathname.startsWith('/mobile-admin') &&
         !window.location.pathname.startsWith('/monetization')
       ) {
         sendTrackBeacon({ eventType: 'view', placement: 'page' });
@@ -163,6 +164,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     if (typeof document === 'undefined') return;
     if (
       window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/mobile-admin') ||
       window.location.pathname.startsWith('/monetization')
     ) {
       return;
@@ -196,6 +198,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     if (typeof document === 'undefined') return;
     if (
       window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/mobile-admin') ||
       window.location.pathname.startsWith('/monetization')
     ) {
       return;

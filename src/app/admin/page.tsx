@@ -571,6 +571,12 @@ export default function AdminDashboardPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
+              href="/mobile-admin"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition"
+            >
+              Mobile Admin App
+            </Link>
+            <Link
               href="/monetization"
               className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition"
             >
