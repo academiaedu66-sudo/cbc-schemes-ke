@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Megaphone,
   GraduationCap,
+  HeartHandshake,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -25,6 +26,7 @@ import PreviewModal from '@/components/PreviewModal';
 import WelcomeAnimation from '@/components/WelcomeAnimation';
 import EducationUpdatesHub from '@/components/EducationUpdatesHub';
 import HolidayTuitionCenter from '@/components/HolidayTuitionCenter';
+import GuidanceCounsellingHub from '@/components/GuidanceCounsellingHub';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -87,6 +89,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
+  const [counsellingOpenTick, setCounsellingOpenTick] = useState(0);
 
   // Payment & WhatsApp Configuration
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
@@ -465,6 +468,14 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setCounsellingOpenTick((c) => c + 1)}
+              className="bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <HeartHandshake className="w-4 h-4 text-purple-900" />
+              Guidance &amp; Counselling
+            </button>
             <a
               href="#holiday-tuition-hub"
               className="bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
@@ -503,8 +514,11 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* TOP FEATURE: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
+        {/* TOP FEATURE 1: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
         <HolidayTuitionCenter />
+
+        {/* TOP FEATURE 2: GEMINI AI GUIDANCE & COUNSELLING (IMMEDIATELY ASKS PARENT OR LEARNER) */}
+        <GuidanceCounsellingHub externalTriggerCount={counsellingOpenTick} />
 
         {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
         <EducationUpdatesHub

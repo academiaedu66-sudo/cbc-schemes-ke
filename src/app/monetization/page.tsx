@@ -58,6 +58,10 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  counselling_button_open: 'Guidance & Counselling Desk Opens',
+  counselling_role_parent: 'Guidance Chosen: Parent / Guardian',
+  counselling_role_learner: 'Guidance Chosen: Learner / Student',
+  counselling_message_sent: 'Gemini Guidance Questions Asked',
   tuition_student_btn_click: 'Student Holiday/Personal Teacher Button Clicks',
   tuition_teacher_btn_click: 'Teacher Tuition Registration Button Clicks',
   preview_sample_open: 'Free Sample Previews Opened',
