@@ -45,6 +45,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Adsterra Live Monetization Unit */}
+        <script
+          id="adsterra-main-unit"
+          data-cfasync="false"
+          src="https://afders.org/1/9b54de7bdfa09cfb49871859cafe8b38"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <MonetizationProvider>{children}</MonetizationProvider>
       </body>

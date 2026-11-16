@@ -204,9 +204,22 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
   },
 ];
 
+export const DEFAULT_ADSTERRA_UNIT_SRC =
+  'https://afders.org/1/9b54de7bdfa09cfb49871859cafe8b38';
+
+export function extractScriptUrlIfTag(rawInput?: string): string {
+  const clean = (rawInput || '').trim();
+  if (!clean) return '';
+  const match = clean.match(/src=["']([^"']+)["']/i);
+  if (match && match[1]) return match[1].trim();
+  return clean;
+}
+
 export function getDefaultMonetizationConfig(): MonetizationConfig {
   const envAdsense = (process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || '').trim();
-  const envMonetagScript = (process.env.NEXT_PUBLIC_AD_NETWORK_SCRIPT_URL || '').trim();
+  const envAdScript =
+    extractScriptUrlIfTag(process.env.NEXT_PUBLIC_AD_NETWORK_SCRIPT_URL) ||
+    DEFAULT_ADSTERRA_UNIT_SRC;
   const envSmartlink = (process.env.NEXT_PUBLIC_SMARTLINK_URL || '').trim();
 
   return {
@@ -220,9 +233,9 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
     adsenseStickySlotId: '',
     adsTxtCustomLines: '',
 
-    adNetworkEnabled: Boolean(envMonetagScript || envSmartlink),
-    adNetworkProvider: 'monetag',
-    adNetworkScriptUrl: envMonetagScript,
+    adNetworkEnabled: true,
+    adNetworkProvider: 'adsterra',
+    adNetworkScriptUrl: envAdScript,
     adNetworkBannerScriptUrl: '',
     smartlinkUrl: envSmartlink,
     smartlinkLabel: 'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →',

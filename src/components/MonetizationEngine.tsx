@@ -12,7 +12,9 @@ import React, {
 import Link from 'next/link';
 import { ExternalLink, Megaphone, Sparkles, TrendingUp, X } from 'lucide-react';
 import {
+  DEFAULT_ADSTERRA_UNIT_SRC,
   DEFAULT_SPONSORED_CAMPAIGNS,
+  extractScriptUrlIfTag,
   type AdPlacement,
   type SponsoredCampaign,
   type TrackEventType,
@@ -52,9 +54,9 @@ const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
   adsenseInFeedSlotId: '',
   adsensePreviewSlotId: '',
   adsenseStickySlotId: '',
-  adNetworkEnabled: false,
-  adNetworkProvider: 'monetag',
-  adNetworkScriptUrl: '',
+  adNetworkEnabled: true,
+  adNetworkProvider: 'adsterra',
+  adNetworkScriptUrl: DEFAULT_ADSTERRA_UNIT_SRC,
   adNetworkBannerScriptUrl: '',
   smartlinkUrl: '',
   smartlinkLabel: 'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →',
@@ -194,7 +196,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
 
   // Inject Monetag / Adsterra / Custom CPM & Interaction Ad Network script when configured
   useEffect(() => {
-    if (!config.enabled || !config.adNetworkEnabled || !config.adNetworkScriptUrl) return;
+    if (!config.enabled || !config.adNetworkEnabled) return;
     if (typeof document === 'undefined') return;
     if (
       window.location.pathname.startsWith('/admin') ||
@@ -204,16 +206,40 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
       return;
     }
 
-    const scriptId = 'cbc-adnetwork-global-js';
-    if (!document.getElementById(scriptId)) {
+    const primaryUrl = extractScriptUrlIfTag(config.adNetworkScriptUrl);
+    if (
+      primaryUrl &&
+      !document.querySelector(`script[src="${primaryUrl}"]`) &&
+      !document.getElementById('cbc-adnetwork-global-js')
+    ) {
       const s = document.createElement('script');
-      s.id = scriptId;
+      s.id = 'cbc-adnetwork-global-js';
       s.async = true;
-      s.src = config.adNetworkScriptUrl;
+      s.src = primaryUrl;
       s.setAttribute('data-cfasync', 'false');
-      document.body.appendChild(s);
+      document.head.appendChild(s);
     }
-  }, [config.enabled, config.adNetworkEnabled, config.adNetworkScriptUrl]);
+
+    const bannerUrl = extractScriptUrlIfTag(config.adNetworkBannerScriptUrl);
+    if (
+      bannerUrl &&
+      bannerUrl !== primaryUrl &&
+      !document.querySelector(`script[src="${bannerUrl}"]`) &&
+      !document.getElementById('cbc-adnetwork-banner-js')
+    ) {
+      const b = document.createElement('script');
+      b.id = 'cbc-adnetwork-banner-js';
+      b.async = true;
+      b.src = bannerUrl;
+      b.setAttribute('data-cfasync', 'false');
+      document.body.appendChild(b);
+    }
+  }, [
+    config.enabled,
+    config.adNetworkEnabled,
+    config.adNetworkScriptUrl,
+    config.adNetworkBannerScriptUrl,
+  ]);
 
   const trackInteraction = useCallback((interactionType: string) => {
     const now = Date.now();
