@@ -58,6 +58,7 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  all_curriculum_materials_btn_click: 'ALL CURRICULUM MATERIALS Top Button Clicks',
   holiday_side_hustles_open: 'HOLIDAY SIDE HUSTLES Button Opens',
   side_hustle_ai_training_click: 'AI Training Company Clicks (AITrainingJobs.it)',
   side_hustle_survey_click: 'Paid Survey Account Clicks',

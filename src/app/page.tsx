@@ -428,6 +428,23 @@ export default function HomePage() {
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
+  const jumpToCurriculumMaterials = (targetCategory = 'All') => {
+    trackInteraction('all_curriculum_materials_btn_click');
+    setSelectedCategory(targetCategory);
+    if (targetCategory === 'All') {
+      setSelectedGrade('All');
+      setSelectedSubject('All');
+      setSelectedTerm('All');
+      setExamSubFilter('ALL');
+      setSearchQuery('');
+    } else if (targetCategory !== 'Revision Papers & Exams') {
+      setExamSubFilter('ALL');
+    }
+    document
+      .getElementById('curriculum-materials-section')
+      ?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const openCheckoutFor = (res: ResourceItem) => {
     trackInteraction('checkout_modal_open');
     setModalItem(res);
@@ -479,6 +496,14 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => jumpToCurriculumMaterials('All')}
+              className="bg-white hover:bg-amber-50 text-emerald-950 border-2 border-amber-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 text-emerald-700" />
+              <strong>ALL CURRICULUM MATERIALS</strong>
+            </button>
             <button
               type="button"
               onClick={() => setSideHustlesOpenTick((c) => c + 1)}
@@ -555,6 +580,40 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* PRIMARY TOP BAR: ALL CURRICULUM MATERIALS (UPPERCASE BOLD) */}
+        <section
+          aria-label="Quick Jump to All Curriculum Materials"
+          className="mb-6 bg-white border-2 border-emerald-600 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3.5"
+        >
+          <button
+            type="button"
+            onClick={() => jumpToCurriculumMaterials('All')}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3.5 rounded-xl text-sm sm:text-base font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-md transition cursor-pointer shrink-0"
+          >
+            <BookOpen className="w-5 h-5 text-amber-300" />
+            <span>ALL CURRICULUM MATERIALS</span>
+            <ChevronDown className="w-4 h-4 text-emerald-200" />
+          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {MATERIAL_AREAS.map((area) => (
+              <button
+                key={area.id}
+                type="button"
+                onClick={() => jumpToCurriculumMaterials(area.filterCategory)}
+                className="px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wide border transition cursor-pointer hover:shadow-xs"
+                style={{
+                  backgroundColor: area.bg,
+                  borderColor: area.borderColor,
+                  color: area.color,
+                }}
+              >
+                {area.shortTitle}
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* TOP FEATURE 1: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
         <HolidayTuitionCenter />
 
@@ -584,15 +643,17 @@ export default function HomePage() {
         <AdSlot placement="top_leaderboard" className="mb-6" />
 
         {/* 1. Category Cards Showcase with Live Counts */}
-        <CategoryGrid
-          resources={resources}
-          selectedCategory={selectedCategory}
-          onSelectCategory={(cat) => {
-            trackInteraction('category_card_select');
-            setSelectedCategory(cat);
-            if (cat !== 'Revision Papers & Exams') setExamSubFilter('ALL');
-          }}
-        />
+        <div id="curriculum-materials-section" className="scroll-mt-6">
+          <CategoryGrid
+            resources={resources}
+            selectedCategory={selectedCategory}
+            onSelectCategory={(cat) => {
+              trackInteraction('category_card_select');
+              setSelectedCategory(cat);
+              if (cat !== 'Revision Papers & Exams') setExamSubFilter('ALL');
+            }}
+          />
+        </div>
 
         {/* Interactive Partner / Smartlink Offer Strip */}
         <PartnerBonusStrip />
