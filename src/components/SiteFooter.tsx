@@ -80,6 +80,11 @@ export default function SiteFooter() {
               </a>
             </li>
             <li>
+              <Link href="/monetization" className="text-slate-400 hover:text-white transition">
+                Monetization &amp; Earnings Studio
+              </Link>
+            </li>
+            <li>
               <Link href="/admin" className="text-slate-400 hover:text-white transition">
                 Publisher &amp; Admin Studio
               </Link>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   BarChart3,
   CheckCircle2,
@@ -187,7 +188,14 @@ export default function AdminMonetizationPanel({ password }: { password: string 
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/monetization"
+            className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black transition shadow-xs"
+          >
+            <Coins className="w-3.5 h-3.5" />
+            Full Earnings &amp; Control Page →
+          </Link>
           <button
             type="button"
             onClick={fetchAll}

@@ -567,7 +567,13 @@ export default function AdminDashboardPage() {
               {inventory.length} listings ({storageCount} storage files)
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/monetization"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition"
+            >
+              Monetization &amp; Earnings Page
+            </Link>
             <Link
               href="/"
               className="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"

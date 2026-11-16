@@ -142,8 +142,12 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
 
     if (!viewRecordedRef.current) {
       viewRecordedRef.current = true;
-      // Record real page view (skip /admin routes)
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+      // Record real page view (skip /admin and /monetization routes)
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.startsWith('/admin') &&
+        !window.location.pathname.startsWith('/monetization')
+      ) {
         sendTrackBeacon({ eventType: 'view', placement: 'page' });
       }
     }
@@ -157,7 +161,12 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!config.enabled || !config.adsenseEnabled || !config.adsenseClientId) return;
     if (typeof document === 'undefined') return;
-    if (window.location.pathname.startsWith('/admin')) return;
+    if (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/monetization')
+    ) {
+      return;
+    }
 
     const scriptId = 'cbc-google-adsense-js';
     if (!document.getElementById(scriptId)) {
@@ -185,7 +194,12 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!config.enabled || !config.adNetworkEnabled || !config.adNetworkScriptUrl) return;
     if (typeof document === 'undefined') return;
-    if (window.location.pathname.startsWith('/admin')) return;
+    if (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/monetization')
+    ) {
+      return;
+    }
 
     const scriptId = 'cbc-adnetwork-global-js';
     if (!document.getElementById(scriptId)) {

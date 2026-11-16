@@ -413,6 +413,7 @@ export default function HomePage() {
   };
 
   const openCheckoutFor = (res: ResourceItem) => {
+    trackInteraction('checkout_modal_open');
     setModalItem(res);
     setPhoneNumber('');
     setMpesaCode('');
@@ -586,7 +587,10 @@ export default function HomePage() {
               </label>
               <select
                 value={selectedGrade}
-                onChange={(e) => setSelectedGrade(e.target.value)}
+                onChange={(e) => {
+                  trackInteraction('grade_dropdown_select');
+                  setSelectedGrade(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Levels (PP1 to Grade 12)</option>
@@ -623,7 +627,10 @@ export default function HomePage() {
               </label>
               <select
                 value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                onChange={(e) => {
+                  trackInteraction('subject_filter_select');
+                  setSelectedSubject(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Subjects ({availableSubjects.length})</option>
@@ -641,7 +648,10 @@ export default function HomePage() {
               </label>
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => {
+                  trackInteraction('area_dropdown_select');
+                  setSelectedCategory(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Areas (Grouped Together)</option>
@@ -666,7 +676,10 @@ export default function HomePage() {
               </label>
               <select
                 value={selectedTerm}
-                onChange={(e) => setSelectedTerm(e.target.value)}
+                onChange={(e) => {
+                  trackInteraction('term_filter_select');
+                  setSelectedTerm(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Terms (1, 2 &amp; 3)</option>
@@ -742,6 +755,7 @@ export default function HomePage() {
                   key={opt.key}
                   type="button"
                   onClick={() => {
+                    trackInteraction('exam_filter_select');
                     if (opt.key === 'ALL' && selectedCategory !== 'Revision Papers & Exams') {
                       setSelectedCategory('Revision Papers & Exams');
                       setExamSubFilter('ALL');
@@ -1071,6 +1085,7 @@ export default function HomePage() {
         )}`}
         target="_blank"
         rel="noreferrer"
+        onClick={() => trackInteraction('whatsapp_help_click')}
         className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3 rounded-full shadow-lg transition"
       >
         <MessageCircle className="w-4 h-4" />
