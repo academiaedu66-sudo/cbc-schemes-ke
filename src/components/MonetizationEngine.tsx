@@ -10,6 +10,7 @@ import React, {
   useState,
 } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ExternalLink, Megaphone, Sparkles, TrendingUp, X } from 'lucide-react';
 import {
   DEFAULT_ADSTERRA_UNIT_SRC,
@@ -116,9 +117,32 @@ declare global {
 }
 
 export function MonetizationProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() || '';
+  const isProtectedAdminRoute =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/mobile-admin') ||
+    pathname.startsWith('/monetization');
+
   const [config, setConfig] = useState<PublicMonetizationConfig>(DEFAULT_PUBLIC_CONFIG);
   const viewRecordedRef = useRef(false);
   const lastInteractionTsRef = useRef<Record<string, number>>({});
+
+  // Guarantee 0% external ad popups/overlays on Anti-Hacker Security & Admin routes!
+  useEffect(() => {
+    if (!isProtectedAdminRoute || typeof window === 'undefined') return;
+
+    const leftoverAdScript =
+      document.getElementById('adsterra-main-unit') ||
+      document.getElementById('cbc-adnetwork-global-js') ||
+      document.getElementById('cbc-adnetwork-banner-js') ||
+      document.querySelector('script[src*="afders.org"]');
+
+    if (leftoverAdScript) {
+      // Remove tag and force a clean isolated reload into the Admin/Security page so zero ad click listeners remain in memory
+      leftoverAdScript.remove();
+      window.location.reload();
+    }
+  }, [isProtectedAdminRoute]);
 
   useEffect(() => {
     let active = true;
@@ -194,8 +218,9 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     }
   }, [config.enabled, config.adsenseEnabled, config.adsenseClientId]);
 
-  // Inject Monetag / Adsterra / Custom CPM & Interaction Ad Network script when configured
+  // Inject Monetag / Adsterra / Custom CPM & Interaction Ad Network script ONLY on public storefront pages
   useEffect(() => {
+    if (isProtectedAdminRoute) return;
     if (!config.enabled || !config.adNetworkEnabled) return;
     if (typeof document === 'undefined') return;
     if (
@@ -235,6 +260,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
       document.body.appendChild(b);
     }
   }, [
+    isProtectedAdminRoute,
     config.enabled,
     config.adNetworkEnabled,
     config.adNetworkScriptUrl,
