@@ -31,6 +31,9 @@ import type {
   MonetizationStats,
   SponsoredCampaign,
 } from '@/lib/monetization';
+import AdminTwoFactorGate, {
+  ADMIN_2FA_TOKEN_KEY,
+} from '@/components/AdminTwoFactorGate';
 
 interface EarningsSummary {
   impressionEarningsKes: number;
@@ -167,6 +170,7 @@ export default function MonetizationControlPage() {
       if (trackRes.status === 401) {
         setAuthenticated(false);
         sessionStorage.removeItem('cbc_admin_pw');
+        sessionStorage.removeItem(ADMIN_2FA_TOKEN_KEY);
         setAuthError('Invalid admin password.');
         return;
       }
@@ -202,14 +206,13 @@ export default function MonetizationControlPage() {
     }
   }, []);
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem('cbc_admin_pw');
-    if (saved) {
-      setPassword(saved);
-      setCheckingAuth(true);
-      loadDashboard(saved, true);
-    }
-  }, [loadDashboard]);
+  const handleVerified2fa = useCallback(
+    async (verifiedPw: string) => {
+      setPassword(verifiedPw);
+      await loadDashboard(verifiedPw, true);
+    },
+    [loadDashboard]
+  );
 
   // Live auto-refresh stats & earnings without overwriting unsaved form edits
   useEffect(() => {
@@ -219,12 +222,6 @@ export default function MonetizationControlPage() {
     }, 8000);
     return () => window.clearInterval(timer);
   }, [authenticated, password, autoRefresh, loadDashboard]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCheckingAuth(true);
-    await loadDashboard(password, true);
-  };
 
   const saveConfigLive = async (overrideCfg?: MonetizationConfig) => {
     const payload = overrideCfg || config;
@@ -322,64 +319,13 @@ export default function MonetizationControlPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-                <Coins className="w-6 h-6" />
-              </div>
-              <div>
-                <h1 className="font-black text-slate-900 text-lg">
-                  Monetization &amp; Earnings Hub
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Views, Clicks, Interactions &amp; Ad Revenue Control
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/"
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Storefront
-            </Link>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                Admin Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter ADMIN_PASSWORD..."
-                  required
-                  className="w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </div>
-            {authError && (
-              <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5">
-                {authError}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={checkingAuth}
-              className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-300 text-slate-950 font-black py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2"
-            >
-              {checkingAuth && <Loader2 className="w-4 h-4 animate-spin" />}
-              Open Earnings &amp; Control Center
-            </button>
-          </form>
-        </div>
-      </div>
+      <AdminTwoFactorGate
+        portalName="Monetization & Earnings Hub"
+        portalSubtitle="Protected by OTP (0728595160 / 0705759072), academia.edu55@gmail.com & Mobile Click"
+        portalPath="/monetization"
+        accent="amber"
+        onVerified={handleVerified2fa}
+      />
     );
   }
 

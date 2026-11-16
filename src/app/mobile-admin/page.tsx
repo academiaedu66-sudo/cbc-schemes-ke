@@ -19,6 +19,7 @@ import {
   MessageCircle,
   RefreshCw,
   Search,
+  ShieldAlert,
   ShieldCheck,
   Smartphone,
   Trophy,
@@ -82,6 +83,35 @@ interface MobileMonetizationSummary {
   ctrPercent: number;
 }
 
+interface MobileChallengePrompt {
+  challengeId: string;
+  matchNumber: number;
+  targetPhone: string;
+  targetEmail: string;
+  requesterIp: string;
+  userAgent: string;
+  portal: string;
+  createdAt: number;
+  expiresAt: number;
+}
+
+interface MobileSecurityPayload {
+  securityPhones: [string, string];
+  securityEmail: string;
+  backupEmail: string;
+  pendingChallenges: MobileChallengePrompt[];
+  authenticator: { code: string; secondsRemaining: number };
+  lockedIps: Array<{ ip: string; count: number; minutesLeft: number }>;
+  lastBackupAt: string | null;
+  auditLog: Array<{
+    id: string;
+    timestamp: string;
+    event: string;
+    ip: string;
+    detail: string;
+  }>;
+}
+
 const STORAGE_AUTH_KEY = 'cbc_mobile_admin_credentials_v1';
 
 function formatShortTime(iso?: string): string {
@@ -116,7 +146,7 @@ export default function MobileAdminAppPage() {
 
   // App Navigation & Data State
   const [activeTab, setActiveTab] = useState<
-    'APPROVE' | 'WALLET' | 'LEADS' | 'TRAFFIC'
+    'APPROVE' | 'WALLET' | 'LEADS' | 'TRAFFIC' | 'SECURITY'
   >('APPROVE');
   const [orderFilter, setOrderFilter] = useState<
     'PENDING' | 'COMPLETED' | 'ALL' | 'FAILED'
@@ -129,11 +159,18 @@ export default function MobileAdminAppPage() {
   const [redemptions, setRedemptions] = useState<MobileGamingRedemption[]>([]);
   const [monetization, setMonetization] =
     useState<MobileMonetizationSummary | null>(null);
+  const [securityData, setSecurityData] =
+    useState<MobileSecurityPayload | null>(null);
+  const [resolvingChallengeId, setResolvingChallengeId] = useState<string | null>(
+    null
+  );
+  const [backingUpMobile, setBackingUpMobile] = useState(false);
 
   const [syncing, setSyncing] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const prevPendingCountRef = useRef<number | null>(null);
+  const prevChallengeCountRef = useRef<number | null>(null);
 
   // Register PWA Service Worker & Capture Install Prompt
   useEffect(() => {
@@ -170,11 +207,12 @@ export default function MobileAdminAppPage() {
       };
 
       try {
-        const [ordRes, monRes, tuiRes, gamRes] = await Promise.all([
+        const [ordRes, monRes, tuiRes, gamRes, secRes] = await Promise.all([
           fetch('/api/admin/orders', { headers }),
           fetch('/api/monetization/track', { headers }),
           fetch('/api/tuition?admin=1', { headers }),
           fetch('/api/gaming?admin=1', { headers }),
+          fetch('/api/admin/security', { headers }),
         ]);
 
         if (ordRes.status === 401) {
@@ -236,6 +274,24 @@ export default function MobileAdminAppPage() {
         if (gamRes.ok) {
           const gamJson = await gamRes.json();
           setRedemptions(gamJson.redemptions || []);
+        }
+
+        if (secRes.ok) {
+          const secJson = (await secRes.json()) as MobileSecurityPayload;
+          setSecurityData(secJson);
+          const chCount = (secJson.pendingChallenges || []).length;
+          if (
+            prevChallengeCountRef.current !== null &&
+            chCount > prevChallengeCountRef.current
+          ) {
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              navigator.vibrate([250, 100, 250, 100, 250]);
+            }
+            showToast(
+              `Security Alert: Sign-in waiting for your Mobile Click approval!`
+            );
+          }
+          prevChallengeCountRef.current = chCount;
         }
 
         return true;
@@ -428,6 +484,114 @@ export default function MobileAdminAppPage() {
     });
     showToast('Gaming reward marked PAID.');
     await fetchAllMobileData(email, password);
+  };
+
+  const handleMobileClickDecision = async (
+    challengeId: string,
+    decision: 'APPROVE' | 'DENY'
+  ) => {
+    setResolvingChallengeId(challengeId);
+    try {
+      const res = await fetch('/api/admin/security', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': email.trim(),
+          'x-admin-password': password.trim(),
+        },
+        body: JSON.stringify({
+          action: 'mobile_click',
+          challengeId,
+          decision,
+        }),
+      });
+      if (res.ok) {
+        showToast(
+          decision === 'APPROVE'
+            ? 'Mobile Click Approved! Desktop unlocked.'
+            : 'Blocked! Intruder IP locked out for 1 hour.'
+        );
+        await fetchAllMobileData(email, password);
+      }
+    } finally {
+      setResolvingChallengeId(null);
+    }
+  };
+
+  const handleMobileBackupToEmail = async () => {
+    setBackingUpMobile(true);
+    try {
+      const res = await fetch('/api/admin/backup', {
+        method: 'POST',
+        headers: {
+          'x-admin-email': email.trim(),
+          'x-admin-password': password.trim(),
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(
+          data.emailSent
+            ? `Backup emailed to ${data.backupEmail}!`
+            : `Cloud backup saved (${data.counts?.resourcesCount || 0} items)!`
+        );
+        if (!data.emailSent && data.signedDownloadUrl) {
+          window.open(
+            `https://mail.google.com/mail/?view=cm&fs=1&to=academia.edu55@gmail.com&su=${encodeURIComponent(
+              'CBC Website Full Data Backup'
+            )}&body=${encodeURIComponent(
+              `Secure 7-Day Cloud Backup Download Link:\n\n${data.signedDownloadUrl}`
+            )}`,
+            '_blank'
+          );
+        }
+        await fetchAllMobileData(email, password);
+      }
+    } finally {
+      setBackingUpMobile(false);
+    }
+  };
+
+  const handleMobileDownloadBackup = async () => {
+    setBackingUpMobile(true);
+    try {
+      const res = await fetch('/api/admin/backup', {
+        headers: {
+          'x-admin-email': email.trim(),
+          'x-admin-password': password.trim(),
+        },
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cbc-website-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Backup file downloaded to your phone!');
+      }
+    } finally {
+      setBackingUpMobile(false);
+    }
+  };
+
+  const handleMobileRevokeSessions = async () => {
+    const res = await fetch('/api/admin/security', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-email': email.trim(),
+        'x-admin-password': password.trim(),
+      },
+      body: JSON.stringify({ action: 'revoke_sessions' }),
+    });
+    if (res.ok) {
+      showToast('All active web sessions revoked!');
+      await fetchAllMobileData(email, password);
+    }
   };
 
   const pendingOrders = useMemo(
@@ -685,6 +849,68 @@ export default function MobileAdminAppPage() {
 
       {/* Main Mobile Container */}
       <main className="max-w-lg mx-auto px-4 py-4 space-y-4">
+        {/* ================================================================= */}
+        {/* GLOBAL LIVE "MOBILE CLICK" 2-STEP VERIFICATION PROMPT             */}
+        {/* ================================================================= */}
+        {(securityData?.pendingChallenges || []).length > 0 && (
+          <div className="space-y-3">
+            {securityData?.pendingChallenges.map((ch) => {
+              const busyCh = resolvingChallengeId === ch.challengeId;
+              return (
+                <div
+                  key={ch.challengeId}
+                  className="bg-gradient-to-br from-amber-500/20 via-slate-900 to-rose-950/40 border-2 border-amber-400 rounded-3xl p-4 space-y-3 shadow-2xl"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-11 h-11 rounded-2xl bg-amber-400 text-slate-950 font-black text-lg flex items-center justify-center shrink-0">
+                        #{ch.matchNumber}
+                      </div>
+                      <div>
+                        <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
+                          Mobile Click 2FA Request
+                        </span>
+                        <p className="text-xs font-black text-white mt-0.5">
+                          Sign-in to <code>{ch.portal}</code>
+                        </p>
+                        <p className="text-[11px] text-slate-300">
+                          IP: <span className="font-mono">{ch.requesterIp}</span> • OTP:{' '}
+                          {ch.targetPhone}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      disabled={busyCh}
+                      onClick={() =>
+                        handleMobileClickDecision(ch.challengeId, 'APPROVE')
+                      }
+                      className="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 shadow cursor-pointer"
+                    >
+                      <Check className="w-4 h-4" />
+                      Allow Login #{ch.matchNumber}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busyCh}
+                      onClick={() =>
+                        handleMobileClickDecision(ch.challengeId, 'DENY')
+                      }
+                      className="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 shadow cursor-pointer"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Block Hacker
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* ================================================================= */}
         {/* TAB 1: VERIFY & APPROVE TRANSACTIONS                              */}
         {/* ================================================================= */}
@@ -1183,11 +1409,143 @@ export default function MobileAdminAppPage() {
               )}
           </div>
         )}
+
+        {/* ================================================================= */}
+        {/* TAB 5: SECURITY, AUTHENTICATOR OTP & WEBSITE BACKUP               */}
+        {/* ================================================================= */}
+        {activeTab === 'SECURITY' && (
+          <div className="space-y-4">
+            {/* Live 6-Digit Authenticator OTP Card */}
+            <div className="bg-gradient-to-br from-emerald-900/70 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-3xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                  Live 2-Step Authenticator Code
+                </span>
+                <span className="text-[10px] font-mono text-amber-300">
+                  Refreshes every 60s
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between bg-slate-950/90 border border-slate-800 rounded-2xl px-4 py-3.5">
+                <span className="font-mono text-3xl font-black tracking-[0.28em] text-white">
+                  {securityData?.authenticator.code || '------'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!securityData?.authenticator.code) return;
+                    navigator.clipboard
+                      ?.writeText(securityData.authenticator.code)
+                      .catch(() => {});
+                    setCopiedId('totp');
+                    showToast('6-digit OTP copied!');
+                  }}
+                  className="bg-emerald-500 text-slate-950 font-black text-xs px-3 py-2 rounded-xl flex items-center gap-1"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copiedId === 'totp' ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+
+              <div className="text-[11px] text-slate-300 space-y-1">
+                <p>
+                  • <strong>OTP Phones:</strong> 0728595160 or 0705759072
+                </p>
+                <p>
+                  • <strong>2FA &amp; Backup Email:</strong> academia.edu55@gmail.com
+                </p>
+                <p className="text-slate-400">
+                  Use this 6-digit code OR tap <strong>Allow Login</strong> whenever signing
+                  in on computer.
+                </p>
+              </div>
+            </div>
+
+            {/* 1-Tap Full Website Data Backup */}
+            <div className="bg-slate-900 border border-amber-400/30 rounded-3xl p-4 space-y-3">
+              <div>
+                <h3 className="text-xs font-black uppercase text-amber-300">
+                  Website Data Backup (academia.edu55@gmail.com)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Exports all 3,403+ CBC materials, M-Pesa orders, tuition leads, gaming
+                  players &amp; monetization data.
+                </p>
+                {securityData?.lastBackupAt && (
+                  <p className="text-[11px] text-emerald-400 font-semibold mt-1">
+                    Last Backup: {formatShortTime(securityData.lastBackupAt)}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  disabled={backingUpMobile}
+                  onClick={handleMobileBackupToEmail}
+                  className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-slate-700 text-slate-950 font-black text-xs py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" />
+                  {backingUpMobile
+                    ? 'Backing up website...'
+                    : 'Backup to academia.edu55@gmail.com'}
+                </button>
+                <button
+                  type="button"
+                  disabled={backingUpMobile}
+                  onClick={handleMobileDownloadBackup}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-emerald-400" />
+                  Download Full Backup File (.JSON)
+                </button>
+              </div>
+            </div>
+
+            {/* Emergency Session Panic Button & Intrusion Log */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase text-rose-400">
+                    Emergency Hacker Lockout
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    {securityData?.lockedIps.length || 0} hacker IPs currently blocked
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleMobileRevokeSessions}
+                  className="bg-rose-600 hover:bg-rose-500 text-white font-black text-[11px] px-3 py-2 rounded-xl flex items-center gap-1 cursor-pointer"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  Logout All Browsers
+                </button>
+              </div>
+
+              {(securityData?.auditLog || []).length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-slate-800 max-h-56 overflow-y-auto">
+                  {securityData?.auditLog.slice(0, 8).map((ev) => (
+                    <div
+                      key={ev.id}
+                      className="text-[11px] border-b border-slate-800/70 pb-1.5 last:border-0"
+                    >
+                      <p className="text-slate-200 font-semibold">{ev.detail}</p>
+                      <p className="text-slate-500 font-mono text-[10px]">
+                        IP {ev.ip} • {formatShortTime(ev.timestamp)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Fixed Native-Style Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 inset-x-0 z-30 bg-slate-950/95 backdrop-blur border-t border-slate-800 px-2 py-2">
-        <div className="max-w-lg mx-auto grid grid-cols-4 gap-1">
+      <nav className="fixed bottom-0 inset-x-0 z-30 bg-slate-950/95 backdrop-blur border-t border-slate-800 px-1.5 py-2">
+        <div className="max-w-lg mx-auto grid grid-cols-5 gap-1">
           <button
             type="button"
             onClick={() => setActiveTab('APPROVE')}
@@ -1200,7 +1558,7 @@ export default function MobileAdminAppPage() {
             <CheckCircle2 className="w-5 h-5" />
             <span className="text-[10px] font-black">Approve</span>
             {pendingOrders.length > 0 && (
-              <span className="absolute top-1 right-4 bg-rose-500 text-white text-[9px] font-black px-1.5 rounded-full">
+              <span className="absolute top-1 right-2 bg-rose-500 text-white text-[9px] font-black px-1.5 rounded-full">
                 {pendingOrders.length}
               </span>
             )}
@@ -1231,7 +1589,7 @@ export default function MobileAdminAppPage() {
             <Users className="w-5 h-5" />
             <span className="text-[10px] font-black">Leads</span>
             {totalLeadsBadge > 0 && (
-              <span className="absolute top-1 right-4 bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 rounded-full">
+              <span className="absolute top-1 right-2 bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 rounded-full">
                 {totalLeadsBadge}
               </span>
             )}
@@ -1248,6 +1606,24 @@ export default function MobileAdminAppPage() {
           >
             <Coins className="w-5 h-5" />
             <span className="text-[10px] font-black">Traffic</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('SECURITY')}
+            className={`relative py-2 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition ${
+              activeTab === 'SECURITY'
+                ? 'bg-emerald-500/15 text-emerald-400'
+                : 'text-slate-400'
+            }`}
+          >
+            <ShieldCheck className="w-5 h-5" />
+            <span className="text-[10px] font-black">Security</span>
+            {(securityData?.pendingChallenges.length || 0) > 0 && (
+              <span className="absolute top-1 right-2 bg-rose-500 text-white text-[9px] font-black px-1.5 rounded-full animate-pulse">
+                {securityData?.pendingChallenges.length}
+              </span>
+            )}
           </button>
         </div>
       </nav>

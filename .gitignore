@@ -43,3 +43,7 @@ next-env.d.ts
 # local bulk-upload inbox binaries (keep README.md)
 /materials-inbox/*
 !/materials-inbox/README.md
+
+# private database & website data backups (never commit to public git)
+/backups
+

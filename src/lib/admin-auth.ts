@@ -44,6 +44,12 @@ export function verifyAdminEmailAndPassword(
   return verifyAdminPasswordString(rawPassword);
 }
 
+export function getRequestIp(req: NextRequest): string {
+  const xff = req.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  return req.headers.get('x-real-ip') || 'unknown';
+}
+
 export function isAdminAuthorized(req: NextRequest): boolean {
   const providedPw = (req.headers.get('x-admin-password') || '').trim();
   if (!verifyAdminPasswordString(providedPw)) return false;

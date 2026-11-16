@@ -38,6 +38,10 @@ import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
+import AdminTwoFactorGate, {
+  ADMIN_2FA_TOKEN_KEY,
+} from '@/components/AdminTwoFactorGate';
+import AdminSecurityBackupPanel from '@/components/AdminSecurityBackupPanel';
 import type { ResourceItem } from '@/components/ResourceCard';
 
 interface QueuedUpload {
@@ -198,14 +202,13 @@ export default function AdminDashboardPage() {
     [fetchOrders, fetchGatewayConfig]
   );
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem('cbc_admin_pw');
-    if (saved) {
-      setPassword(saved);
-      setIsCheckingAuth(true);
-      fetchInventory(saved);
-    }
-  }, [fetchInventory]);
+  const handleVerified2fa = useCallback(
+    async (verifiedPw: string) => {
+      setPassword(verifiedPw);
+      await fetchInventory(verifiedPw);
+    },
+    [fetchInventory]
+  );
 
   // Auto-refresh M-Pesa orders every 10 seconds while logged in
   useEffect(() => {
@@ -215,12 +218,6 @@ export default function AdminDashboardPage() {
     }, 10000);
     return () => clearInterval(timer);
   }, [authenticated, password, fetchOrders]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsCheckingAuth(true);
-    await fetchInventory(password);
-  };
 
   const handleSaveGateway = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -459,61 +456,13 @@ export default function AdminDashboardPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-lg max-w-md w-full p-6 space-y-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                <Lock className="w-5 h-5" />
-              </div>
-              <div>
-                <h1 className="font-black text-slate-900 text-lg">
-                  Materials &amp; M-Pesa Admin
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Manage 0728595160 payouts &amp; CBC documents
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/"
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Storefront
-            </Link>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                Admin Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter ADMIN_PASSWORD..."
-                required
-                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-            {authError && (
-              <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5">
-                {authError}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={isCheckingAuth}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2"
-            >
-              {isCheckingAuth && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sign In to Admin
-            </button>
-          </form>
-        </div>
-      </div>
+      <AdminTwoFactorGate
+        portalName="Materials & M-Pesa Admin"
+        portalSubtitle="Protected by OTP (0728595160 / 0705759072), academia.edu55@gmail.com & Mobile Click"
+        portalPath="/admin"
+        accent="emerald"
+        onVerified={handleVerified2fa}
+      />
     );
   }
 
@@ -593,6 +542,7 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={() => {
                 sessionStorage.removeItem('cbc_admin_pw');
+                sessionStorage.removeItem(ADMIN_2FA_TOKEN_KEY);
                 setAuthenticated(false);
                 setPassword('');
               }}
@@ -605,6 +555,9 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* BACKEND ANTI-HACKER SHIELD, 2-STEP VERIFICATION & WEBSITE BACKUP */}
+        <AdminSecurityBackupPanel password={password} />
+
         {/* LIVE STK -> 0728595160 INSTANT PAYOUT CONFIGURATION */}
         <section
           className={`border rounded-2xl p-6 shadow-sm space-y-4 ${

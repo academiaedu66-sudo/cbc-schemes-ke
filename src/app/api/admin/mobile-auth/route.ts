@@ -1,13 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   DEFAULT_ADMIN_EMAIL,
+  getRequestIp,
   verifyAdminEmailAndPassword,
 } from '@/lib/admin-auth';
+import {
+  checkIpLockout,
+  getSecurityState,
+  recordFailedAuthAttempt,
+} from '@/lib/security';
 
 export async function POST(req: NextRequest) {
-  void req.headers.get('user-agent');
+  const ip = getRequestIp(req);
 
   try {
+    const secState = await getSecurityState();
+    const lock = checkIpLockout(secState, ip);
+    if (lock.locked) {
+      return NextResponse.json(
+        {
+          error: `Too many failed sign-in attempts from this IP. Locked for ${Math.ceil(
+            lock.retryAfterSec / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = (await req.json()) as { email?: string; password?: string };
     const email = (body.email || '').trim();
     const password = (body.password || '').trim();
@@ -21,8 +40,16 @@ export async function POST(req: NextRequest) {
 
     const valid = verifyAdminEmailAndPassword(email, password);
     if (!valid) {
+      const fail = await recordFailedAuthAttempt(
+        ip,
+        `Failed Mobile Admin login (${email.slice(0, 32)})`
+      );
       return NextResponse.json(
-        { error: 'Invalid admin email or password.' },
+        {
+          error: fail.locked
+            ? 'IP locked for 30 minutes due to repeated failed attempts.'
+            : `Invalid admin email or password (${fail.attemptsLeft} attempts left before lockout).`,
+        },
         { status: 401 }
       );
     }
