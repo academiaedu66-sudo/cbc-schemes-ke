@@ -216,6 +216,21 @@ export default function HolidayTuitionCenter({
       );
       return;
     }
+    fetch('/api/purchase-attempt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: 'Tuition Hub',
+        itemTitle: `${
+          activeModalRole === 'LEARNER'
+            ? 'Student Tuition Match'
+            : 'Teacher Tuition Listing'
+        } (${fullName.trim()})`,
+        amountKes: feeKes,
+        buyerPhone: phone.trim(),
+        stage: 'OPENED_CHECKOUT',
+      }),
+    }).catch(() => {});
     setStep('PAYMENT');
   };
 

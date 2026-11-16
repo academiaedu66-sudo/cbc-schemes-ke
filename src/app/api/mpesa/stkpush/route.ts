@@ -13,6 +13,7 @@ import {
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
 import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
+import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
 
 export async function GET(req: Request) {
   const summary = await resolveActiveGatewaySummary();
@@ -33,6 +34,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const { phoneNumber, resourceId, testAmount, serviceType } = await req.json();
+
+    await recordPurchaseAttempt({
+      channel: 'M-Pesa STK Push',
+      itemTitle: serviceType
+        ? String(serviceType)
+        : resourceId
+        ? `Resource #${resourceId}`
+        : 'Admin Live STK Test',
+      amountKes: Number(testAmount) || 0,
+      buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
+      stage: 'SUBMITTED_PAYMENT',
+    }).catch(() => {});
 
     // All public payment methods are temporarily in 72-hour maintenance (keep admin testAmount active)
     if (!testAmount) {

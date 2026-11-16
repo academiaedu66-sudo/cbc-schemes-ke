@@ -85,6 +85,6 @@ function decodeURIComponentSafe(raw: string): string {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|admin-icon.svg|admin-sw.js).*)',
+    '/((?!_next/static|_next/image|favicon.ico|admin-icon.svg|admin-sw.js|pinchez-check-money.wav).*)',
   ],
 };

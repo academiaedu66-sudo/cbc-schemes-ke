@@ -447,6 +447,16 @@ export default function HomePage() {
 
   const openCheckoutFor = (res: ResourceItem) => {
     trackInteraction('checkout_modal_open');
+    fetch('/api/purchase-attempt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: 'Curriculum Material',
+        itemTitle: res.title,
+        amountKes: res.price,
+        stage: 'OPENED_CHECKOUT',
+      }),
+    }).catch(() => {});
     setModalItem(res);
     setPhoneNumber('');
     setMpesaCode('');

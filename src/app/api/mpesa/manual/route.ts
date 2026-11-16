@@ -9,9 +9,24 @@ import {
   sendWhatsAppAdminNotification,
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
+import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
 
 export async function POST(req: Request) {
   void req.headers.get('user-agent');
+  const body = (await req.json().catch(() => ({}))) as {
+    mpesaCode?: string;
+    phoneNumber?: string;
+    resourceId?: string;
+    serviceType?: string;
+  };
+  await recordPurchaseAttempt({
+    channel: 'M-Pesa Direct Code',
+    itemTitle:
+      body.serviceType ||
+      (body.resourceId ? `Resource #${body.resourceId}` : 'M-Pesa Submission'),
+    buyerPhone: body.phoneNumber,
+    stage: 'SUBMITTED_PAYMENT',
+  }).catch(() => {});
   return NextResponse.json(
     {
       error:

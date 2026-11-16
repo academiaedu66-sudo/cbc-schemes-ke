@@ -199,6 +199,16 @@ export default function SubjectGamingHub({
 
       const resumed = await tryResumeActiveSession(chosenSubject, chosenGrade);
       if (!resumed) {
+        fetch('/api/purchase-attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channel: 'Gaming Pass',
+            itemTitle: `20-Min Gaming Pass (${chosenSubject || 'All Subjects'})`,
+            amountKes: 10,
+            stage: 'OPENED_CHECKOUT',
+          }),
+        }).catch(() => {});
         setView('ACTIVATE');
       }
     },

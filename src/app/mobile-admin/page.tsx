@@ -25,6 +25,8 @@ import {
   Trophy,
   UserCheck,
   Users,
+  Volume2,
+  VolumeX,
   Wallet,
   X,
   XCircle,
@@ -112,6 +114,19 @@ interface MobileSecurityPayload {
   }>;
 }
 
+interface MobilePurchaseAttempt {
+  id: string;
+  timestamp: string;
+  channel: string;
+  itemTitle: string;
+  amountKes: number;
+  buyerPhone?: string;
+  stage: 'OPENED_CHECKOUT' | 'SUBMITTED_PAYMENT';
+}
+
+const PINCHEZ_SPOKEN_GREETING =
+  'Hello senior counsel Pinchez. Please check money.';
+
 const STORAGE_AUTH_KEY = 'cbc_mobile_admin_credentials_v1';
 
 function formatShortTime(iso?: string): string {
@@ -161,6 +176,11 @@ export default function MobileAdminAppPage() {
     useState<MobileMonetizationSummary | null>(null);
   const [securityData, setSecurityData] =
     useState<MobileSecurityPayload | null>(null);
+  const [purchaseAttempts, setPurchaseAttempts] = useState<
+    MobilePurchaseAttempt[]
+  >([]);
+  const [totalPurchaseAttempts, setTotalPurchaseAttempts] = useState(0);
+  const [voiceAlertEnabled, setVoiceAlertEnabled] = useState(true);
   const [resolvingChallengeId, setResolvingChallengeId] = useState<string | null>(
     null
   );
@@ -171,6 +191,90 @@ export default function MobileAdminAppPage() {
   const [toastMsg, setToastMsg] = useState('');
   const prevPendingCountRef = useRef<number | null>(null);
   const prevChallengeCountRef = useRef<number | null>(null);
+  const lastSeenAttemptIdRef = useRef<string | null | undefined>(undefined);
+  const voiceEnabledRef = useRef<boolean>(true);
+  const alertAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlockedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    voiceEnabledRef.current = voiceAlertEnabled;
+  }, [voiceAlertEnabled]);
+
+  // Preload "/pinchez-check-money.wav" & unlock mobile audio on first screen tap
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const audio = new Audio('/pinchez-check-money.wav');
+    audio.preload = 'auto';
+    audio.volume = 1.0;
+    alertAudioRef.current = audio;
+
+    const unlockOnGesture = () => {
+      if (audioUnlockedRef.current) return;
+      audioUnlockedRef.current = true;
+      try {
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext?: typeof AudioContext })
+            .webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          ctx.resume().catch(() => {});
+        }
+        // Prime speechSynthesis & audio element silently
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.getVoices();
+        }
+        if (alertAudioRef.current) {
+          alertAudioRef.current.load();
+        }
+      } catch {}
+    };
+
+    window.addEventListener('pointerdown', unlockOnGesture, { passive: true });
+    window.addEventListener('touchstart', unlockOnGesture, { passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlockOnGesture);
+      window.removeEventListener('touchstart', unlockOnGesture);
+    };
+  }, []);
+
+  const playPinchezVoiceAlert = useCallback((forcePlay = false) => {
+    if (!forcePlay && !voiceEnabledRef.current) return;
+    if (typeof window === 'undefined') return;
+
+    if (navigator.vibrate) {
+      navigator.vibrate([260, 100, 260, 100, 380]);
+    }
+
+    const speakFallback = () => {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(PINCHEZ_SPOKEN_GREETING);
+          utter.rate = 0.95;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+          window.speechSynthesis.speak(utter);
+        }
+      } catch {}
+    };
+
+    try {
+      const audio =
+        alertAudioRef.current || new Audio('/pinchez-check-money.wav');
+      alertAudioRef.current = audio;
+      audio.currentTime = 0;
+      audio.volume = 1.0;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          speakFallback();
+        });
+      }
+    } catch {
+      speakFallback();
+    }
+  }, []);
 
   // Register PWA Service Worker & Capture Install Prompt
   useEffect(() => {
@@ -207,13 +311,15 @@ export default function MobileAdminAppPage() {
       };
 
       try {
-        const [ordRes, monRes, tuiRes, gamRes, secRes] = await Promise.all([
-          fetch('/api/admin/orders', { headers }),
-          fetch('/api/monetization/track', { headers }),
-          fetch('/api/tuition?admin=1', { headers }),
-          fetch('/api/gaming?admin=1', { headers }),
-          fetch('/api/admin/security', { headers }),
-        ]);
+        const [ordRes, monRes, tuiRes, gamRes, secRes, attRes] =
+          await Promise.all([
+            fetch('/api/admin/orders', { headers }),
+            fetch('/api/monetization/track', { headers }),
+            fetch('/api/tuition?admin=1', { headers }),
+            fetch('/api/gaming?admin=1', { headers }),
+            fetch('/api/admin/security', { headers }),
+            fetch('/api/purchase-attempt', { headers }),
+          ]);
 
         if (ordRes.status === 401) {
           setAuthenticated(false);
@@ -227,18 +333,50 @@ export default function MobileAdminAppPage() {
           setOrders(list);
 
           const pendingCount = list.filter((o) => o.status === 'PENDING').length;
+          let playedOrderAlert = false;
           if (
             prevPendingCountRef.current !== null &&
             pendingCount > prevPendingCountRef.current
           ) {
-            if (typeof navigator !== 'undefined' && navigator.vibrate) {
-              navigator.vibrate([180, 90, 180]);
-            }
+            playPinchezVoiceAlert();
+            playedOrderAlert = true;
             showToast(
-              `New pending M-Pesa transaction! (${pendingCount} awaiting approval)`
+              `Hello Senior Counsel Pinchez! New M-Pesa order (${pendingCount} pending)`
             );
           }
           prevPendingCountRef.current = pendingCount;
+
+          if (attRes.ok) {
+            const attJson = (await attRes.json()) as {
+              totalAttempts: number;
+              latestAttempt: MobilePurchaseAttempt | null;
+              recentAttempts: MobilePurchaseAttempt[];
+            };
+            setTotalPurchaseAttempts(attJson.totalAttempts || 0);
+            setPurchaseAttempts(attJson.recentAttempts || []);
+
+            const newestId = attJson.latestAttempt?.id || null;
+            if (lastSeenAttemptIdRef.current === undefined) {
+              // First baseline snapshot on app load
+              lastSeenAttemptIdRef.current = newestId;
+            } else if (
+              newestId &&
+              newestId !== lastSeenAttemptIdRef.current
+            ) {
+              lastSeenAttemptIdRef.current = newestId;
+              if (!playedOrderAlert) {
+                playPinchezVoiceAlert();
+              }
+              const latest = attJson.latestAttempt;
+              if (latest) {
+                showToast(
+                  `Purchase Attempt: ${latest.itemTitle}${
+                    latest.amountKes ? ` (KES ${latest.amountKes})` : ''
+                  }`
+                );
+              }
+            }
+          }
 
           // Auto-switch to ALL if 0 pending on very first load so screen isn't empty
           if (prevPendingCountRef.current === 0 && list.length > 0 && pendingCount === 0) {
@@ -301,7 +439,7 @@ export default function MobileAdminAppPage() {
         setSyncing(false);
       }
     },
-    []
+    [playPinchezVoiceAlert]
   );
 
   // Restore saved mobile session if present
@@ -338,12 +476,12 @@ export default function MobileAdminAppPage() {
     } catch {}
   }, [fetchAllMobileData]);
 
-  // Live 6-second auto-sync while authenticated
+  // Live 4-second auto-sync while authenticated (triggers Senior Counsel Pinchez voice alert!)
   useEffect(() => {
     if (!authenticated || !email || !password) return;
     const timer = window.setInterval(() => {
       fetchAllMobileData(email, password);
-    }, 6000);
+    }, 4000);
     return () => window.clearInterval(timer);
   }, [authenticated, email, password, fetchAllMobileData]);
 
@@ -821,6 +959,33 @@ export default function MobileAdminAppPage() {
             )}
             <button
               type="button"
+              onClick={() => {
+                const next = !voiceAlertEnabled;
+                setVoiceAlertEnabled(next);
+                showToast(
+                  next
+                    ? 'Voice Alert ON: "Hello senior counsel Pinchez. Please check money."'
+                    : 'Voice Alert muted'
+                );
+                if (next) {
+                  playPinchezVoiceAlert(true);
+                }
+              }}
+              aria-label="Toggle voice alert"
+              className={`p-2 rounded-xl border active:scale-95 transition ${
+                voiceAlertEnabled
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                  : 'bg-slate-900 border-slate-800 text-slate-500'
+              }`}
+            >
+              {voiceAlertEnabled ? (
+                <Volume2 className="w-4 h-4" />
+              ) : (
+                <VolumeX className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              type="button"
               onClick={() => fetchAllMobileData(email, password)}
               aria-label="Sync now"
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 active:scale-95 transition"
@@ -916,6 +1081,82 @@ export default function MobileAdminAppPage() {
         {/* ================================================================= */}
         {activeTab === 'APPROVE' && (
           <div className="space-y-4">
+            {/* Senior Counsel Pinchez Voice Alert Strip */}
+            <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-amber-950/40 border border-emerald-500/40 rounded-2xl p-3.5 flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    voiceAlertEnabled
+                      ? 'bg-emerald-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  {voiceAlertEnabled ? (
+                    <Volume2 className="w-4 h-4" />
+                  ) : (
+                    <VolumeX className="w-4 h-4" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase text-emerald-300 truncate">
+                    Purchase Voice Alert ({voiceAlertEnabled ? 'ACTIVE' : 'MUTED'})
+                  </p>
+                  <p className="text-[11px] text-slate-300 truncate">
+                    &ldquo;Hello senior counsel Pinchez. Please check money.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playPinchezVoiceAlert(true);
+                  showToast('Playing: "Hello senior counsel Pinchez. Please check money."');
+                }}
+                className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-[11px] px-3 py-2 rounded-xl shrink-0 cursor-pointer"
+              >
+                ▶ Test Sound
+              </button>
+            </div>
+
+            {/* Live Real-Time Purchase Attempts Feed */}
+            {purchaseAttempts.length > 0 && (
+              <div className="bg-slate-900 border border-amber-400/30 rounded-2xl p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                    Live Purchase Attempts ({totalPurchaseAttempts})
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Auto-rings voice alert
+                  </span>
+                </div>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                  {purchaseAttempts.slice(0, 4).map((att) => (
+                    <div
+                      key={att.id}
+                      className="flex items-center justify-between gap-2 text-xs bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-bold text-white truncate">
+                          {att.itemTitle}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {att.channel}
+                          {att.buyerPhone ? ` • ${att.buyerPhone}` : ''} •{' '}
+                          {formatShortTime(att.timestamp)}
+                        </p>
+                      </div>
+                      {att.amountKes > 0 && (
+                        <span className="font-mono font-black text-emerald-400 shrink-0">
+                          KES {att.amountKes}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Quick Summary Banner */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-3.5">
