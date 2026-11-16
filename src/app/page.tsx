@@ -20,6 +20,7 @@ import {
   HeartHandshake,
   Gamepad2,
   Landmark,
+  Briefcase,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -33,6 +34,7 @@ import SubjectGamingHub, {
   type ExternalGameLaunch,
 } from '@/components/SubjectGamingHub';
 import TscServicesHub from '@/components/TscServicesHub';
+import HolidaySideHustlesHub from '@/components/HolidaySideHustlesHub';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -97,6 +99,7 @@ export default function HomePage() {
   const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
   const [counsellingOpenTick, setCounsellingOpenTick] = useState(0);
   const [tscOpenTick, setTscOpenTick] = useState(0);
+  const [sideHustlesOpenTick, setSideHustlesOpenTick] = useState(0);
   const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
 
   // Payment & WhatsApp Configuration
@@ -478,6 +481,14 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() => setSideHustlesOpenTick((c) => c + 1)}
+              className="bg-emerald-400 hover:bg-emerald-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <Briefcase className="w-4 h-4" />
+              HOLIDAY SIDE HUSTLES
+            </button>
+            <button
+              type="button"
               onClick={() => setTscOpenTick((c) => c + 1)}
               className="bg-sky-400 hover:bg-sky-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
@@ -555,6 +566,9 @@ export default function HomePage() {
 
         {/* TOP FEATURE 4: ALL TEACHERS SERVICE COMMISSION (TSC) SERVICES IN ONE MONETIZED BUTTON */}
         <TscServicesHub externalTriggerCount={tscOpenTick} />
+
+        {/* TOP FEATURE 5: FREELANCERS HOLIDAY SIDE HUSTLES (ALL AITRAININGJOBS.IT COMPANIES + PAID SURVEY ACCOUNTS) */}
+        <HolidaySideHustlesHub externalTriggerCount={sideHustlesOpenTick} />
 
         {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
         <EducationUpdatesHub

@@ -708,6 +708,7 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                           <option value="preview_modal">Preview Modal</option>
                           <option value="sticky_footer">Sticky Bottom Bar</option>
                           <option value="tsc_services_hub">TSC Services Hub</option>
+                          <option value="holiday_side_hustles">Holiday Side Hustles</option>
                         </select>
                         <button
                           type="button"

@@ -11,7 +11,8 @@ export type AdPlacement =
   | 'sticky_footer'
   | 'updates_hub'
   | 'smartlink'
-  | 'tsc_services_hub';
+  | 'tsc_services_hub'
+  | 'holiday_side_hustles';
 
 export type TrackEventType = 'view' | 'impression' | 'interaction' | 'click';
 
@@ -173,6 +174,19 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
     ctaText: 'Explore / Advertise →',
     targetUrl: '/advertise',
     accentColor: 'blue',
+  },
+  {
+    id: 'sponsor-side-hustles',
+    enabled: true,
+    placement: 'holiday_side_hustles',
+    badge: 'FREELANCER PARTNER',
+    headline:
+      'Are You a Qualified Teacher? Also Earn Locally by Registering as a Holiday / Personal Tutor (KSh 500)!',
+    subtext:
+      'Combine remote USD AI-training & paid surveys with local CBC holiday tuition students — or advertise your freelance training/tools here.',
+    ctaText: 'Advertise / Partner →',
+    targetUrl: '/advertise',
+    accentColor: 'emerald',
   },
 ];
 

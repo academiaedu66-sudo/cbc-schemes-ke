@@ -58,6 +58,9 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  holiday_side_hustles_open: 'HOLIDAY SIDE HUSTLES Button Opens',
+  side_hustle_ai_training_click: 'AI Training Company Clicks (AITrainingJobs.it)',
+  side_hustle_survey_click: 'Paid Survey Account Clicks',
   tsc_all_services_btn_click: 'TSC All-Services Button Clicks (Monetized)',
   tsc_service_tpay: 'TSC T-PAY Payslip & P9 Clicks',
   tsc_service_tpad2: 'TSC TPAD 2 Appraisal Clicks',
@@ -97,6 +100,7 @@ const INTERACTION_LABELS: Record<string, string> = {
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
+  holiday_side_hustles: 'HOLIDAY SIDE HUSTLES Hub (AI & Survey Clicks)',
   tsc_services_hub: 'All-in-One TSC Services Hub (Monetized Clicks)',
   top_leaderboard: 'Top Homepage Leaderboard Banner',
   infeed_grid: 'In-Feed Catalog Native Ad Cards',
@@ -1193,6 +1197,7 @@ export default function MonetizationControlPage() {
                             <option value="preview_modal">Preview Modal</option>
                             <option value="sticky_footer">Sticky Bottom Bar</option>
                             <option value="tsc_services_hub">TSC Services Hub</option>
+                            <option value="holiday_side_hustles">Holiday Side Hustles</option>
                           </select>
                           <button
                             type="button"
