@@ -643,18 +643,27 @@ export async function resolveChallengeByMobileClick(params: {
     );
   } else {
     ch.status = 'DENIED';
-    // Also lock out the intruder IP immediately!
-    state.ipFailures[ch.requesterIp] = {
-      count: 10,
-      firstFailedAt: Date.now(),
-      lockedUntil: Date.now() + 60 * 60 * 1000, // 1-hour immediate hacker block
-    };
-    appendAuditEvent(
-      state,
-      '2FA_BLOCKED_INTRUDER',
-      ch.requesterIp,
-      `BLOCKED intruder IP ${ch.requesterIp} for 1 hour via Mobile Click Deny (#${ch.matchNumber})`
-    );
+    // Lock out external intruder IP (never lock out the owner's own mobile device IP!)
+    if (ch.requesterIp && ch.requesterIp !== params.mobileIp) {
+      state.ipFailures[ch.requesterIp] = {
+        count: 10,
+        firstFailedAt: Date.now(),
+        lockedUntil: Date.now() + 60 * 60 * 1000, // 1-hour immediate hacker block
+      };
+      appendAuditEvent(
+        state,
+        '2FA_BLOCKED_INTRUDER',
+        ch.requesterIp,
+        `BLOCKED intruder IP ${ch.requesterIp} for 1 hour via Mobile Click Deny (#${ch.matchNumber})`
+      );
+    } else {
+      appendAuditEvent(
+        state,
+        '2FA_BLOCKED_INTRUDER',
+        ch.requesterIp,
+        `Denied sign-in #${ch.matchNumber} via Mobile Click (kept owner device IP unlocked)`
+      );
+    }
   }
 
   await saveSecurityState(state);

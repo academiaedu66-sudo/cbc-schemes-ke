@@ -6,6 +6,16 @@ const FALLBACK_SCRYPT_HEX =
   'cb0ce2c8673d756e0f4fdc2dadf90661655fa0f7d4211662013aa7661126a1f1';
 
 export const DEFAULT_ADMIN_EMAIL = 'academia.edu66@gmail.com';
+export const SECONDARY_SECURITY_EMAIL = 'academia.edu55@gmail.com';
+
+function isAllowedAdminEmail(rawEmail: string): boolean {
+  const clean = (rawEmail || '').trim().toLowerCase();
+  if (!clean) return false;
+  const primary = (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL)
+    .trim()
+    .toLowerCase();
+  return clean === primary || clean === SECONDARY_SECURITY_EMAIL;
+}
 
 export function verifyAdminPasswordString(rawPassword: string): boolean {
   const provided = (rawPassword || '').trim();
@@ -34,13 +44,7 @@ export function verifyAdminEmailAndPassword(
   rawEmail: string,
   rawPassword: string
 ): boolean {
-  const expectedEmail = (
-    process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL
-  )
-    .trim()
-    .toLowerCase();
-  const cleanEmail = (rawEmail || '').trim().toLowerCase();
-  if (!cleanEmail || cleanEmail !== expectedEmail) return false;
+  if (!isAllowedAdminEmail(rawEmail)) return false;
   return verifyAdminPasswordString(rawPassword);
 }
 
@@ -56,15 +60,8 @@ export function isAdminAuthorized(req: NextRequest): boolean {
 
   // If request comes from the Mobile App (sends x-admin-email), strictly verify email too
   const providedEmail = req.headers.get('x-admin-email');
-  if (providedEmail !== null) {
-    const expectedEmail = (
-      process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL
-    )
-      .trim()
-      .toLowerCase();
-    if (providedEmail.trim().toLowerCase() !== expectedEmail) {
-      return false;
-    }
+  if (providedEmail !== null && !isAllowedAdminEmail(providedEmail)) {
+    return false;
   }
 
   return true;

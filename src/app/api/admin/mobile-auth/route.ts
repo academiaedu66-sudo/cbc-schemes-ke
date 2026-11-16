@@ -8,25 +8,13 @@ import {
   checkIpLockout,
   getSecurityState,
   recordFailedAuthAttempt,
+  saveSecurityState,
 } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   const ip = getRequestIp(req);
 
   try {
-    const secState = await getSecurityState();
-    const lock = checkIpLockout(secState, ip);
-    if (lock.locked) {
-      return NextResponse.json(
-        {
-          error: `Too many failed sign-in attempts from this IP. Locked for ${Math.ceil(
-            lock.retryAfterSec / 60
-          )} minutes.`,
-        },
-        { status: 429 }
-      );
-    }
-
     const body = (await req.json()) as { email?: string; password?: string };
     const email = (body.email || '').trim();
     const password = (body.password || '').trim();
@@ -38,8 +26,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const secState = await getSecurityState();
+    const lock = checkIpLockout(secState, ip);
     const valid = verifyAdminEmailAndPassword(email, password);
+
+    // If an IP is locked, keep blocking wrong guesses — but allow the verified owner right in & clear self-lockout!
     if (!valid) {
+      if (lock.locked) {
+        return NextResponse.json(
+          {
+            error: `Too many failed sign-in attempts from this IP. Locked for ${Math.ceil(
+              lock.retryAfterSec / 60
+            )} minutes.`,
+          },
+          { status: 429 }
+        );
+      }
+
       const fail = await recordFailedAuthAttempt(
         ip,
         `Failed Mobile Admin login (${email.slice(0, 32)})`
@@ -54,9 +57,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verified owner! Clear any prior CGNAT / self-test IP lockout automatically
+    if (secState.ipFailures[ip]) {
+      delete secState.ipFailures[ip];
+      await saveSecurityState(secState).catch(() => {});
+    }
+
     return NextResponse.json({
       authenticated: true,
-      email: (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim().toLowerCase(),
+      email: email.toLowerCase() || DEFAULT_ADMIN_EMAIL,
     });
   } catch {
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
