@@ -49,6 +49,12 @@ export async function POST(req: Request) {
         price: 500,
         title: 'Teacher Holiday / Personal Tuition Registration (KSh 500)',
       };
+    } else if (serviceType === 'SUBJECT_GAMING') {
+      resource = {
+        id: null,
+        price: 10,
+        title: 'CBC Subject Gaming 20-Minute Pass (KSh 10)',
+      };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
         .from('resources')

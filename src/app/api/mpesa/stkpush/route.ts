@@ -34,6 +34,17 @@ export async function POST(req: Request) {
   try {
     const { phoneNumber, resourceId, testAmount, serviceType } = await req.json();
 
+    // STK Push is temporarily in maintenance for public checkouts (keep admin testAmount active)
+    if (!testAmount) {
+      return NextResponse.json(
+        {
+          error:
+            'M-Pesa STK Push is currently under maintenance. Please pay via M-Pesa Send Money to 0728595160 and paste your M-Pesa confirmation code instead.',
+        },
+        { status: 503 }
+      );
+    }
+
     if (!phoneNumber || (!resourceId && !testAmount && !serviceType)) {
       return NextResponse.json(
         { error: 'Phone number and selection are required.' },

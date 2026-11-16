@@ -111,9 +111,9 @@ export default function HomePage() {
   // Preview Modal State
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
 
-  // Checkout Modal State (STK Express is ALWAYS primary & active)
+  // Checkout Modal State (M-Pesa Send Money primary while STK Push is under maintenance)
   const [modalItem, setModalItem] = useState<ResourceItem | null>(null);
-  const [checkoutTab, setCheckoutTab] = useState<'STK' | 'DIRECT'>('STK');
+  const [checkoutTab, setCheckoutTab] = useState<'STK' | 'DIRECT'>('DIRECT');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mpesaCode, setMpesaCode] = useState('');
   const [submittedReceipt, setSubmittedReceipt] = useState('');
@@ -457,7 +457,7 @@ export default function HomePage() {
     setDocxDownloadUrl(null);
     setPdfDownloadUrl(null);
     setPaymentStatus('IDLE');
-    setCheckoutTab('STK');
+    setCheckoutTab('DIRECT');
   };
 
   const resetModal = () => {
@@ -1264,9 +1264,17 @@ export default function HomePage() {
               ✕
             </button>
             <h2 className="text-lg font-black text-slate-900 mb-1">
-              M-Pesa Express Checkout
+              M-Pesa Send Money Checkout
             </h2>
-            <p className="text-xs text-slate-500 mb-4 pr-6">{modalItem.title}</p>
+            <p className="text-xs text-slate-500 mb-3 pr-6">{modalItem.title}</p>
+
+            {/* Maintenance Notice Banner */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 text-xs text-amber-950">
+              <strong>Notice:</strong> M-Pesa STK Push is currently{' '}
+              <strong>under maintenance</strong>. Please pay using{' '}
+              <strong>M-Pesa Send Money to {merchantLocalPhone}</strong> and paste
+              your M-Pesa confirmation code below.
+            </div>
 
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center mb-4">
               <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">
@@ -1312,23 +1320,8 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {/* Payment Method Switcher (Always enabled so buyers are never stuck) */}
+                {/* Payment Method Switcher: Send Money Active, STK Marked Maintenance */}
                 <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl mb-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCheckoutTab('STK');
-                      if (paymentStatus !== 'PENDING') setCheckoutMessage('');
-                    }}
-                    className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 ${
-                      checkoutTab === 'STK'
-                        ? 'bg-white text-emerald-800 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    M-Pesa STK Prompt
-                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -1342,86 +1335,51 @@ export default function HomePage() {
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Enter M-Pesa Code
+                    M-Pesa Send Money
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCheckoutTab('STK');
+                      if (paymentStatus !== 'PENDING') setCheckoutMessage('');
+                    }}
+                    className={`py-2 px-2 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
+                      checkoutTab === 'STK'
+                        ? 'bg-white text-amber-800 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                    <span>STK Push (Maintenance)</span>
                   </button>
                 </div>
 
                 {checkoutTab === 'STK' ? (
-                  <form onSubmit={handleMpesaStkPay} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                        Enter Your M-Pesa Number
-                      </label>
-                      <input
-                        type="tel"
-                        placeholder="07XXXXXXXX or 01XXXXXXXX"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        required
-                        disabled={isProcessing}
-                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                      <p className="text-[11px] text-slate-500 mt-1">
-                        An automatic M-Pesa PIN prompt for{' '}
-                        <strong>KES {modalItem.price}</strong> will pop up on
-                        your phone.
+                  <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-center space-y-3">
+                    <AlertCircle className="w-8 h-8 text-amber-600 mx-auto" />
+                    <div className="space-y-1">
+                      <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full">
+                        Temporarily Under Maintenance
+                      </span>
+                      <h4 className="text-sm font-black text-slate-900">
+                        M-Pesa STK Push is Under Maintenance
+                      </h4>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        Automatic STK prompts are currently undergoing maintenance.
+                        To purchase right now, please use{' '}
+                        <strong>M-Pesa Send Money</strong> to{' '}
+                        <strong className="font-mono">{merchantLocalPhone}</strong>{' '}
+                        (KES {modalItem.price}) and paste your confirmation code.
                       </p>
                     </div>
-
-                    {checkoutMessage && (
-                      <div
-                        className={`text-xs text-center p-3 rounded-lg flex items-center justify-center gap-2 ${
-                          paymentStatus === 'FAILED'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                        }`}
-                      >
-                        {paymentStatus === 'PENDING' && (
-                          <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
-                        )}
-                        {paymentStatus === 'FAILED' && (
-                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                        )}
-                        <span>{checkoutMessage}</span>
-                      </div>
-                    )}
-
                     <button
-                      type="submit"
-                      disabled={isProcessing || paymentStatus === 'PENDING'}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-700/70 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm"
+                      type="button"
+                      onClick={() => setCheckoutTab('DIRECT')}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 rounded-xl transition cursor-pointer"
                     >
-                      {paymentStatus === 'PENDING'
-                        ? 'Waiting for M-Pesa PIN Entry...'
-                        : 'Pay & Download Now'}
+                      Use M-Pesa Send Money ({merchantLocalPhone}) →
                     </button>
-
-                    {paymentStatus === 'PENDING' && (
-                      <div className="text-center space-y-1 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPaymentStatus('IDLE');
-                            setCheckoutMessage('');
-                          }}
-                          className="text-[11px] text-slate-500 hover:text-slate-800 underline mr-3"
-                        >
-                          Resend STK Prompt
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCheckoutTab('DIRECT');
-                            setPaymentStatus('IDLE');
-                            setCheckoutMessage('');
-                          }}
-                          className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 underline"
-                        >
-                          Already received M-Pesa SMS? Paste code here
-                        </button>
-                      </div>
-                    )}
-                  </form>
+                  </div>
                 ) : (
                   <form onSubmit={handleDirectMpesaSubmit} className="space-y-3.5">
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-2 text-slate-700">

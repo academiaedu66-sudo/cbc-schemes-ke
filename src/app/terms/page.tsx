@@ -47,12 +47,13 @@ export default function TermsPage() {
               2. Payments &amp; Instant Delivery
             </h2>
             <p>
-              Payments are processed via M-Pesa Express (STK Push) or verified M-Pesa
-              confirmation codes to <strong>0728595160</strong>. Upon confirmation, both
-              the Editable Word (.DOCX) and Print-Ready (.PDF) download links unlock
-              immediately on screen. If a network interruption occurs during download,
-              contact WhatsApp support at <strong>0705759072</strong> with your M-Pesa
-              receipt for immediate re-issuance.
+              Payments are processed via <strong>M-Pesa Send Money to 0728595160</strong>{' '}
+              followed by pasting your M-Pesa confirmation code (M-Pesa STK Push is
+              currently under maintenance). Upon confirmation, both the Editable Word
+              (.DOCX) and Print-Ready (.PDF) download links unlock immediately on screen.
+              If a network interruption occurs during download, contact WhatsApp support
+              at <strong>0705759072</strong> with your M-Pesa receipt for immediate
+              re-issuance.
             </p>
           </section>
 

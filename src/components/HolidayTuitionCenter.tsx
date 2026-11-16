@@ -77,7 +77,7 @@ export default function HolidayTuitionCenter({
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   // Payment State (KSh 1,000 for Learner | KSh 500 for Teacher)
-  const [payTab, setPayTab] = useState<'STK' | 'DIRECT'>('STK');
+  const [payTab, setPayTab] = useState<'STK' | 'DIRECT'>('DIRECT');
   const [mpesaCode, setMpesaCode] = useState('');
   const [copiedMpesa, setCopiedMpesa] = useState(false);
   const [payProcessing, setPayProcessing] = useState(false);
@@ -109,6 +109,7 @@ export default function HolidayTuitionCenter({
     setStep('FORM');
     setFormError('');
     setPayStatus('IDLE');
+    setPayTab('DIRECT');
     setPayMsg('');
     setCheckoutRequestId(null);
     setReceiptCode('');
@@ -298,6 +299,7 @@ export default function HolidayTuitionCenter({
     e.preventDefault();
     setPayProcessing(true);
     setPayStatus('IDLE');
+    setPayTab('DIRECT');
     setPayMsg('');
 
     try {
@@ -336,6 +338,7 @@ export default function HolidayTuitionCenter({
     e.preventDefault();
     setPayProcessing(true);
     setPayStatus('IDLE');
+    setPayTab('DIRECT');
     setPayMsg('');
 
     try {
@@ -871,19 +874,17 @@ export default function HolidayTuitionCenter({
                     </div>
                   </div>
 
-                  {/* STK vs Direct M-Pesa Tabs */}
+                  {/* Maintenance Notice */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-950">
+                    <strong>Payment Notice:</strong> M-Pesa STK Push is currently{' '}
+                    <strong>under maintenance</strong>. Please pay{' '}
+                    <strong>KSh {feeKes.toLocaleString()}</strong> via{' '}
+                    <strong>M-Pesa Send Money to {COORDINATOR_MPESA_LOCAL}</strong> and
+                    paste your confirmation code below.
+                  </div>
+
+                  {/* Send Money (Primary) vs STK Push (Maintenance) Tabs */}
                   <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => setPayTab('STK')}
-                      className={`py-2 rounded-lg text-xs font-black transition ${
-                        payTab === 'STK'
-                          ? 'bg-white text-emerald-800 shadow-xs'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      1. M-Pesa STK Prompt
-                    </button>
                     <button
                       type="button"
                       onClick={() => setPayTab('DIRECT')}
@@ -893,56 +894,44 @@ export default function HolidayTuitionCenter({
                           : 'text-slate-600'
                       }`}
                     >
-                      2. Send to {COORDINATOR_MPESA_LOCAL} &amp; Paste Code
+                      M-Pesa Send Money ({COORDINATOR_MPESA_LOCAL})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPayTab('STK')}
+                      className={`py-2 rounded-lg text-[11px] font-black transition ${
+                        payTab === 'STK'
+                          ? 'bg-white text-amber-800 shadow-xs'
+                          : 'text-slate-500'
+                      }`}
+                    >
+                      STK Push (Maintenance)
                     </button>
                   </div>
 
                   {payTab === 'STK' ? (
-                    <form onSubmit={handleInitiateStk} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                          M-Pesa Phone Number for KSh {feeKes.toLocaleString()} Prompt
-                        </label>
-                        <div className="relative">
-                          <Smartphone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                          <input
-                            type="tel"
-                            required
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-semibold"
-                          />
-                        </div>
-                      </div>
-
-                      {payMsg && (
-                        <div
-                          className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                            payStatus === 'FAILED'
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                          }`}
-                        >
-                          {payStatus === 'PENDING' && (
-                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                          )}
-                          <span>{payMsg}</span>
-                        </div>
-                      )}
-
+                    <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-center space-y-3">
+                      <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full">
+                        Under Maintenance
+                      </span>
+                      <h4 className="text-sm font-black text-slate-900">
+                        M-Pesa STK Push is Under Maintenance
+                      </h4>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        Please use <strong>M-Pesa Send Money</strong> to send{' '}
+                        <strong>KSh {feeKes.toLocaleString()}</strong> to{' '}
+                        <strong className="font-mono">{COORDINATOR_MPESA_LOCAL}</strong>{' '}
+                        and paste your confirmation code to complete registration right
+                        away.
+                      </p>
                       <button
-                        type="submit"
-                        disabled={payProcessing || payStatus === 'PENDING'}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-black py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2"
+                        type="button"
+                        onClick={() => setPayTab('DIRECT')}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 rounded-xl transition cursor-pointer"
                       >
-                        {(payProcessing || payStatus === 'PENDING') && (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        )}
-                        {payStatus === 'PENDING'
-                          ? 'Waiting for M-Pesa PIN...'
-                          : `Send KSh ${feeKes.toLocaleString()} M-Pesa STK Prompt`}
+                        Use M-Pesa Send Money ({COORDINATOR_MPESA_LOCAL}) →
                       </button>
-                    </form>
+                    </div>
                   ) : (
                     <form onSubmit={handleDirectMpesaSubmit} className="space-y-4">
                       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-xs text-slate-700">
