@@ -63,6 +63,8 @@ export async function GET(req: NextRequest) {
           fallbackTitle = 'Learner Holiday / Personal Teacher Booking (KSh 1,000)';
         } else if (Number(o.amount) === 500) {
           fallbackTitle = 'Teacher Holiday / Personal Tuition Registration (KSh 500)';
+        } else if (Number(o.amount) === 10) {
+          fallbackTitle = 'CBC Subject Gaming 1-Hour Pass (KSh 10)';
         }
       }
       return {

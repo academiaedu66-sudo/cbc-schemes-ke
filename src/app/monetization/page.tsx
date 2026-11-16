@@ -58,6 +58,9 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  gaming_arena_open: 'CBC Subject Gaming Arena Opens',
+  gaming_stk_initiate: 'Gaming KSh 10 Pass STK Initiations',
+  gaming_question_answered: 'Gaming Subject Questions Answered',
   counselling_button_open: 'Guidance & Counselling Desk Opens',
   counselling_role_parent: 'Guidance Chosen: Parent / Guardian',
   counselling_role_learner: 'Guidance Chosen: Learner / Student',

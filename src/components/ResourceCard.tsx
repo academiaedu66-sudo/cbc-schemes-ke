@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye } from "lucide-react";
+import { Eye, Gamepad2 } from "lucide-react";
 import {
   formatGradeLabel,
   formatTermLabel,
@@ -25,12 +25,14 @@ interface ResourceProps {
   resource: ResourceItem;
   onBuy: (resource: ResourceItem) => void;
   onPreview: (resource: ResourceItem) => void;
+  onPlayGame?: (resource: ResourceItem) => void;
 }
 
 export default function ResourceCard({
   resource,
   onBuy,
   onPreview,
+  onPlayGame,
 }: ResourceProps) {
   const isDocx = resource.format.toLowerCase().includes("doc");
   const gradeKey = getResourceGradeKey(resource);
@@ -115,12 +117,23 @@ export default function ResourceCard({
           </span>
         </div>
 
-        {/* Price, Preview & Buy Buttons */}
-        <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+        {/* Price, Gaming, Preview & Buy Buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
           <span className="text-sm font-black text-emerald-700">
             KES {resource.price}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {onPlayGame && (
+              <button
+                type="button"
+                onClick={() => onPlayGame(resource)}
+                title={`Play ${resource.subject} Quiz Game (1pt/Q • 1,000pts = KSh 5)`}
+                className="inline-flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-black text-xs px-2.5 py-1.5 rounded-lg transition cursor-pointer"
+              >
+                <Gamepad2 className="w-3.5 h-3.5 text-amber-700" />
+                Gaming
+              </button>
+            )}
             <button
               type="button"
               onClick={() => onPreview(resource)}

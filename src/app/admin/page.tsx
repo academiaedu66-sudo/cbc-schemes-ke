@@ -37,6 +37,7 @@ import {
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
+import AdminGamingPanel from '@/components/AdminGamingPanel';
 import type { ResourceItem } from '@/components/ResourceCard';
 
 interface QueuedUpload {
@@ -874,6 +875,9 @@ export default function AdminDashboardPage() {
 
         {/* HOLIDAY & PERSONAL TUITION REGISTRATIONS & WHATSAPP 0705759072 MATCHMAKER */}
         <AdminTuitionPanel password={password} />
+
+        {/* CBC SUBJECT GAMING ARENA (KSh 10 / 1 HR • 1,000 PTS = KSh 5) */}
+        <AdminGamingPanel password={password} />
 
         {/* 0. M-Pesa Orders & Instant Payment Approvals (254728595160) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">

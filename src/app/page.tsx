@@ -18,6 +18,7 @@ import {
   Megaphone,
   GraduationCap,
   HeartHandshake,
+  Gamepad2,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -27,6 +28,9 @@ import WelcomeAnimation from '@/components/WelcomeAnimation';
 import EducationUpdatesHub from '@/components/EducationUpdatesHub';
 import HolidayTuitionCenter from '@/components/HolidayTuitionCenter';
 import GuidanceCounsellingHub from '@/components/GuidanceCounsellingHub';
+import SubjectGamingHub, {
+  type ExternalGameLaunch,
+} from '@/components/SubjectGamingHub';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -90,6 +94,7 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
   const [counsellingOpenTick, setCounsellingOpenTick] = useState(0);
+  const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
 
   // Payment & WhatsApp Configuration
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
@@ -470,6 +475,20 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() =>
+                setGameLaunch({
+                  subject: selectedSubject !== 'All' ? selectedSubject : 'Mathematics',
+                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                  tick: Date.now(),
+                })
+              }
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <Gamepad2 className="w-4 h-4" />
+              Gaming (1,000 Pts = KSh 5)
+            </button>
+            <button
+              type="button"
               onClick={() => setCounsellingOpenTick((c) => c + 1)}
               className="bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
@@ -519,6 +538,9 @@ export default function HomePage() {
 
         {/* TOP FEATURE 2: GEMINI AI GUIDANCE & COUNSELLING (IMMEDIATELY ASKS PARENT OR LEARNER) */}
         <GuidanceCounsellingHub externalTriggerCount={counsellingOpenTick} />
+
+        {/* TOP FEATURE 3: ALL-SUBJECTS PLAY & EARN GAMING ARENA (KSh 10 / 1 HR • 1,000 PTS = KSh 5) */}
+        <SubjectGamingHub externalLaunch={gameLaunch} />
 
         {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
         <EducationUpdatesHub
@@ -958,6 +980,13 @@ export default function HomePage() {
                             resource={item}
                             onPreview={(res) => setPreviewItem(res)}
                             onBuy={(res) => openCheckoutFor(res)}
+                            onPlayGame={(res) =>
+                              setGameLaunch({
+                                subject: res.subject || 'Mathematics',
+                                gradeKey: getResourceGradeKey(res),
+                                tick: Date.now(),
+                              })
+                            }
                           />
                         ))}
                       </div>
@@ -1070,6 +1099,13 @@ export default function HomePage() {
                       resource={item}
                       onPreview={(res) => setPreviewItem(res)}
                       onBuy={(res) => openCheckoutFor(res)}
+                      onPlayGame={(res) =>
+                        setGameLaunch({
+                          subject: res.subject || 'Mathematics',
+                          gradeKey: getResourceGradeKey(res),
+                          tick: Date.now(),
+                        })
+                      }
                     />
                   ))}
                 </div>
