@@ -111,6 +111,8 @@ async function main() {
     'monetization-stats.json',
     'tuition-registrations.json',
     'gaming-ledger.json',
+    'homework-qa-ledger.json',
+    'purchase-attempts.json',
     'security-state.json',
   ];
   const systemConfigs = {};
@@ -159,9 +161,9 @@ async function main() {
     generatedAt,
     siteUrl: 'https://cbc-schemes-ke.vercel.app',
     securityContacts: {
-      otpPhones: ['0728595160', '0705759072'],
-      twoFactorEmail: 'academia.edu55@gmail.com',
-      backupEmail: 'academia.edu55@gmail.com',
+      otpPhonesMasked: ['0728***160', '0705***072'],
+      twoFactorEmailMasked: 'aca*******55@gmail.com',
+      autoBackupEnabled: true,
     },
     counts: {
       resourcesCount: allResources.length,
@@ -239,8 +241,9 @@ async function main() {
 
 - **Generated At:** \`${generatedAt}\`
 - **Production Website:** https://cbc-schemes-ke.vercel.app
-- **Security OTP Phones:** \`0728595160\` or \`0705759072\`
-- **2-Step Verification & Backup Email:** \`academia.edu55@gmail.com\`
+- **Security OTP Phones (Masked):** \`0728***160\` or \`0705***072\`
+- **2-Step Verification & Backup Email (Masked):** \`aca*******55@gmail.com\`
+- **Automatic Continuous Backup:** Enabled across all website features (Curriculum Materials, M-Pesa Orders, Tuition Hub, Subject Gaming, Monetization, and Ask Gemini Q&A)
 
 ## Backup Inventory
 - **Curriculum Materials (\`resources-catalog.json\` & \`.csv\`):** **${allResources.length.toLocaleString()}** items

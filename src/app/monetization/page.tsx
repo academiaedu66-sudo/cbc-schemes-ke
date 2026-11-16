@@ -61,6 +61,11 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  gemini_qa_btn_open: 'Ask Gemini Q&A Button Opens (Monetized)',
+  gemini_qa_profile_saved: 'Ask Gemini Learner Profile (Name & Grade) Saved',
+  gemini_qa_question_asked: 'Ask Gemini Questions Submitted by Learners',
+  gemini_qa_unlock_click: 'Ask Gemini KSh 20 Weekly Paywall Unlock Clicks',
+  gemini_qa_unlocked_full: 'Ask Gemini Full Answers Unlocked (7-Day Pass)',
   all_curriculum_materials_btn_click: 'ALL CURRICULUM MATERIALS Top Button Clicks',
   holiday_side_hustles_open: 'HOLIDAY SIDE HUSTLES Button Opens',
   side_hustle_ai_training_click: 'AI Training Company Clicks (AITrainingJobs.it)',
@@ -104,6 +109,7 @@ const INTERACTION_LABELS: Record<string, string> = {
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
+  gemini_qa_hub: 'Ask Gemini Learner Q&A Hub (Monetized Ad & Clicks)',
   holiday_side_hustles: 'HOLIDAY SIDE HUSTLES Hub (AI & Survey Clicks)',
   tsc_services_hub: 'All-in-One TSC Services Hub (Monetized Clicks)',
   top_leaderboard: 'Top Homepage Leaderboard Banner',
@@ -321,7 +327,7 @@ export default function MonetizationControlPage() {
     return (
       <AdminTwoFactorGate
         portalName="Monetization & Earnings Hub"
-        portalSubtitle="Protected by OTP (0728595160 / 0705759072), academia.edu55@gmail.com & Mobile Click"
+        portalSubtitle="Protected by 2-Step Shield (0728***160 / 0705***072 • aca*******55@gmail.com & Mobile Click)"
         portalPath="/monetization"
         accent="amber"
         onVerified={handleVerified2fa}

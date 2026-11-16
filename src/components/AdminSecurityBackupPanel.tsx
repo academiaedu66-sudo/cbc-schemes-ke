@@ -233,16 +233,19 @@ export default function AdminSecurityBackupPanel({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-black uppercase tracking-tight text-white">
-                Backend Anti-Hacker Shield, 2FA &amp; Website Backup Vault
+                Backend Anti-Hacker Shield, 2FA &amp; Auto-Backup Vault
               </h2>
               <span className="bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full">
                 PROTECTED
               </span>
+              <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                AUTO-BACKUP ON
+              </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              OTP Phones: <strong className="text-emerald-300">0728595160</strong> /{' '}
-              <strong className="text-emerald-300">0705759072</strong> • 2FA &amp; Backup
-              Email: <strong className="text-amber-300">academia.edu55@gmail.com</strong> •
+              OTP Phones: <strong className="text-emerald-300">0728***160</strong> /{' '}
+              <strong className="text-emerald-300">0705***072</strong> • 2FA &amp; Backup
+              Email: <strong className="text-amber-300">aca*******55@gmail.com</strong> •
               Mobile Click Active
             </p>
           </div>
@@ -295,7 +298,7 @@ export default function AdminSecurityBackupPanel({
             <span>Security Phone OTP</span>
             <Phone className="w-3.5 h-3.5" />
           </div>
-          <p className="text-sm font-black text-white">0728595160 • 0705759072</p>
+          <p className="text-sm font-black text-white">0728***160 • 0705***072</p>
           <p className="text-[11px] text-slate-400">
             6-digit OTP + Mobile Authenticator code ({status?.authenticator.code || '------'})
           </p>
@@ -307,12 +310,12 @@ export default function AdminSecurityBackupPanel({
             <Mail className="w-3.5 h-3.5" />
           </div>
           <p className="text-sm font-black text-white truncate">
-            academia.edu55@gmail.com
+            aca*******55@gmail.com
           </p>
           <p className="text-[11px] text-slate-400">
             {status?.deliveryStatus.hasResendKey
               ? 'Automated Email API Active ✓'
-              : 'Ready (Cloud Link + Gmail / Resend)'}
+              : 'Auto-Vault + Cloud Link Active'}
           </p>
         </div>
 

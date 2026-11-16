@@ -12,6 +12,20 @@ export const SECURITY_PHONE_SECONDARY_INTL = '254705759072';
 export const SECURITY_VERIFICATION_EMAIL = 'academia.edu55@gmail.com';
 export const BACKUP_DESTINATION_EMAIL = 'academia.edu55@gmail.com';
 
+export function maskSecurityPhone(phone: string): string {
+  const clean = (phone || '').trim();
+  if (clean.length < 7) return '***';
+  return `${clean.slice(0, 4)}***${clean.slice(-3)}`;
+}
+
+export function maskSecurityEmail(email: string): string {
+  const clean = (email || '').trim();
+  const [local, domain] = clean.split('@');
+  if (!local || !domain) return '***@***';
+  if (local.length <= 4) return `${local[0]}***@${domain}`;
+  return `${local.slice(0, 3)}*******${local.slice(-2)}@${domain}`;
+}
+
 export interface SecurityChallenge {
   challengeId: string;
   otpHash: string;
@@ -484,9 +498,14 @@ export async function issueAdmin2faChallenge(params: {
 }> {
   const state = await getSecurityState(true);
   const chosenPhone =
-    params.selectedPhone === SECURITY_PHONE_SECONDARY
+    params.selectedPhone === 'SECONDARY' ||
+    params.selectedPhone === SECURITY_PHONE_SECONDARY ||
+    params.selectedPhone === maskSecurityPhone(SECURITY_PHONE_SECONDARY)
       ? SECURITY_PHONE_SECONDARY
       : SECURITY_PHONE_PRIMARY;
+
+  const maskedPhone = maskSecurityPhone(chosenPhone);
+  const maskedEmail = maskSecurityEmail(SECURITY_VERIFICATION_EMAIL);
 
   const challengeId = `ch_${crypto.randomBytes(12).toString('hex')}`;
   const rawOtp = String(crypto.randomInt(100000, 999999));
@@ -498,8 +517,8 @@ export async function issueAdmin2faChallenge(params: {
     challengeId,
     otpHash: hashOtp(rawOtp, challengeId),
     matchNumber,
-    targetPhone: chosenPhone,
-    targetEmail: SECURITY_VERIFICATION_EMAIL,
+    targetPhone: maskedPhone,
+    targetEmail: maskedEmail,
     requesterIp: params.ip,
     userAgent: (params.userAgent || 'Browser').slice(0, 120),
     portal: params.portal || '/admin',
@@ -513,7 +532,7 @@ export async function issueAdmin2faChallenge(params: {
     state,
     'LOGIN_CHALLENGE',
     params.ip,
-    `2-Step Verification initiated for ${params.portal} (Match #${matchNumber}, Phone ${chosenPhone}, Email ${SECURITY_VERIFICATION_EMAIL})`
+    `2-Step Verification initiated for ${params.portal} (Match #${matchNumber}, Phone ${maskedPhone}, Email ${maskedEmail})`
   );
 
   await saveSecurityState(state);
@@ -552,8 +571,8 @@ export async function issueAdmin2faChallenge(params: {
   return {
     challengeId,
     matchNumber,
-    targetPhone: chosenPhone,
-    targetEmail: SECURITY_VERIFICATION_EMAIL,
+    targetPhone: maskedPhone,
+    targetEmail: maskedEmail,
     phoneDispatched: phoneDelivery.sent,
     emailDispatched: emailDelivery.sent,
     expiresAt,
@@ -727,6 +746,8 @@ export async function compileFullWebsiteBackup(): Promise<{
     '_system/monetization-stats.json',
     '_system/tuition-registrations.json',
     '_system/gaming-ledger.json',
+    '_system/homework-qa-ledger.json',
+    '_system/purchase-attempts.json',
   ];
   const systemConfigs: Record<string, unknown> = {};
 
@@ -793,14 +814,19 @@ export async function compileFullWebsiteBackup(): Promise<{
 
   const stamp = generatedAt.replace(/[:.]/g, '-');
   const cloudSnapshotPath = `_system/backups/cbc-website-backup-${stamp}.json`;
+  const latestAutoPath = `_system/backups/cbc-auto-backup-latest.json`;
   const jsonBytes = Buffer.from(JSON.stringify(bundle, null, 2), 'utf-8');
 
-  await supabaseAdmin.storage
-    .from(BUCKET_NAME)
-    .upload(cloudSnapshotPath, jsonBytes, {
+  await Promise.all([
+    supabaseAdmin.storage.from(BUCKET_NAME).upload(cloudSnapshotPath, jsonBytes, {
       contentType: 'application/json',
       upsert: true,
-    });
+    }),
+    supabaseAdmin.storage.from(BUCKET_NAME).upload(latestAutoPath, jsonBytes, {
+      contentType: 'application/json',
+      upsert: true,
+    }),
+  ]);
 
   const { data: signed } = await supabaseAdmin.storage
     .from(BUCKET_NAME)
@@ -812,7 +838,7 @@ export async function compileFullWebsiteBackup(): Promise<{
   appendAuditEvent(
     secState,
     'BACKUP_EXPORTED',
-    'admin',
+    'auto-vault',
     `Full website backup saved (${allResources.length} resources, ${(allOrders || []).length} orders)`
   );
   await saveSecurityState(secState);
@@ -822,4 +848,60 @@ export async function compileFullWebsiteBackup(): Promise<{
     cloudSnapshotPath,
     signedDownloadUrl: signed?.signedUrl || null,
   };
+}
+
+let lastAutoBackupStartedAt = 0;
+
+/**
+ * Automatically backs up all live website data into Supabase Cloud Vault
+ * (and emails academia.edu55@gmail.com when email API key is configured)
+ * whenever new materials, orders, tuition leads, gaming data, or Gemini Q&A
+ * records are added to the website.
+ */
+export async function triggerAutomaticBackup(reason: string): Promise<void> {
+  const now = Date.now();
+  // Coalesce rapid consecutive writes within 45 seconds
+  if (now - lastAutoBackupStartedAt < 45_000) {
+    return;
+  }
+  lastAutoBackupStartedAt = now;
+
+  try {
+    const [{ bundle, signedDownloadUrl, cloudSnapshotPath }, secState] =
+      await Promise.all([compileFullWebsiteBackup(), getSecurityState()]);
+
+    const hasEmailChannel = Boolean(
+      (
+        secState.deliveryConfig.resendApiKey ||
+        process.env.RESEND_API_KEY ||
+        secState.deliveryConfig.customEmailWebhookUrl ||
+        process.env.EMAIL_WEBHOOK_URL ||
+        ''
+      ).trim()
+    );
+
+    if (hasEmailChannel) {
+      const text =
+        `Automatic Website Backup Triggered (${reason})\n` +
+        `• Materials: ${bundle.counts.resourcesCount}\n` +
+        `• Orders: ${bundle.counts.ordersCount}\n` +
+        (signedDownloadUrl
+          ? `Download Link: ${signedDownloadUrl}`
+          : `Vault Path: ${cloudSnapshotPath}`);
+
+      await sendSecurityEmailMessage({
+        toEmail: BACKUP_DESTINATION_EMAIL,
+        subject: `[CBC Auto-Backup] Website Updated: ${reason}`,
+        text,
+        html: `<p><strong>Automatic Website Backup Completed</strong> (${reason})</p><p>Materials: <strong>${bundle.counts.resourcesCount}</strong> • Orders: <strong>${bundle.counts.ordersCount}</strong></p>${
+          signedDownloadUrl
+            ? `<p><a href="${signedDownloadUrl}">Download Updated Backup Snapshot</a></p>`
+            : ''
+        }`,
+        config: secState.deliveryConfig,
+      }).catch(() => {});
+    }
+  } catch {
+    // Never fail primary user request if background auto-backup encounters a transient network hiccup
+  }
 }

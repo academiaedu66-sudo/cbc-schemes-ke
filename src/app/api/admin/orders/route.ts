@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isAdminAuthorized } from '@/lib/admin-auth';
+import { triggerAutomaticBackup } from '@/lib/security';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -57,12 +58,14 @@ export async function GET(req: NextRequest) {
     }
 
     const enriched = (orders || []).map((o) => {
-      let fallbackTitle = 'CBC Material';
-      if (!o.resource_id) {
+      let fallbackTitle = o.resource_title || 'CBC Material';
+      if (!o.resource_id && !o.resource_title) {
         if (Number(o.amount) === 1000) {
           fallbackTitle = 'Learner Holiday / Personal Teacher Booking (KSh 1,000)';
         } else if (Number(o.amount) === 500) {
           fallbackTitle = 'Teacher Holiday / Personal Tuition Registration (KSh 500)';
+        } else if (Number(o.amount) === 20) {
+          fallbackTitle = 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)';
         } else if (Number(o.amount) === 10) {
           fallbackTitle = 'CBC Subject Gaming 20-Minute Pass (KSh 10)';
         }
@@ -99,6 +102,7 @@ export async function PATCH(req: NextRequest) {
       .eq('id', id);
 
     if (error) throw error;
+    void triggerAutomaticBackup(`Order ${id} marked ${status}`);
     return NextResponse.json({ message: `Order marked ${status}` });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to update order';

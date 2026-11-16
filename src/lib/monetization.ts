@@ -12,7 +12,8 @@ export type AdPlacement =
   | 'updates_hub'
   | 'smartlink'
   | 'tsc_services_hub'
-  | 'holiday_side_hustles';
+  | 'holiday_side_hustles'
+  | 'gemini_qa_hub';
 
 export type TrackEventType = 'view' | 'impression' | 'interaction' | 'click';
 
@@ -187,6 +188,19 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
     ctaText: 'Advertise / Partner →',
     targetUrl: '/advertise',
     accentColor: 'emerald',
+  },
+  {
+    id: 'sponsor-gemini-qa-hub',
+    enabled: true,
+    placement: 'gemini_qa_hub',
+    badge: 'STUDENT REVISION SPOTLIGHT',
+    headline:
+      'Boost Your Marks! Download Full KPSEA, KJSEA, Opener & End-Term Marking Schemes + Hire a Personal CBC Tutor',
+    subtext:
+      'Complete editable Word & PDF revision papers across PP1–Grade 12 or advertise your school/tuition center here.',
+    ctaText: 'Explore Revision Kits →',
+    targetUrl: '/advertise',
+    accentColor: 'purple',
   },
 ];
 

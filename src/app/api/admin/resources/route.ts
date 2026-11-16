@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 import { getLevelForGrade, normalizeCategory } from '@/lib/material-utils';
 import { isAdminAuthorized } from '@/lib/admin-auth';
 
@@ -231,6 +232,8 @@ export async function POST(req: NextRequest) {
       savedResource = data;
     }
 
+    void triggerAutomaticBackup(`Uploaded material: ${title}`);
+
     return NextResponse.json({
       message: 'Material uploaded and published!',
       resource: savedResource,
@@ -269,6 +272,8 @@ export async function DELETE(req: NextRequest) {
         .from(BUCKET_NAME)
         .remove([resource.file_path, `_meta/${resource.file_path}.json`]);
     }
+
+    void triggerAutomaticBackup(`Deleted material ID ${id}`);
 
     return NextResponse.json({ message: 'Material deleted' });
   } catch (err: unknown) {

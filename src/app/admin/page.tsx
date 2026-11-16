@@ -458,7 +458,7 @@ export default function AdminDashboardPage() {
     return (
       <AdminTwoFactorGate
         portalName="Materials & M-Pesa Admin"
-        portalSubtitle="Protected by OTP (0728595160 / 0705759072), academia.edu55@gmail.com & Mobile Click"
+        portalSubtitle="Protected by 2-Step Shield (0728***160 / 0705***072 • aca*******55@gmail.com & Mobile Click)"
         portalPath="/admin"
         accent="emerald"
         onVerified={handleVerified2fa}

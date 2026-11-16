@@ -11,6 +11,8 @@ import {
   computeRollingAuthenticatorCode,
   getSecurityState,
   issueAdmin2faChallenge,
+  maskSecurityEmail,
+  maskSecurityPhone,
   recordFailedAuthAttempt,
   resolveChallengeByMobileClick,
   saveSecurityState,
@@ -59,9 +61,12 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       require2faOnWebAdmin: state.require2faOnWebAdmin,
-      securityPhones: [SECURITY_PHONE_PRIMARY, SECURITY_PHONE_SECONDARY],
-      securityEmail: SECURITY_VERIFICATION_EMAIL,
-      backupEmail: BACKUP_DESTINATION_EMAIL,
+      securityPhones: [
+        maskSecurityPhone(SECURITY_PHONE_PRIMARY),
+        maskSecurityPhone(SECURITY_PHONE_SECONDARY),
+      ],
+      securityEmail: maskSecurityEmail(SECURITY_VERIFICATION_EMAIL),
+      backupEmail: maskSecurityEmail(BACKUP_DESTINATION_EMAIL),
       sessionEpoch: state.sessionEpoch,
       pendingChallenges,
       authenticator,

@@ -802,7 +802,7 @@ export default function MobileAdminAppPage() {
                   type="email"
                   required
                   autoComplete="email"
-                  placeholder="academia.edu66@gmail.com"
+                  placeholder="Enter admin email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
@@ -1690,10 +1690,10 @@ export default function MobileAdminAppPage() {
 
               <div className="text-[11px] text-slate-300 space-y-1">
                 <p>
-                  • <strong>OTP Phones:</strong> 0728595160 or 0705759072
+                  • <strong>OTP Phones:</strong> 0728***160 or 0705***072
                 </p>
                 <p>
-                  • <strong>2FA &amp; Backup Email:</strong> academia.edu55@gmail.com
+                  • <strong>2FA &amp; Backup Email:</strong> aca*******55@gmail.com
                 </p>
                 <p className="text-slate-400">
                   Use this 6-digit code OR tap <strong>Allow Login</strong> whenever signing

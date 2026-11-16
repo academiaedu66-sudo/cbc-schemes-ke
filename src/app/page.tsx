@@ -21,6 +21,7 @@ import {
   Gamepad2,
   Landmark,
   Briefcase,
+  Bot,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -35,6 +36,7 @@ import SubjectGamingHub, {
 } from '@/components/SubjectGamingHub';
 import TscServicesHub from '@/components/TscServicesHub';
 import HolidaySideHustlesHub from '@/components/HolidaySideHustlesHub';
+import GeminiHomeworkHub from '@/components/GeminiHomeworkHub';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -100,6 +102,7 @@ export default function HomePage() {
   const [counsellingOpenTick, setCounsellingOpenTick] = useState(0);
   const [tscOpenTick, setTscOpenTick] = useState(0);
   const [sideHustlesOpenTick, setSideHustlesOpenTick] = useState(0);
+  const [geminiOpenTick, setGeminiOpenTick] = useState(0);
   const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
 
   // Payment & WhatsApp Configuration
@@ -516,6 +519,14 @@ export default function HomePage() {
             </button>
             <button
               type="button"
+              onClick={() => setGeminiOpenTick((c) => c + 1)}
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border border-amber-300/60 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <Bot className="w-4 h-4 text-amber-300" />
+              ASK GEMINI (Q&amp;A)
+            </button>
+            <button
+              type="button"
               onClick={() => setSideHustlesOpenTick((c) => c + 1)}
               className="bg-emerald-400 hover:bg-emerald-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
@@ -587,6 +598,9 @@ export default function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* Ask Gemini Detailed Homework & Q&A Hub (KSh 20 Bob Weekly Subscription) */}
+      <GeminiHomeworkHub externalOpenTick={geminiOpenTick} />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">

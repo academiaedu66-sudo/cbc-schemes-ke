@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthorized } from '@/lib/admin-auth';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 import {
   normalizeKenyanPhone,
   sendWhatsAppAdminNotification,
@@ -192,6 +193,7 @@ export async function POST(req: NextRequest) {
     };
 
     const updatedPool = await saveTuitionRegistration(entry);
+    void triggerAutomaticBackup(`New Tuition ${role} registration: ${referenceCode}`);
     const matches = findSubjectMatches({
       targetRole: role === 'LEARNER' ? 'TEACHER' : 'LEARNER',
       subjects: entry.subjects,

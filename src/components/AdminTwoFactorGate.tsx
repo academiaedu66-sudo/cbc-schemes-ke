@@ -37,9 +37,12 @@ export default function AdminTwoFactorGate({
     'CHECKING'
   );
   const [password, setPassword] = useState('');
-  const [selectedPhone, setSelectedPhone] = useState<'0728595160' | '0705759072'>(
-    '0728595160'
+  const [selectedPhone, setSelectedPhone] = useState<'PRIMARY' | 'SECONDARY'>(
+    'PRIMARY'
   );
+  const maskedPhoneDisplay =
+    selectedPhone === 'SECONDARY' ? '0705***072' : '0728***160';
+  const maskedEmailDisplay = 'aca*******55@gmail.com';
 
   const [challengeId, setChallengeId] = useState('');
   const [matchNumber, setMatchNumber] = useState<number | null>(null);
@@ -285,27 +288,33 @@ export default function AdminTwoFactorGate({
                 Select Security Phone for OTP
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {(['0728595160', '0705759072'] as const).map((ph) => (
+                {(
+                  [
+                    { slot: 'PRIMARY', label: '0728***160' },
+                    { slot: 'SECONDARY', label: '0705***072' },
+                  ] as const
+                ).map((ph) => (
                   <button
-                    key={ph}
+                    key={ph.slot}
                     type="button"
-                    onClick={() => setSelectedPhone(ph)}
+                    onClick={() => setSelectedPhone(ph.slot)}
                     className={`py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      selectedPhone === ph
+                      selectedPhone === ph.slot
                         ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
                         : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                     }`}
                   >
                     <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                    {ph}
+                    {ph.label}
                   </button>
                 ))}
               </div>
               <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span>
-                  2-Step Email: <strong className="text-slate-700">academia.edu55@gmail.com</strong>{' '}
-                  + Mobile Click
+                  2-Step Email:{' '}
+                  <strong className="text-slate-700">{maskedEmailDisplay}</strong> +
+                  Mobile Click
                 </span>
               </p>
             </div>
@@ -375,17 +384,17 @@ export default function AdminTwoFactorGate({
                 <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">
                   {phoneDispatched ? (
                     <span className="text-emerald-700 font-semibold">
-                      ✓ Sent to {selectedPhone}.{' '}
+                      ✓ Sent to {maskedPhoneDisplay}.{' '}
                     </span>
                   ) : (
-                    <span>Phone target: {selectedPhone}. </span>
+                    <span>Phone target: {maskedPhoneDisplay}. </span>
                   )}
                   {emailDispatched ? (
                     <span className="text-emerald-700 font-semibold">
-                      ✓ Emailed to academia.edu55@gmail.com.{' '}
+                      ✓ Emailed to {maskedEmailDisplay}.{' '}
                     </span>
                   ) : (
-                    <span>Email: academia.edu55@gmail.com. </span>
+                    <span>Email: {maskedEmailDisplay}. </span>
                   )}
                   You can also enter the live 6-digit{' '}
                   <strong>Mobile App Authenticator code</strong>!
@@ -445,7 +454,7 @@ export default function AdminTwoFactorGate({
                 }}
                 className="text-slate-500 hover:text-slate-800 font-semibold cursor-pointer"
               >
-                Change Phone ({selectedPhone === '0728595160' ? '0705759072' : '0728595160'})
+                Change Phone ({selectedPhone === 'PRIMARY' ? '0705***072' : '0728***160'})
               </button>
             </div>
           </div>

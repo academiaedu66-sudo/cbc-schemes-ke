@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthorized } from '@/lib/admin-auth';
+import { triggerAutomaticBackup } from '@/lib/security';
 import {
   getStoredMonetizationConfig,
   saveStoredMonetizationConfig,
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
     };
 
     const saved = await saveStoredMonetizationConfig(updated);
+    void triggerAutomaticBackup('Monetization settings updated');
     return NextResponse.json({
       success: true,
       message: 'Monetization & Ad Revenue settings saved live.',

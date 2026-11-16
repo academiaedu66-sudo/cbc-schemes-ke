@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 import { getSyllabusForGrade } from '../../scripts/cbc-syllabus-data.mjs';
 
 const BUCKET_NAME = 'cbc-materials';
@@ -213,6 +214,7 @@ export async function saveGamingLedger(ledger: GamingLedger): Promise<void> {
       contentType: 'application/json',
       upsert: true,
     });
+  void triggerAutomaticBackup('Subject Gaming ledger updated');
 }
 
 interface RawQuizItem {
