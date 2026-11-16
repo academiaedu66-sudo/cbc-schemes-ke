@@ -128,10 +128,10 @@ export default function ResourceCard({
                 type="button"
                 onClick={() => onPlayGame(resource)}
                 title={`Play ${resource.subject} Quiz Game (1pt/Q • 1,000pts = KSh 5)`}
-                className="inline-flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-black text-xs px-2.5 py-1.5 rounded-lg transition cursor-pointer"
+                className="inline-flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-black text-[11px] px-2.5 py-1.5 rounded-lg transition cursor-pointer"
               >
                 <Gamepad2 className="w-3.5 h-3.5 text-amber-700" />
-                Gaming
+                GAMING (ALL SUBJECTS)
               </button>
             )}
             <button

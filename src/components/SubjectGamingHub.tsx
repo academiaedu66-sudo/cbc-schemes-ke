@@ -529,7 +529,7 @@ export default function SubjectGamingHub({
             className="shrink-0 inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-5 py-3.5 rounded-xl shadow-lg transition cursor-pointer"
           >
             <Gamepad2 className="w-4 h-4" />
-            <span>Launch Gaming Arena (KSh 10 / 20 Mins)</span>
+            <span>GAMING (ALL SUBJECTS)</span>
           </button>
         </div>
 
