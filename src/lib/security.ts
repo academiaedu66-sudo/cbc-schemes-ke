@@ -748,6 +748,7 @@ export async function compileFullWebsiteBackup(): Promise<{
     '_system/gaming-ledger.json',
     '_system/homework-qa-ledger.json',
     '_system/purchase-attempts.json',
+    '_system/wallet-ledger.json',
   ];
   const systemConfigs: Record<string, unknown> = {};
 

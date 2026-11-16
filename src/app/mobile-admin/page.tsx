@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import {
   Activity,
+  ArrowUpRight,
   Check,
   CheckCircle2,
   Coins,
@@ -124,6 +125,37 @@ interface MobilePurchaseAttempt {
   stage: 'OPENED_CHECKOUT' | 'SUBMITTED_PAYMENT';
 }
 
+interface MobileWithdrawalRecord {
+  id: string;
+  referenceCode: string;
+  amountKes: number;
+  fromClientPaymentsKes: number;
+  fromMonetizationKes: number;
+  source: 'COMBINED' | 'CLIENT_PAYMENTS' | 'MONETIZATION';
+  method: 'MPESA' | 'BANK';
+  destination: string;
+  status: 'COMPLETED' | 'PENDING_SETTLEMENT' | 'CANCELLED';
+  gatewayDisbursed: boolean;
+  gatewayMessage: string;
+  createdAt: string;
+}
+
+interface MobileWalletOverview {
+  clientPaymentsGrossKes: number;
+  monetizationGrossKes: number;
+  totalGrossEarnedKes: number;
+  clientPaymentsWithdrawnKes: number;
+  monetizationWithdrawnKes: number;
+  totalWithdrawnKes: number;
+  availableClientPaymentsKes: number;
+  availableMonetizationKes: number;
+  availableTotalKes: number;
+  completedOrdersCount: number;
+  liveB2cReady: boolean;
+  defaultMpesaPhone: string;
+  withdrawals: MobileWithdrawalRecord[];
+}
+
 const PINCHEZ_SPOKEN_GREETING =
   'Hello senior counsel Pinchez. Please check money.';
 
@@ -180,6 +212,22 @@ export default function MobileAdminAppPage() {
     MobilePurchaseAttempt[]
   >([]);
   const [totalPurchaseAttempts, setTotalPurchaseAttempts] = useState(0);
+  const [walletOverview, setWalletOverview] =
+    useState<MobileWalletOverview | null>(null);
+  const [showWithdrawForm, setShowWithdrawForm] = useState(false);
+  const [withdrawSource, setWithdrawSource] = useState<
+    'COMBINED' | 'CLIENT_PAYMENTS' | 'MONETIZATION'
+  >('COMBINED');
+  const [withdrawMethod, setWithdrawMethod] = useState<'MPESA' | 'BANK'>(
+    'MPESA'
+  );
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawDest, setWithdrawDest] = useState('0728595160');
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawFeedback, setWithdrawFeedback] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
   const [voiceAlertEnabled, setVoiceAlertEnabled] = useState(true);
   const [resolvingChallengeId, setResolvingChallengeId] = useState<string | null>(
     null
@@ -311,7 +359,7 @@ export default function MobileAdminAppPage() {
       };
 
       try {
-        const [ordRes, monRes, tuiRes, gamRes, secRes, attRes] =
+        const [ordRes, monRes, tuiRes, gamRes, secRes, attRes, walRes] =
           await Promise.all([
             fetch('/api/admin/orders', { headers }),
             fetch('/api/monetization/track', { headers }),
@@ -319,6 +367,7 @@ export default function MobileAdminAppPage() {
             fetch('/api/gaming?admin=1', { headers }),
             fetch('/api/admin/security', { headers }),
             fetch('/api/purchase-attempt', { headers }),
+            fetch('/api/admin/wallet', { headers }),
           ]);
 
         if (ordRes.status === 401) {
@@ -430,6 +479,15 @@ export default function MobileAdminAppPage() {
             );
           }
           prevChallengeCountRef.current = chCount;
+        }
+
+        if (walRes.ok) {
+          const walJson = (await walRes.json()) as {
+            overview?: MobileWalletOverview;
+          };
+          if (walJson.overview) {
+            setWalletOverview(walJson.overview);
+          }
         }
 
         return true;
@@ -729,6 +787,84 @@ export default function MobileAdminAppPage() {
     if (res.ok) {
       showToast('All active web sessions revoked!');
       await fetchAllMobileData(email, password);
+    }
+  };
+
+  const handleSubmitWithdrawal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setWithdrawing(true);
+    setWithdrawFeedback(null);
+
+    try {
+      const res = await fetch('/api/admin/wallet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': email.trim(),
+          'x-admin-password': password.trim(),
+        },
+        body: JSON.stringify({
+          amountKes: Number(withdrawAmount),
+          source: withdrawSource,
+          method: withdrawMethod,
+          destination: withdrawDest.trim(),
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setWithdrawFeedback({
+          ok: false,
+          text: data.error || 'Withdrawal failed.',
+        });
+        return;
+      }
+
+      if (data.overview) {
+        setWalletOverview(data.overview);
+      }
+      setWithdrawAmount('');
+      setWithdrawFeedback({
+        ok: true,
+        text:
+          data.withdrawal?.gatewayMessage ||
+          `Withdrawal ${data.withdrawal?.referenceCode} of KES ${data.withdrawal?.amountKes?.toLocaleString()} completed!`,
+      });
+      showToast(
+        `Withdrawn KES ${data.withdrawal?.amountKes?.toLocaleString()} (${data.withdrawal?.referenceCode})!`
+      );
+      await fetchAllMobileData(email, password);
+    } catch {
+      setWithdrawFeedback({
+        ok: false,
+        text: 'Network error submitting withdrawal.',
+      });
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  const handleWithdrawalStatusUpdate = async (
+    id: string,
+    status: 'COMPLETED' | 'CANCELLED'
+  ) => {
+    const res = await fetch('/api/admin/wallet', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-email': email.trim(),
+        'x-admin-password': password.trim(),
+      },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.overview) setWalletOverview(data.overview);
+      showToast(
+        status === 'CANCELLED'
+          ? 'Withdrawal cancelled & refunded back to Wallet!'
+          : 'Withdrawal marked settled!'
+      );
     }
   };
 
@@ -1368,26 +1504,322 @@ export default function MobileAdminAppPage() {
         )}
 
         {/* ================================================================= */}
-        {/* TAB 2: WALLET & OVERVIEW                                          */}
+        {/* TAB 2: UNIFIED WALLET & WITHDRAWALS (CLIENT PAYMENTS + MONETIZE)  */}
         {/* ================================================================= */}
         {activeTab === 'WALLET' && (
           <div className="space-y-4">
-            <div className="bg-gradient-to-br from-emerald-600 via-emerald-800 to-slate-900 rounded-3xl p-5 space-y-2 shadow-xl border border-emerald-400/30">
-              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-200">
-                Total Combined Site Earnings
-              </span>
-              <p className="text-3xl font-black text-white">
-                KES {combinedTotalKes.toLocaleString()}
-              </p>
-              <p className="text-xs text-emerald-100">
-                M-Pesa Sales (0728595160):{' '}
-                <strong>KES {totalMpesaKes.toLocaleString()}</strong> • Ad/Click Coin:{' '}
-                <strong>
-                  KES {(monetization?.totalEstimatedKes || 0).toLocaleString()}
-                </strong>
-              </p>
+            {/* Master Unified Wallet Card + Withdraw Button */}
+            <div className="bg-gradient-to-br from-emerald-600 via-emerald-800 to-slate-900 rounded-3xl p-5 space-y-4 shadow-xl border border-emerald-400/40">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-emerald-200">
+                    Available Wallet Balance
+                  </span>
+                  <p className="text-3xl font-black text-white mt-0.5">
+                    KES{' '}
+                    {(
+                      walletOverview?.availableTotalKes ?? combinedTotalKes
+                    ).toLocaleString()}
+                  </p>
+                </div>
+                <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full shrink-0">
+                  All Revenue Streams
+                </span>
+              </div>
+
+              {/* Exact 2-Stream Breakdown Inside Wallet */}
+              <div className="grid grid-cols-2 gap-2.5 bg-slate-950/45 border border-white/10 rounded-2xl p-3 text-xs">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-emerald-200 block">
+                    Client Payments
+                  </span>
+                  <span className="text-sm font-black text-white">
+                    KES{' '}
+                    {(
+                      walletOverview?.availableClientPaymentsKes ?? totalMpesaKes
+                    ).toLocaleString()}
+                  </span>
+                  <span className="block text-[10px] text-emerald-200/80">
+                    Gross: KES{' '}
+                    {(
+                      walletOverview?.clientPaymentsGrossKes ?? totalMpesaKes
+                    ).toLocaleString()}
+                  </span>
+                </div>
+                <div className="border-l border-white/15 pl-2.5">
+                  <span className="text-[10px] font-bold uppercase text-amber-300 block">
+                    Monetization Coin
+                  </span>
+                  <span className="text-sm font-black text-amber-300">
+                    KES{' '}
+                    {(
+                      walletOverview?.availableMonetizationKes ??
+                      (monetization?.totalEstimatedKes || 0)
+                    ).toLocaleString()}
+                  </span>
+                  <span className="block text-[10px] text-emerald-200/80">
+                    Gross: KES{' '}
+                    {(
+                      walletOverview?.monetizationGrossKes ??
+                      (monetization?.totalEstimatedKes || 0)
+                    ).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-emerald-100">
+                <span>
+                  Lifetime Earned:{' '}
+                  <strong>
+                    KES{' '}
+                    {(
+                      walletOverview?.totalGrossEarnedKes ?? combinedTotalKes
+                    ).toLocaleString()}
+                  </strong>
+                </span>
+                <span>
+                  Withdrawn:{' '}
+                  <strong>
+                    KES {(walletOverview?.totalWithdrawnKes || 0).toLocaleString()}
+                  </strong>
+                </span>
+              </div>
+
+              {/* PRIMARY WITHDRAWAL BUTTON */}
+              <button
+                type="button"
+                onClick={() => {
+                  setWithdrawFeedback(null);
+                  setShowWithdrawForm((s) => !s);
+                }}
+                className="w-full bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-slate-950 font-black text-sm py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
+                <span>
+                  {showWithdrawForm
+                    ? 'Hide Withdrawal Panel'
+                    : 'Withdraw Money from Wallet'}
+                </span>
+              </button>
             </div>
 
+            {/* INTERACTIVE WITHDRAWAL DRAWER */}
+            {showWithdrawForm && (
+              <form
+                onSubmit={handleSubmitWithdrawal}
+                className="bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-4 space-y-4 shadow-2xl"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-300">
+                    Withdraw Funds to M-Pesa / Bank
+                  </h3>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Min KES 10
+                  </span>
+                </div>
+
+                {/* 1. Select Wallet Source */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">
+                    1. Withdraw From
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {(
+                      [
+                        {
+                          key: 'COMBINED',
+                          label: 'All Money',
+                          avail:
+                            walletOverview?.availableTotalKes ?? combinedTotalKes,
+                        },
+                        {
+                          key: 'CLIENT_PAYMENTS',
+                          label: 'Client Sales',
+                          avail:
+                            walletOverview?.availableClientPaymentsKes ??
+                            totalMpesaKes,
+                        },
+                        {
+                          key: 'MONETIZATION',
+                          label: 'Monetization',
+                          avail:
+                            walletOverview?.availableMonetizationKes ??
+                            (monetization?.totalEstimatedKes || 0),
+                        },
+                      ] as const
+                    ).map((src) => (
+                      <button
+                        key={src.key}
+                        type="button"
+                        onClick={() => setWithdrawSource(src.key)}
+                        className={`p-2 rounded-xl border text-left transition cursor-pointer ${
+                          withdrawSource === src.key
+                            ? 'border-emerald-400 bg-emerald-500/15 text-white'
+                            : 'border-slate-800 bg-slate-950 text-slate-400'
+                        }`}
+                      >
+                        <span className="block text-[10px] font-black truncate">
+                          {src.label}
+                        </span>
+                        <span className="block text-[10px] font-mono text-emerald-300">
+                          KES {src.avail.toLocaleString()}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Amount + Quick Percentage Pills */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] font-bold uppercase text-slate-400">
+                      2. Amount to Withdraw (KES)
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {[0.25, 0.5, 1].map((pct) => {
+                        const pool =
+                          withdrawSource === 'CLIENT_PAYMENTS'
+                            ? walletOverview?.availableClientPaymentsKes ??
+                              totalMpesaKes
+                            : withdrawSource === 'MONETIZATION'
+                            ? walletOverview?.availableMonetizationKes ??
+                              (monetization?.totalEstimatedKes || 0)
+                            : walletOverview?.availableTotalKes ?? combinedTotalKes;
+                        return (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() =>
+                              setWithdrawAmount(
+                                String(Math.max(0, Math.floor(pool * pct)))
+                              )
+                            }
+                            className="text-[10px] font-black bg-slate-800 hover:bg-slate-700 text-amber-300 px-2 py-0.5 rounded-lg cursor-pointer"
+                          >
+                            {pct === 1 ? 'MAX' : `${pct * 100}%`}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    min={10}
+                    step="any"
+                    required
+                    placeholder="Enter amount in KES..."
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    className="w-full px-3.5 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-base font-mono font-black text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {/* 3. Payout Method & Destination */}
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-bold uppercase text-slate-400">
+                    3. Payout Destination
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWithdrawMethod('MPESA');
+                        if (!withdrawDest || !withdrawDest.startsWith('0')) {
+                          setWithdrawDest('0728595160');
+                        }
+                      }}
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${
+                        withdrawMethod === 'MPESA'
+                          ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
+                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                      }`}
+                    >
+                      M-Pesa Instant
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWithdrawMethod('BANK');
+                        if (
+                          withdrawDest === '0728595160' ||
+                          withdrawDest === '0705759072'
+                        ) {
+                          setWithdrawDest('');
+                        }
+                      }}
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${
+                        withdrawMethod === 'BANK'
+                          ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
+                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                      }`}
+                    >
+                      Bank / Paybill
+                    </button>
+                  </div>
+
+                  {withdrawMethod === 'MPESA' && (
+                    <div className="flex items-center gap-1.5">
+                      {(['0728595160', '0705759072'] as const).map((ph) => (
+                        <button
+                          key={ph}
+                          type="button"
+                          onClick={() => setWithdrawDest(ph)}
+                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${
+                            withdrawDest === ph
+                              ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                              : 'border-slate-800 bg-slate-950 text-slate-400'
+                          }`}
+                        >
+                          Use {ph.slice(0, 4)}***{ph.slice(-3)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <input
+                    type="text"
+                    required
+                    placeholder={
+                      withdrawMethod === 'MPESA'
+                        ? 'Enter M-Pesa phone (e.g. 0728595160)'
+                        : 'Enter Bank Name & Account / Paybill...'
+                    }
+                    value={withdrawDest}
+                    onChange={(e) => setWithdrawDest(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-950 border border-slate-700 text-xs font-mono font-bold text-white focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                {withdrawFeedback && (
+                  <div
+                    className={`rounded-2xl p-3 text-xs font-bold ${
+                      withdrawFeedback.ok
+                        ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
+                        : 'bg-rose-950/80 border border-rose-600 text-rose-200'
+                    }`}
+                  >
+                    {withdrawFeedback.text}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={withdrawing}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 text-slate-950 font-black text-sm py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  {withdrawing
+                    ? 'Processing Withdrawal...'
+                    : `Confirm Withdrawal${
+                        Number(withdrawAmount) > 0
+                          ? ` (KES ${Number(withdrawAmount).toLocaleString()})`
+                          : ''
+                      }`}
+                </button>
+              </form>
+            )}
+
+            {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-slate-400">
@@ -1421,6 +1853,87 @@ export default function MobileAdminAppPage() {
                   {pendingGamingClaims.length}
                 </p>
               </div>
+            </div>
+
+            {/* RECENT WALLET WITHDRAWALS LEDGER */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black uppercase text-slate-300">
+                  Recent Withdrawals ({walletOverview?.withdrawals.length || 0})
+                </p>
+                <span className="text-[10px] text-emerald-400 font-bold">
+                  Auto-Backed Up
+                </span>
+              </div>
+
+              {(walletOverview?.withdrawals || []).length === 0 ? (
+                <p className="text-xs text-slate-500 py-3 text-center">
+                  No withdrawals made yet. Tap &ldquo;Withdraw Money from
+                  Wallet&rdquo; above anytime.
+                </p>
+              ) : (
+                <div className="space-y-2.5 max-h-72 overflow-y-auto">
+                  {walletOverview?.withdrawals.slice(0, 15).map((w) => (
+                    <div
+                      key={w.id}
+                      className="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-1.5 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono font-black text-amber-300">
+                          {w.referenceCode} • KES {w.amountKes.toLocaleString()}
+                        </span>
+                        <span
+                          className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            w.status === 'COMPLETED'
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : w.status === 'CANCELLED'
+                              ? 'bg-slate-800 text-slate-400 line-through'
+                              : 'bg-amber-400/20 text-amber-300'
+                          }`}
+                        >
+                          {w.status === 'PENDING_SETTLEMENT'
+                            ? 'QUEUED'
+                            : w.status}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300">
+                        To <strong>{w.method}</strong> ({w.destination}) • Client: KES{' '}
+                        {w.fromClientPaymentsKes.toLocaleString()} | Monetization: KES{' '}
+                        {w.fromMonetizationKes.toLocaleString()}
+                      </p>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-slate-500">
+                          {formatShortTime(w.createdAt)}
+                        </span>
+                        {w.status !== 'CANCELLED' && (
+                          <div className="flex items-center gap-2">
+                            {w.status === 'PENDING_SETTLEMENT' && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleWithdrawalStatusUpdate(w.id, 'COMPLETED')
+                                }
+                                className="text-[10px] font-black text-emerald-400 underline cursor-pointer"
+                              >
+                                Mark Settled
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleWithdrawalStatusUpdate(w.id, 'CANCELLED')
+                              }
+                              className="text-[10px] font-bold text-rose-400 underline cursor-pointer"
+                            >
+                              Refund to Wallet
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick Links to Full Desktop Studios */}

@@ -113,6 +113,7 @@ async function main() {
     'gaming-ledger.json',
     'homework-qa-ledger.json',
     'purchase-attempts.json',
+    'wallet-ledger.json',
     'security-state.json',
   ];
   const systemConfigs = {};
