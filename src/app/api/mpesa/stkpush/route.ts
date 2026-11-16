@@ -32,11 +32,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, resourceId, testAmount } = await req.json();
+    const { phoneNumber, resourceId, testAmount, serviceType } = await req.json();
 
-    if (!phoneNumber || (!resourceId && !testAmount)) {
+    if (!phoneNumber || (!resourceId && !testAmount && !serviceType)) {
       return NextResponse.json(
-        { error: 'Phone number and material selection are required.' },
+        { error: 'Phone number and selection are required.' },
         { status: 400 }
       );
     }
@@ -55,7 +55,19 @@ export async function POST(req: Request) {
       title: 'CBC Live M-Pesa Test',
     };
 
-    if (resourceId) {
+    if (serviceType === 'LEARNER_TUITION') {
+      resource = {
+        id: null,
+        price: 1000,
+        title: 'Student Holiday / Personal Teacher Booking (KSh 1,000)',
+      };
+    } else if (serviceType === 'TEACHER_TUITION') {
+      resource = {
+        id: null,
+        price: 500,
+        title: 'Teacher Holiday / Personal Tuition Registration (KSh 500)',
+      };
+    } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin
         .from('resources')
         .select('id, price, title')

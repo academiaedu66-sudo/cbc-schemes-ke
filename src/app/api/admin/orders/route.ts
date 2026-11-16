@@ -56,10 +56,22 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const enriched = (orders || []).map((o) => ({
-      ...o,
-      resource_title: o.resource_id ? titleById.get(o.resource_id) || 'CBC Material' : 'CBC Material',
-    }));
+    const enriched = (orders || []).map((o) => {
+      let fallbackTitle = 'CBC Material';
+      if (!o.resource_id) {
+        if (Number(o.amount) === 1000) {
+          fallbackTitle = 'Learner Holiday / Personal Teacher Booking (KSh 1,000)';
+        } else if (Number(o.amount) === 500) {
+          fallbackTitle = 'Teacher Holiday / Personal Tuition Registration (KSh 500)';
+        }
+      }
+      return {
+        ...o,
+        resource_title: o.resource_id
+          ? titleById.get(o.resource_id) || 'CBC Material'
+          : fallbackTitle,
+      };
+    });
 
     return NextResponse.json({ orders: enriched });
   } catch (err: unknown) {

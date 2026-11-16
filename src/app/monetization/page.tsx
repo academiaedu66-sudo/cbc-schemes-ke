@@ -58,6 +58,8 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  tuition_student_btn_click: 'Student Holiday/Personal Teacher Button Clicks',
+  tuition_teacher_btn_click: 'Teacher Tuition Registration Button Clicks',
   preview_sample_open: 'Free Sample Previews Opened',
   checkout_modal_open: 'Buy / M-Pesa Checkout Opens',
   catalog_search: 'Catalog Keyword Searches',

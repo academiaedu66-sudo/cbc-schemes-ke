@@ -36,6 +36,7 @@ import {
 } from '@/lib/material-utils';
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
+import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import type { ResourceItem } from '@/components/ResourceCard';
 
 interface QueuedUpload {
@@ -870,6 +871,9 @@ export default function AdminDashboardPage() {
 
         {/* SITE MONETIZATION, AD NETWORKS & CLICK / VIEW EARNINGS STUDIO */}
         <AdminMonetizationPanel password={password} />
+
+        {/* HOLIDAY & PERSONAL TUITION REGISTRATIONS & WHATSAPP 0705759072 MATCHMAKER */}
+        <AdminTuitionPanel password={password} />
 
         {/* 0. M-Pesa Orders & Instant Payment Approvals (254728595160) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">

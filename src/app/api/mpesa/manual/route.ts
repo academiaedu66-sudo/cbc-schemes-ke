@@ -12,7 +12,7 @@ import {
 
 export async function POST(req: Request) {
   try {
-    const { mpesaCode, phoneNumber, resourceId } = await req.json();
+    const { mpesaCode, phoneNumber, resourceId, serviceType } = await req.json();
 
     const cleanCode = extractMpesaReceiptCode(mpesaCode || '');
 
@@ -26,8 +26,8 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!resourceId) {
-      return NextResponse.json({ error: 'Resource selection is required.' }, { status: 400 });
+    if (!resourceId && !serviceType) {
+      return NextResponse.json({ error: 'Selection is required.' }, { status: 400 });
     }
 
     const phone =
@@ -35,15 +35,31 @@ export async function POST(req: Request) {
       String(phoneNumber || 'DIRECT_MPESA').trim() ||
       'DIRECT_MPESA';
 
-    // Verify resource exists
-    const { data: resource, error: resErr } = await supabaseAdmin
-      .from('resources')
-      .select('id, price, title')
-      .eq('id', resourceId)
-      .single();
+    let resource: { id: string | null; price: number; title: string };
 
-    if (resErr || !resource) {
-      return NextResponse.json({ error: 'Selected material not found.' }, { status: 404 });
+    if (serviceType === 'LEARNER_TUITION') {
+      resource = {
+        id: null,
+        price: 1000,
+        title: 'Student Holiday / Personal Teacher Booking (KSh 1,000)',
+      };
+    } else if (serviceType === 'TEACHER_TUITION') {
+      resource = {
+        id: null,
+        price: 500,
+        title: 'Teacher Holiday / Personal Tuition Registration (KSh 500)',
+      };
+    } else {
+      const { data: dbRes, error: resErr } = await supabaseAdmin
+        .from('resources')
+        .select('id, price, title')
+        .eq('id', resourceId)
+        .single();
+
+      if (resErr || !dbRes) {
+        return NextResponse.json({ error: 'Selected material not found.' }, { status: 404 });
+      }
+      resource = dbRes;
     }
 
     const amountKes = Math.round(Number(resource.price) || 50);

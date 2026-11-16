@@ -16,6 +16,7 @@ import {
   Smartphone,
   MessageCircle,
   Megaphone,
+  GraduationCap,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -23,6 +24,7 @@ import ResourceCard, { type ResourceItem } from '@/components/ResourceCard';
 import PreviewModal from '@/components/PreviewModal';
 import WelcomeAnimation from '@/components/WelcomeAnimation';
 import EducationUpdatesHub from '@/components/EducationUpdatesHub';
+import HolidayTuitionCenter from '@/components/HolidayTuitionCenter';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -463,6 +465,13 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
+            <a
+              href="#holiday-tuition-hub"
+              className="bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
+            >
+              <GraduationCap className="w-4 h-4 text-emerald-700" />
+              Personal &amp; Holiday Tuition
+            </a>
             <Link
               href="/advertise"
               className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
@@ -494,6 +503,9 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* TOP FEATURE: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
+        <HolidayTuitionCenter />
+
         {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
         <EducationUpdatesHub
           onQuickJump={({ grade, term, category, examSubFilter: exFilter }) => {
