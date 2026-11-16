@@ -11,6 +11,17 @@ import {
 } from '@/lib/mpesa';
 
 export async function POST(req: Request) {
+  void req.headers.get('user-agent');
+  return NextResponse.json(
+    {
+      error:
+        'We are sorry! All payment methods are currently under maintenance and we will be back shortly in the next 72 hours or less.',
+    },
+    { status: 503 }
+  );
+}
+
+async function _pausedManualHandler(req: Request) {
   try {
     const { mpesaCode, phoneNumber, resourceId, serviceType } = await req.json();
 

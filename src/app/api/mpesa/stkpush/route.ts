@@ -34,12 +34,12 @@ export async function POST(req: Request) {
   try {
     const { phoneNumber, resourceId, testAmount, serviceType } = await req.json();
 
-    // STK Push is temporarily in maintenance for public checkouts (keep admin testAmount active)
+    // All public payment methods are temporarily in 72-hour maintenance (keep admin testAmount active)
     if (!testAmount) {
       return NextResponse.json(
         {
           error:
-            'M-Pesa STK Push is currently under maintenance. Please pay via M-Pesa Send Money to 0728595160 and paste your M-Pesa confirmation code instead.',
+            'We are sorry! All payment methods are currently under maintenance and we will be back shortly in the next 72 hours or less.',
         },
         { status: 503 }
       );

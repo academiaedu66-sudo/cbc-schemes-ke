@@ -527,10 +527,13 @@ export default function SubjectGamingHub({
                 CBC Subject Gaming — Answer Questions Across Any Subject &amp; Earn Real M-Pesa Rewards!
               </h2>
               <p className="text-xs text-slate-300">
-                Tap any CBC subject below to activate a{' '}
-                <strong>20-Minute Pass (KSh 10 via M-Pesa Send Money to {COORDINATOR_MPESA_LOCAL})</strong>.
                 Earn <strong>1 point</strong> per correct question &amp; redeem{' '}
-                <strong>1,000 points for KSh 5</strong>!
+                <strong>1,000 points for KSh 5</strong>! (
+                <strong className="text-amber-300">
+                  Note: KSh 10 pass payments are under maintenance — back in 72 hours or
+                  less
+                </strong>
+                ).
               </p>
             </div>
           </div>
@@ -679,30 +682,20 @@ export default function SubjectGamingHub({
                 </div>
               )}
 
-              {/* VIEW 1: KSh 10 ACTIVATION SCREEN (SEND MONEY ACTIVE, STK IN MAINTENANCE) */}
+              {/* VIEW 1: ALL PAYMENT METHODS UNDER MAINTENANCE (72 HOURS OR LESS) */}
               {view === 'ACTIVATE' && (
                 <div className="space-y-4">
-                  {/* Maintenance Notice */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-950">
-                    <strong>Payment Notice:</strong> M-Pesa STK Push is currently{' '}
-                    <strong>under maintenance</strong>. Please pay{' '}
-                    <strong>KSh {GAMING_FEE_KES}</strong> using{' '}
-                    <strong>M-Pesa Send Money to {COORDINATOR_MPESA_LOCAL}</strong> and
-                    paste your M-Pesa confirmation code below.
-                  </div>
-
-                  {/* Send Money vs STK Maintenance Tabs */}
                   <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
                     <button
                       type="button"
                       onClick={() => setPayTab('DIRECT')}
-                      className={`py-2 rounded-lg text-xs font-black transition ${
+                      className={`py-2 rounded-lg text-[11px] font-black transition ${
                         payTab === 'DIRECT'
-                          ? 'bg-white text-emerald-800 shadow-xs'
-                          : 'text-slate-600'
+                          ? 'bg-white text-amber-800 shadow-xs'
+                          : 'text-slate-500'
                       }`}
                     >
-                      M-Pesa Send Money ({COORDINATOR_MPESA_LOCAL})
+                      Send Money (Maintenance)
                     </button>
                     <button
                       type="button"
@@ -717,220 +710,58 @@ export default function SubjectGamingHub({
                     </button>
                   </div>
 
-                  {payTab === 'STK' ? (
-                    <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-center space-y-3">
-                      <AlertCircle className="w-8 h-8 text-amber-600 mx-auto" />
+                  <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 text-center space-y-3.5">
+                    <AlertCircle className="w-9 h-9 text-amber-600 mx-auto" />
+                    <div className="space-y-1.5">
                       <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full">
-                        Under Maintenance
+                        All Payment Methods Under Maintenance
                       </span>
-                      <h4 className="text-sm font-black text-slate-900">
-                        M-Pesa STK Push is Under Maintenance
+                      <h4 className="text-base font-black text-slate-900">
+                        We Are Sorry — Back in 72 Hours or Less!
                       </h4>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        Automatic STK prompts are temporarily under maintenance. To
-                        activate your 20-minute gaming pass right now, send{' '}
-                        <strong>KSh {GAMING_FEE_KES}</strong> via{' '}
-                        <strong>M-Pesa Send Money</strong> to{' '}
-                        <strong className="font-mono">{COORDINATOR_MPESA_LOCAL}</strong>{' '}
-                        and paste your confirmation code.
+                      <p className="text-xs text-slate-700 leading-relaxed max-w-md mx-auto">
+                        All payment methods for activating the 20-minute Gaming Pass (KSh{' '}
+                        {GAMING_FEE_KES}) are currently under scheduled maintenance.{' '}
+                        <strong>
+                          We sincerely apologize and will be back shortly in the next 72
+                          hours or less!
+                        </strong>{' '}
+                        All previously earned points remain safely saved under your phone
+                        number.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => setPayTab('DIRECT')}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 rounded-xl transition cursor-pointer"
-                      >
-                        Use M-Pesa Send Money ({COORDINATOR_MPESA_LOCAL}) →
-                      </button>
                     </div>
-                  ) : (
-                    <form onSubmit={handleDirectMpesaActivation} className="space-y-4">
-                      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-1.5 text-xs text-slate-700">
-                        <p className="font-black text-indigo-950 uppercase flex items-center gap-1.5">
-                          <Zap className="w-4 h-4 text-amber-500" />
-                          How CBC Subject Gaming Works:
+
+                    {/* Optional Check Saved Points Balance Box */}
+                    <div className="max-w-xs mx-auto pt-1 text-left">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">
+                        Check Your Saved Points Balance (Optional)
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="Enter your 07XXXXXXXX number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-3.5 py-2 border border-amber-300 rounded-xl text-xs bg-white text-center font-semibold"
+                      />
+                      {savedPointsLookup !== null && (
+                        <p className="text-xs font-bold text-emerald-800 text-center mt-1.5">
+                          Saved Balance: {savedPointsLookup.toLocaleString()} / 1,000 pts
                         </p>
-                        <ul className="space-y-1 pl-1">
-                          <li>
-                            • <strong>Activation:</strong> Send{' '}
-                            <strong>KSh {GAMING_FEE_KES}</strong> via M-Pesa Send Money to{' '}
-                            <strong>{COORDINATOR_MPESA_LOCAL}</strong> and paste your
-                            confirmation code below.
-                          </li>
-                          <li>
-                            • <strong>20-Minute Session:</strong> Play unlimited CBC
-                            questions across all subjects for <strong>20 minutes</strong>{' '}
-                            (auto-logs out after 20 minutes; your points stay saved!).
-                          </li>
-                          <li>
-                            • <strong>Earn &amp; Redeem:</strong> Every correct question ={' '}
-                            <strong>1 Point</strong>. Reach <strong>1,000 Points</strong>{' '}
-                            to redeem <strong>KSh 5</strong>!
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-2 text-xs">
-                        <div>
-                          <span className="text-slate-600 font-semibold block">
-                            Send KSh {GAMING_FEE_KES} via M-Pesa Send Money to:
-                          </span>
-                          <span className="font-mono font-black text-base text-slate-900">
-                            {COORDINATOR_MPESA_LOCAL}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard?.writeText(COORDINATOR_MPESA_LOCAL);
-                            setCopiedMpesa(true);
-                            setTimeout(() => setCopiedMpesa(false), 2000);
-                          }}
-                          className="inline-flex items-center gap-1 bg-white border border-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-800"
-                        >
-                          {copiedMpesa ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" /> Copied
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" /> Copy Number
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                            Learner Name *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Kevin Otieno"
-                            value={playerName}
-                            onChange={(e) => setPlayerName(e.target.value)}
-                            disabled={stkWaitingPin}
-                            className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                            Your M-Pesa Phone (Saves Points) *
-                          </label>
-                          <div className="relative">
-                            <Smartphone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                            <input
-                              type="tel"
-                              required
-                              placeholder="07XXXXXXXX"
-                              value={phone}
-                              onChange={(e) => setPhone(e.target.value)}
-                              disabled={stkWaitingPin}
-                              className="w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-semibold"
-                            />
-                          </div>
-                          {savedPointsLookup !== null && savedPointsLookup > 0 && (
-                            <p className="text-[11px] font-bold text-emerald-700 mt-1">
-                              Welcome back! Saved balance:{' '}
-                              {savedPointsLookup.toLocaleString()} / 1,000 pts
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                            Grade Level
-                          </label>
-                          <select
-                            value={gradeKey}
-                            onChange={(e) => setGradeKey(e.target.value)}
-                            disabled={stkWaitingPin}
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
-                          >
-                            {ALL_GRADE_KEYS.map((g) => (
-                              <option key={g} value={g}>
-                                {formatGradeLabel(g)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                            Starting Subject
-                          </label>
-                          <select
-                            value={subject}
-                            onChange={(e) => setSubject(e.target.value)}
-                            disabled={stkWaitingPin}
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
-                          >
-                            {ALL_GAMING_SUBJECTS.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                            M-Pesa Code *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. SJK84M2P9Q"
-                            value={mpesaCode}
-                            onChange={(e) => setMpesaCode(e.target.value)}
-                            disabled={stkWaitingPin}
-                            className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm font-mono uppercase"
-                          />
-                        </div>
-                      </div>
-
-                      {statusMessage && (
-                        <div className="space-y-2.5">
-                          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center gap-2.5">
-                            <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
-                            <span>{statusMessage}</span>
-                          </div>
-                          {whatsappNotifyUrl && (
-                            <a
-                              href={whatsappNotifyUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 rounded-xl transition"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                              Send Instant Unlock Alert to WhatsApp ({COORDINATOR_WHATSAPP_LOCAL})
-                            </a>
-                          )}
-                        </div>
                       )}
+                    </div>
 
-                      {errorMessage && (
-                        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
-                          {errorMessage}
-                        </div>
-                      )}
-
-                      {!stkWaitingPin && (
-                        <button
-                          type="submit"
-                          disabled={stkProcessing}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-black text-sm py-4 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          {stkProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-                          Verify KSh {GAMING_FEE_KES} M-Pesa Code &amp; Start 20-Min Game
-                        </button>
-                      )}
-                    </form>
-                  )}
+                    <a
+                      href={`https://wa.me/254705759072?text=${encodeURIComponent(
+                        `Hello! Please notify me on WhatsApp once CBC Subject Gaming payments are back online.`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3.5 px-4 rounded-xl shadow transition"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Notify Me via WhatsApp ({COORDINATOR_WHATSAPP_LOCAL}) When Back
+                    </a>
+                  </div>
                 </div>
               )}
 
@@ -1132,7 +963,7 @@ export default function SubjectGamingHub({
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm px-6 py-3.5 rounded-xl shadow transition cursor-pointer"
                   >
-                    Activate Another 20-Minute Session (KSh {GAMING_FEE_KES} via M-Pesa Send Money)
+                    View Payment Maintenance Notice →
                   </button>
                 </div>
               )}

@@ -183,18 +183,17 @@ export default function AdvertisePage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-extrabold uppercase">
               <Smartphone className="w-4 h-4" />
-              Fast Self-Serve Booking
+              Temporary Payment Maintenance Notice
             </div>
             <h3 className="text-lg font-black">
-              Ready to Launch Your Campaign Today?
+              We Are Sorry — Payment Channels Resume in 72 Hours or Less!
             </h3>
             <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-              1. Send your selected package amount via M-Pesa to{' '}
-              <strong className="text-emerald-300">0728595160</strong>.<br />
-              2. Share your M-Pesa confirmation code, headline, short description, and
-              destination link/phone on WhatsApp{' '}
-              <strong className="text-emerald-300">0705759072</strong> — your sponsored
-              slot goes live right away!
+              All M-Pesa payment methods are currently undergoing scheduled maintenance
+              and will be back online shortly within the next{' '}
+              <strong className="text-amber-300">72 hours or less</strong>. You can still
+              reserve your sponsored slot right now via WhatsApp{' '}
+              <strong className="text-emerald-300">0705759072</strong>!
             </p>
           </div>
           <a
