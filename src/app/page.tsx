@@ -19,6 +19,7 @@ import {
   GraduationCap,
   HeartHandshake,
   Gamepad2,
+  Landmark,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -31,6 +32,7 @@ import GuidanceCounsellingHub from '@/components/GuidanceCounsellingHub';
 import SubjectGamingHub, {
   type ExternalGameLaunch,
 } from '@/components/SubjectGamingHub';
+import TscServicesHub from '@/components/TscServicesHub';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -94,6 +96,7 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedAreaCounts, setExpandedAreaCounts] = useState<Record<string, number>>({});
   const [counsellingOpenTick, setCounsellingOpenTick] = useState(0);
+  const [tscOpenTick, setTscOpenTick] = useState(0);
   const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
 
   // Payment & WhatsApp Configuration
@@ -475,6 +478,14 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() => setTscOpenTick((c) => c + 1)}
+              className="bg-sky-400 hover:bg-sky-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <Landmark className="w-4 h-4" />
+              All TSC Services
+            </button>
+            <button
+              type="button"
               onClick={() =>
                 setGameLaunch({
                   subject: selectedSubject !== 'All' ? selectedSubject : 'Mathematics',
@@ -541,6 +552,9 @@ export default function HomePage() {
 
         {/* TOP FEATURE 3: ALL-SUBJECTS PLAY & EARN GAMING ARENA (KSh 10 / 1 HR • 1,000 PTS = KSh 5) */}
         <SubjectGamingHub externalLaunch={gameLaunch} />
+
+        {/* TOP FEATURE 4: ALL TEACHERS SERVICE COMMISSION (TSC) SERVICES IN ONE MONETIZED BUTTON */}
+        <TscServicesHub externalTriggerCount={tscOpenTick} />
 
         {/* 0. 2026 MoE Term Dates & TSC / KNEC Quick Updates Strip */}
         <EducationUpdatesHub

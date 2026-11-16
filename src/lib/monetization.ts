@@ -10,7 +10,8 @@ export type AdPlacement =
   | 'preview_modal'
   | 'sticky_footer'
   | 'updates_hub'
-  | 'smartlink';
+  | 'smartlink'
+  | 'tsc_services_hub';
 
 export type TrackEventType = 'view' | 'impression' | 'interaction' | 'click';
 
@@ -159,6 +160,19 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
     ctaText: 'Advertise Now',
     targetUrl: '/advertise',
     accentColor: 'emerald',
+  },
+  {
+    id: 'sponsor-tsc-hub',
+    enabled: true,
+    placement: 'tsc_services_hub',
+    badge: 'TSC TEACHERS OFFER',
+    headline:
+      'Preparing TPAD 2 Lesson Observations? Download Ready-to-Print KICD Schemes, Lesson Plans & Records of Work!',
+    subtext:
+      'Or advertise your Sacco, Teacher Loan, Laptop Offer, or College Intake directly to TSC teachers here.',
+    ctaText: 'Explore / Advertise →',
+    targetUrl: '/advertise',
+    accentColor: 'blue',
   },
 ];
 

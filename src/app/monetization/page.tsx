@@ -58,6 +58,17 @@ interface OrderRow {
 }
 
 const INTERACTION_LABELS: Record<string, string> = {
+  tsc_all_services_btn_click: 'TSC All-Services Button Clicks (Monetized)',
+  tsc_service_tpay: 'TSC T-PAY Payslip & P9 Clicks',
+  tsc_service_tpad2: 'TSC TPAD 2 Appraisal Clicks',
+  tsc_service_registration: 'TSC Teacher Registration Clicks',
+  tsc_service_recruitment: 'TSC Vacancies & Promotions Clicks',
+  tsc_service_leave: 'TSC Online Leave Portal Clicks',
+  tsc_service_transfers: 'TSC Transfers & Swaps Clicks',
+  tsc_service_wealth: 'TSC Wealth Declaration Clicks',
+  tsc_service_tmis: 'TSC TMIS Institutional Clicks',
+  tsc_service_medical: 'TSC Medical Scheme Clicks',
+  tsc_service_circulars: 'TSC Circulars & CBA Downloads Clicks',
   gaming_arena_open: 'CBC Subject Gaming Arena Opens',
   gaming_stk_initiate: 'Gaming KSh 10 Pass STK Initiations',
   gaming_question_answered: 'Gaming Subject Questions Answered',
@@ -86,6 +97,7 @@ const INTERACTION_LABELS: Record<string, string> = {
 };
 
 const PLACEMENT_LABELS: Record<string, string> = {
+  tsc_services_hub: 'All-in-One TSC Services Hub (Monetized Clicks)',
   top_leaderboard: 'Top Homepage Leaderboard Banner',
   infeed_grid: 'In-Feed Catalog Native Ad Cards',
   preview_modal: 'Free Document Preview Modal Ad',
@@ -1180,6 +1192,7 @@ export default function MonetizationControlPage() {
                             <option value="infeed_grid">In-Feed Catalog</option>
                             <option value="preview_modal">Preview Modal</option>
                             <option value="sticky_footer">Sticky Bottom Bar</option>
+                            <option value="tsc_services_hub">TSC Services Hub</option>
                           </select>
                           <button
                             type="button"
