@@ -450,25 +450,36 @@ export default function HolidayTuitionCenter({
             </button>
           </div>
 
-          {/* BUTTON 2: FOR TEACHERS / TUTORS (KSh 500) */}
+          {/* BUTTON 2: FOR TEACHERS / TUTORS (KSh 500 REGISTRATION & TIME-BASED PRIORITY) */}
           <div className="bg-white/10 hover:bg-white/[0.13] backdrop-blur-xs border border-sky-400/30 rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-4 transition">
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-sky-300">
                   <UserCheck className="w-4 h-4" />
                   For CBC Teachers &amp; Tutors
                 </span>
                 <span className="bg-sky-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-lg">
-                  Registration: KSh 500
+                  Registration Fee: KSh 500
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
                 <strong>Register to Get Learners to Teach:</strong> List the CBC subjects
                 and grade levels you teach during school holidays or at your convenient
-                time (home or online). Get matched with paying learners requesting your
-                subjects and connect via Coordinator WhatsApp{' '}
-                <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>.
+                time (home or online).
               </p>
+              <div className="bg-sky-950/70 border border-sky-400/40 rounded-xl px-3 py-2 text-[11px] sm:text-xs text-sky-100 leading-snug">
+                <strong className="text-amber-300">
+                  ⚡ KSh 500 Registration &amp; Priority Notice:
+                </strong>{' '}
+                KSh 500 is for your official Teacher Registration. Whenever a student
+                registers requesting your service,{' '}
+                <strong className="text-white underline decoration-amber-300/80">
+                  you will be given priority based on the time you paid for your premium
+                  subscription
+                </strong>{' '}
+                (earlier paid teachers are matched first via WhatsApp{' '}
+                <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>).
+              </div>
             </div>
 
             <button
@@ -477,7 +488,7 @@ export default function HolidayTuitionCenter({
               className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <UserCheck className="w-4 h-4 shrink-0" />
-              <span>Register to Teach Learners (Teacher — KSh 500)</span>
+              <span>Register to Teach Learners (KSh 500 Registration — Priority Queue)</span>
             </button>
           </div>
         </div>
@@ -838,13 +849,27 @@ export default function HolidayTuitionCenter({
 
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-950 flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>
-                      <strong>How Connection Works:</strong> Registration is{' '}
-                      <strong>KSh {feeKes.toLocaleString()}</strong> (one-time). Before
-                      any learner and teacher connect, both connect directly through
-                      Coordinator WhatsApp <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>{' '}
-                      for safety and subject verification.
-                    </span>
+                    {activeModalRole === 'TEACHER' ? (
+                      <span>
+                        <strong>KSh {feeKes.toLocaleString()} Registration &amp; Priority Queue:</strong>{' '}
+                        KSh {feeKes.toLocaleString()} is for your official Teacher Registration.
+                        When a student registers requesting your service,{' '}
+                        <strong>
+                          you will be given priority based on the exact time you paid for your
+                          premium subscription
+                        </strong>
+                        , and connected directly via Coordinator WhatsApp{' '}
+                        <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>.
+                      </span>
+                    ) : (
+                      <span>
+                        <strong>How Connection Works:</strong> Registration is{' '}
+                        <strong>KSh {feeKes.toLocaleString()}</strong> (one-time). Before
+                        any learner and teacher connect, both connect directly through
+                        Coordinator WhatsApp <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>{' '}
+                        for safety and subject verification.
+                      </span>
+                    )}
                   </div>
 
                   <button

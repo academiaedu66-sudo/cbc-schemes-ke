@@ -362,7 +362,7 @@ export function findSubjectMatches(params: {
   const cleanCounty = (params.county || '').toLowerCase().trim();
 
   const candidates = params.pool.filter((c) => c.role === params.targetRole);
-  const scored: PublicTuitionMatch[] = [];
+  const scored: Array<PublicTuitionMatch & { paidTimeMs: number; isPaidLive: boolean }> = [];
 
   for (const cand of candidates) {
     const matchedSubjects = cand.subjects.filter(
@@ -373,9 +373,11 @@ export function findSubjectMatches(params: {
 
     if (matchedSubjects.length === 0) continue;
 
+    const isPaidLive = !cand.id.startsWith('seed-') && cand.paymentStatus === 'COMPLETED';
     const bandOverlap = cand.gradeBands.some((b) => wantedBands.has(b));
     let score = matchedSubjects.length * 15;
     if (bandOverlap) score += 25;
+    if (isPaidLive) score += 100; // Paid premium teachers always rank ahead of demo profiles
     if (
       cleanCounty &&
       cand.county.toLowerCase().includes(cleanCounty)
@@ -393,6 +395,8 @@ export function findSubjectMatches(params: {
           : `Grade ${cand.learnerGrade}`
         : cand.gradeBands.map((b) => GRADE_BAND_LABELS[b].split(' (')[0]).join(', ');
 
+    const parsedTime = Date.parse(cand.createdAt || '');
+
     scored.push({
       referenceCode: cand.referenceCode,
       role: cand.role,
@@ -405,8 +409,21 @@ export function findSubjectMatches(params: {
       schedule: cand.schedule,
       qualification: cand.tscOrQualification,
       score,
+      isPaidLive,
+      paidTimeMs: Number.isFinite(parsedTime) ? parsedTime : Number.MAX_SAFE_INTEGER,
     });
   }
 
-  return scored.sort((a, b) => b.score - a.score).slice(0, 8);
+  // Priority Queue: Paid premium teachers first, ordered by earliest subscription payment time!
+  return scored
+    .sort((a, b) => {
+      if (a.isPaidLive !== b.isPaidLive) return a.isPaidLive ? -1 : 1;
+      if (a.isPaidLive && b.isPaidLive && a.paidTimeMs !== b.paidTimeMs) {
+        return a.paidTimeMs - b.paidTimeMs;
+      }
+      if (b.score !== a.score) return b.score - a.score;
+      return a.paidTimeMs - b.paidTimeMs;
+    })
+    .slice(0, 8)
+    .map(({ paidTimeMs: _pt, isPaidLive: _ip, ...pub }) => pub);
 }
