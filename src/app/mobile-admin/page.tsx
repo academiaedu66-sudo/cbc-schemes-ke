@@ -152,6 +152,7 @@ interface MobileWalletOverview {
   availableTotalKes: number;
   completedOrdersCount: number;
   liveB2cReady: boolean;
+  hasPaystackKey?: boolean;
   payheroChannelId: string;
   adNetworkConnected: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
@@ -236,6 +237,7 @@ export default function MobileAdminAppPage() {
   } | null>(null);
   // In-App Real Money Linker (PayHero B2C + Monetag/Adsterra/AdSense)
   const [showRealMoneyLinker, setShowRealMoneyLinker] = useState(false);
+  const [linkPaystackSecret, setLinkPaystackSecret] = useState('');
   const [linkPayheroChannelId, setLinkPayheroChannelId] = useState('');
   const [linkPayheroToken, setLinkPayheroToken] = useState('');
   const [linkAdProvider, setLinkAdProvider] = useState<
@@ -905,15 +907,20 @@ export default function MobileAdminAppPage() {
     try {
       const promises: Promise<Response>[] = [];
 
-      // 1. Save PayHero M-Pesa B2C & STK credentials if entered
-      if (linkPayheroChannelId.trim() || linkPayheroToken.trim()) {
+      // 1. Save Paystack Kenya (Primary) or PayHero credentials if entered
+      if (
+        linkPaystackSecret.trim() ||
+        linkPayheroChannelId.trim() ||
+        linkPayheroToken.trim()
+      ) {
         promises.push(
           fetch('/api/admin/payment-config', {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              activeGateway: 'payhero',
+              activeGateway: linkPaystackSecret.trim() ? 'paystack' : 'payhero',
               recipientMpesa: '254728595160',
+              paystackSecretKey: linkPaystackSecret.trim(),
               payheroChannelId: linkPayheroChannelId.trim(),
               payheroAuthToken: linkPayheroToken.trim(),
               payheroAutoWithdraw: true,
@@ -942,6 +949,7 @@ export default function MobileAdminAppPage() {
       );
 
       await Promise.all(promises);
+      setLinkPaystackSecret('');
       setLinkPayheroToken('');
       showToast('Real M-Pesa B2C & Paid Ad Network links saved live!');
       await fetchAllMobileData(email, password);
@@ -1739,7 +1747,7 @@ export default function MobileAdminAppPage() {
 
                   <p className="text-[11px] text-slate-400 leading-snug">
                     Sign up free (5 mins, instant approval) and add{' '}
-                    <code className="text-slate-200">cbc-schemes-ke.vercel.app</code>:
+                    <code className="text-slate-200">cbcmaterials.shop</code>:
                   </p>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1807,7 +1815,7 @@ export default function MobileAdminAppPage() {
                 <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-black text-emerald-300 uppercase text-[11px]">
-                      Step B: Link Instant M-Pesa B2C Withdrawal
+                      Step B: Paystack Kenya Live Secret Key
                     </span>
                     <span
                       className={`text-[10px] font-black px-2 py-0.5 rounded-full ${walletOverview?.liveB2cReady
@@ -1815,44 +1823,35 @@ export default function MobileAdminAppPage() {
                           : 'bg-amber-500/20 text-amber-300'
                         }`}
                     >
-                      {walletOverview?.liveB2cReady ? 'LIVE B2C ✓' : 'NOT LINKED'}
+                      {walletOverview?.liveB2cReady ? 'LIVE B2C ✓' : 'PASTE KEY'}
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-snug">
-                    Open{' '}
+                    In your{' '}
                     <a
-                      href="https://app.payhero.co.ke"
+                      href="https://dashboard.paystack.com/#/settings/developer"
                       target="_blank"
                       rel="noreferrer"
                       className="text-emerald-400 font-black underline"
                     >
-                      app.payhero.co.ke
+                      Paystack Settings &rarr; API Keys &amp; Webhooks
                     </a>
-                    , link your Kenyan ID &amp; M-Pesa (<code>0728***160</code>), then
-                    paste your Channel ID &amp; Basic Auth Token:
+                    , copy your <strong>Secret Key</strong> (<code>sk_live_...</code>) and
+                    paste below:
                   </p>
 
-                  <div className="grid grid-cols-1 gap-2">
-                    <input
-                      type="text"
-                      placeholder="PayHero Channel ID (e.g. 133)"
-                      value={linkPayheroChannelId}
-                      onChange={(e) => setLinkPayheroChannelId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                    <input
-                      type="password"
-                      placeholder={
-                        walletOverview?.liveB2cReady
-                          ? 'Basic Auth Token Saved ✓ (Paste new to update)'
-                          : 'Paste PayHero Basic Auth Token...'
-                      }
-                      value={linkPayheroToken}
-                      onChange={(e) => setLinkPayheroToken(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                    />
-                  </div>
+                  <input
+                    type="password"
+                    placeholder={
+                      walletOverview?.hasPaystackKey
+                        ? 'Paystack Secret Key Saved ✓ (Paste new to update)'
+                        : 'Paste sk_live_xxxxxxxxxxxxxxxxxxxx'
+                    }
+                    value={linkPaystackSecret}
+                    onChange={(e) => setLinkPaystackSecret(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
+                  />
                 </div>
 
                 <button

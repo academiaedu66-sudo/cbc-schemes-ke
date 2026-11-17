@@ -109,6 +109,25 @@ export async function POST(req: Request) {
 
       const event = body?.event;
       const ref = body?.data?.reference;
+
+      // Handle Paystack Kenya M-Pesa B2C Transfer Callbacks ("wd-xxxxxx")
+      if (
+        ref &&
+        String(ref).toUpperCase().startsWith('WD-') &&
+        (event === 'transfer.success' ||
+          event === 'transfer.failed' ||
+          event === 'transfer.reversed')
+      ) {
+        await confirmWithdrawalCallback({
+          referenceCode: String(ref).toUpperCase(),
+          mpesaReceipt: String(
+            body?.data?.transfer_code || body?.data?.Titan_code || ref
+          ),
+          success: event === 'transfer.success',
+        });
+        return NextResponse.json({ received: true });
+      }
+
       if (ref) {
         const checkoutId = `PAYSTACK_${ref}`;
         if (event === 'charge.success') {

@@ -10,7 +10,7 @@ import {
 
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
 export const DEFAULT_WHATSAPP_PHONE = '254705759072';
-export const DEFAULT_PRODUCTION_ORIGIN = 'https://cbc-schemes-ke.vercel.app';
+export const DEFAULT_PRODUCTION_ORIGIN = 'https://cbcmaterials.shop';
 
 export function getMerchantPhone(stored?: StoredPaymentConfig): string {
   const raw = (

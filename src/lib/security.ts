@@ -792,7 +792,7 @@ export async function compileFullWebsiteBackup(): Promise<{
   const generatedAt = new Date().toISOString();
   const bundle: FullWebsiteBackupBundle = {
     generatedAt,
-    siteUrl: 'https://cbc-schemes-ke.vercel.app',
+    siteUrl: 'https://cbcmaterials.shop',
     securityContacts: {
       otpPhones: [SECURITY_PHONE_PRIMARY, SECURITY_PHONE_SECONDARY],
       twoFactorEmail: SECURITY_VERIFICATION_EMAIL,

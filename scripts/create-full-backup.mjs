@@ -160,7 +160,7 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const masterBundle = {
     generatedAt,
-    siteUrl: 'https://cbc-schemes-ke.vercel.app',
+    siteUrl: 'https://cbcmaterials.shop',
     securityContacts: {
       otpPhonesMasked: ['0728***160', '0705***072'],
       twoFactorEmailMasked: 'aca*******55@gmail.com',
@@ -241,7 +241,7 @@ async function main() {
   const readme = `# CBC Hub Kenya — Full Website Data Backup
 
 - **Generated At:** \`${generatedAt}\`
-- **Production Website:** https://cbc-schemes-ke.vercel.app
+- **Production Website:** https://cbcmaterials.shop
 - **Security OTP Phones (Masked):** \`0728***160\` or \`0705***072\`
 - **2-Step Verification & Backup Email (Masked):** \`aca*******55@gmail.com\`
 - **Automatic Continuous Backup:** Enabled across all website features (Curriculum Materials, M-Pesa Orders, Tuition Hub, Subject Gaming, Monetization, and Ask Gemini Q&A)
