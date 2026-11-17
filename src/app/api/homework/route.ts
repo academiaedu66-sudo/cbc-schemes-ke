@@ -187,10 +187,8 @@ export async function POST(req: NextRequest) {
       if (!existingOrder) {
         const { error: insertErr } = await supabaseAdmin.from('orders').insert({
           checkout_request_id: checkoutRequestId,
-          merchant_request_id: `GEMINI_${Date.now()}`,
           phone_number: normalizedPhone,
           resource_id: null,
-          resource_title: orderTitle,
           amount: WEEKLY_SUBSCRIPTION_KES,
           mpesa_receipt_number: cleanCode,
           status: 'PENDING',
@@ -262,7 +260,7 @@ export async function POST(req: NextRequest) {
       if (
         orderStatus === 'PENDING' &&
         reqId.startsWith('PAYHERO_') &&
-        !shouldThrottleQuery(reqId, 4000)
+        !shouldThrottleQuery(reqId, 900)
       ) {
         try {
           const stored = await getStoredPaymentConfig();

@@ -16,7 +16,7 @@ async function verifyPayHeroOrder(
   checkoutRequestId: string,
   orderAmount: number
 ): Promise<'COMPLETED' | 'FAILED' | 'PENDING'> {
-  if (shouldThrottleQuery(checkoutRequestId, 4000)) {
+  if (shouldThrottleQuery(checkoutRequestId, 900)) {
     return 'PENDING';
   }
   const stored = await getStoredPaymentConfig();
@@ -243,18 +243,70 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'checkoutRequestId is required' }, { status: 400 });
     }
 
-    const { data: order, error: orderError } = await supabaseAdmin
+    const idStr = String(checkoutRequestId);
+    const { data: initialOrder } = await supabaseAdmin
       .from('orders')
       .select('status, resource_id, amount, created_at')
-      .eq('checkout_request_id', checkoutRequestId)
-      .single();
+      .eq('checkout_request_id', idStr)
+      .maybeSingle();
 
-    if (orderError || !order) {
+    let order = initialOrder;
+
+    // Self-heal if a PayHero STK order completed before DB row visibility
+    if (!order && idStr.startsWith('PAYHERO_')) {
+      const stored = await getStoredPaymentConfig();
+      const rawToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
+      if (rawToken) {
+        try {
+          const reference = idStr.replace(/^PAYHERO_/, '');
+          const phRes = await fetch(
+            `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
+              reference
+            )}`,
+            {
+              headers: { Authorization: formatPayHeroAuthHeader(rawToken) },
+              cache: 'no-store',
+            }
+          );
+          const phJson = await phRes.json();
+          const st = String(phJson?.status || '').toUpperCase();
+          if (st === 'SUCCESS' || st === 'COMPLETED') {
+            const receipt = String(
+              phJson?.provider_reference || phJson?.third_party_reference || reference
+            ).slice(0, 40);
+            const amt = Number(phJson?.amount) || 10;
+            const phPhone = String(phJson?.phone_number || '254700000000');
+            await supabaseAdmin.from('orders').upsert(
+              {
+                checkout_request_id: idStr,
+                phone_number: phPhone,
+                resource_id: null,
+                amount: amt,
+                mpesa_receipt_number: receipt,
+                status: 'COMPLETED',
+              },
+              { onConflict: 'checkout_request_id' }
+            );
+            order = {
+              status: 'COMPLETED',
+              resource_id: null,
+              amount: amt,
+              created_at: new Date().toISOString(),
+            };
+          } else {
+            return NextResponse.json({ status: 'PENDING', message: 'Processing' }, { status: 200 });
+          }
+        } catch {
+          return NextResponse.json({ status: 'PENDING', message: 'Processing' }, { status: 200 });
+        }
+      }
+    }
+
+    if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     let currentStatus = order.status as string;
-    const idStr = String(checkoutRequestId);
 
     if (currentStatus === 'PENDING') {
       if (idStr.startsWith('MANUAL_')) {

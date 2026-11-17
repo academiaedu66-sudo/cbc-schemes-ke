@@ -5,8 +5,10 @@ import { supabaseAdmin } from '@/lib/supabase';
 import {
   normalizeKenyanPhone,
   sendWhatsAppAdminNotification,
+  shouldThrottleQuery,
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
+import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 import { COORDINATOR_WHATSAPP_INTL, COORDINATOR_WHATSAPP_LOCAL } from '@/lib/tuition';
 import {
   GAMING_SESSION_MS,
@@ -148,17 +150,84 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Verify auto-confirmed M-Pesa payment in orders table
-      const { data: order, error: ordErr } = await supabaseAdmin
+      // Verify auto-confirmed M-Pesa payment in orders table (with live PayHero instant verification!)
+      const { data: initialOrder } = await supabaseAdmin
         .from('orders')
         .select('checkout_request_id, status, amount, phone_number')
         .eq('checkout_request_id', checkoutRequestId)
         .maybeSingle();
 
-      if (ordErr || !order) {
+      let order = initialOrder;
+
+      if (
+        checkoutRequestId.startsWith('PAYHERO_') &&
+        (!order || order.status === 'PENDING') &&
+        !shouldThrottleQuery(`gaming_${checkoutRequestId}`, 900)
+      ) {
+        try {
+          const stored = await getStoredPaymentConfig();
+          const rawToken = (
+            stored.payheroAuthToken ||
+            process.env.PAYHERO_AUTH_TOKEN ||
+            ''
+          ).trim();
+          if (rawToken) {
+            const reference = checkoutRequestId.replace(/^PAYHERO_/, '');
+            const phRes = await fetch(
+              `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
+                reference
+              )}`,
+              {
+                headers: { Authorization: formatPayHeroAuthHeader(rawToken) },
+                cache: 'no-store',
+              }
+            );
+            const phJson = await phRes.json();
+            const st = String(phJson?.status || '').toUpperCase();
+            if (st === 'SUCCESS' || st === 'COMPLETED') {
+              const receipt = String(
+                phJson?.provider_reference ||
+                  phJson?.third_party_reference ||
+                  reference
+              ).slice(0, 40);
+              const amt = Math.max(10, Number(phJson?.amount) || Number(order?.amount) || 10);
+              const phPhone = String(
+                phJson?.phone_number || order?.phone_number || rawPhone || '254700000000'
+              );
+              await supabaseAdmin.from('orders').upsert(
+                {
+                  checkout_request_id: checkoutRequestId,
+                  phone_number: phPhone,
+                  resource_id: null,
+                  amount: amt,
+                  mpesa_receipt_number: receipt,
+                  status: 'COMPLETED',
+                },
+                { onConflict: 'checkout_request_id' }
+              );
+              order = {
+                checkout_request_id: checkoutRequestId,
+                status: 'COMPLETED',
+                amount: amt,
+                phone_number: phPhone,
+              };
+            } else if (st === 'FAILED' || st === 'CANCELLED' || st === 'CANCELED') {
+              if (order) {
+                await supabaseAdmin
+                  .from('orders')
+                  .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+                  .eq('checkout_request_id', checkoutRequestId);
+                order = { ...order, status: 'FAILED' };
+              }
+            }
+          }
+        } catch {}
+      }
+
+      if (!order) {
         return NextResponse.json(
-          { error: 'Payment record not found.' },
-          { status: 404 }
+          { status: 'PENDING', error: 'Waiting for M-Pesa confirmation...' },
+          { status: 202 }
         );
       }
 

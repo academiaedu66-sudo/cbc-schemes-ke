@@ -211,44 +211,68 @@ export default function HomePage() {
     }
   }, [availableSubjects, selectedSubject]);
 
-  // Poll for payment status once an STK push or Direct M-Pesa code is submitted
+  // Poll every 1.2s once an STK push or Pochi code is submitted -> auto-open material immediately!
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    if (!checkoutRequestId || paymentStatus !== 'PENDING') return;
 
-    if (checkoutRequestId && paymentStatus === 'PENDING') {
-      interval = setInterval(async () => {
-        try {
-          const res = await fetch('/api/resources/download', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checkoutRequestId }),
-          });
+    let cancelled = false;
+    let openedOnce = false;
 
-          const data = await res.json();
+    const checkNow = async () => {
+      try {
+        const res = await fetch('/api/resources/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ checkoutRequestId }),
+        });
 
-          if (data.status === 'COMPLETED' && data.downloadUrl) {
-            setPaymentStatus('COMPLETED');
-            setDownloadUrl(data.downloadUrl);
-            setDocxDownloadUrl(data.docxDownloadUrl || data.downloadUrl);
-            setPdfDownloadUrl(data.pdfDownloadUrl || data.downloadUrl);
-            setCheckoutMessage(
-              'Payment verified! Download BOTH your Editable Word (.DOCX) and Print-Ready (.PDF) copies below.'
-            );
-            clearInterval(interval);
-          } else if (data.status === 'FAILED') {
-            setPaymentStatus('FAILED');
-            setCheckoutMessage(
-              'Payment was cancelled or timed out. Click below to resend STK prompt or enter M-Pesa code.'
-            );
-            clearInterval(interval);
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data.status === 'COMPLETED' && data.downloadUrl) {
+          const primaryFileUrl = data.docxDownloadUrl || data.downloadUrl;
+          setPaymentStatus('COMPLETED');
+          setDownloadUrl(data.downloadUrl);
+          setDocxDownloadUrl(primaryFileUrl);
+          setPdfDownloadUrl(data.pdfDownloadUrl || data.downloadUrl);
+          setCheckoutMessage(
+            'Payment auto-confirmed! Opening your material automatically now...'
+          );
+
+          if (!openedOnce && primaryFileUrl && primaryFileUrl !== '#') {
+            openedOnce = true;
+            try {
+              const link = document.createElement('a');
+              link.href = primaryFileUrl;
+              link.rel = 'noopener noreferrer';
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+            } catch {
+              window.location.assign(primaryFileUrl);
+            }
           }
-        } catch (err) {
-          console.error('Polling error:', err);
+          clearInterval(interval);
+        } else if (data.status === 'FAILED') {
+          setPaymentStatus('FAILED');
+          setCheckoutMessage(
+            'Payment was cancelled or timed out. Click below to resend STK prompt or enter Pochi code.'
+          );
+          clearInterval(interval);
         }
-      }, 3000);
-    }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    };
 
-    return () => clearInterval(interval);
+    const initialTimer = setTimeout(checkNow, 700);
+    const interval = setInterval(checkNow, 1200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, [checkoutRequestId, paymentStatus]);
 
   // Matches grade, subject, term & search (used for per-area counts & grouped sections)

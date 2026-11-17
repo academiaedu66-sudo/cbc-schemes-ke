@@ -133,70 +133,71 @@ export async function POST(req: Request) {
       let payheroProvider: 'm-pesa' | 'sasapay' = 'm-pesa';
       let isPochiPhoneShortcode = false;
 
-      // Smart Channel & Payment Wallet Discovery on Account #14023
-      try {
-        const chListRes = await fetch(
-          `https://backend.payhero.co.ke/api/v2/payment_channels?account_id=${encodeURIComponent(
-            accountId
-          )}`,
-          {
-            headers: { Authorization: authHeader },
-            cache: 'no-store',
-            signal: AbortSignal.timeout(3500),
-          }
-        );
-        if (chListRes.ok) {
-          const chListJson = (await chListRes.json()) as {
-            payment_channels?: Array<{
-              id: number;
-              short_code?: string;
-              channel_type?: string;
-              is_active?: boolean;
-            }>;
-          };
-          const activeChannels = (chListJson.payment_channels || []).filter(
-            (c) => c.is_active !== false
+      // Only run channel discovery if configured channel is unset or old Pochi #15436
+      if (!targetChannelId || targetChannelId === 15436) {
+        try {
+          const chListRes = await fetch(
+            `https://backend.payhero.co.ke/api/v2/payment_channels?account_id=${encodeURIComponent(
+              accountId
+            )}`,
+            {
+              headers: { Authorization: authHeader },
+              cache: 'no-store',
+              signal: AbortSignal.timeout(3000),
+            }
           );
-          const validDarajaChannel = activeChannels.find((c) => {
-            const sc = String(c.short_code || '').trim();
-            return sc.length >= 4 && !/^(07|01|2547|2541)\d{7,8}$/.test(sc);
-          });
-
-          if (validDarajaChannel) {
-            targetChannelId = Number(validDarajaChannel.id);
-            payheroProvider = 'm-pesa';
-          } else {
-            const matching = activeChannels.find((c) => Number(c.id) === targetChannelId);
-            if (
-              matching &&
-              /^(07|01|2547|2541)\d{7,8}$/.test(String(matching.short_code || '').trim())
-            ) {
-              isPochiPhoneShortcode = true;
-            }
-            // Check if PayHero Payment Wallet (SasaPay) is active as automatic STK fallback
-            const pwRes = await fetch(
-              'https://backend.payhero.co.ke/api/v2/wallets?wallet_type=payment_wallet',
-              {
-                headers: { Authorization: authHeader },
-                cache: 'no-store',
-                signal: AbortSignal.timeout(2500),
-              }
+          if (chListRes.ok) {
+            const chListJson = (await chListRes.json()) as {
+              payment_channels?: Array<{
+                id: number;
+                short_code?: string;
+                channel_type?: string;
+                is_active?: boolean;
+              }>;
+            };
+            const activeChannels = (chListJson.payment_channels || []).filter(
+              (c) => c.is_active !== false
             );
-            if (pwRes.ok) {
-              const pwJson = (await pwRes.json()) as {
-                id?: number;
-                wallet_status?: string;
-              };
-              if (pwJson?.id && String(pwJson.wallet_status || '').toUpperCase() !== 'INACTIVE') {
-                targetChannelId = Number(pwJson.id);
-                payheroProvider = 'sasapay';
-                isPochiPhoneShortcode = false;
+            const validDarajaChannel = activeChannels.find((c) => {
+              const sc = String(c.short_code || '').trim();
+              return sc.length >= 4 && !/^(07|01|2547|2541)\d{7,8}$/.test(sc);
+            });
+
+            if (validDarajaChannel) {
+              targetChannelId = Number(validDarajaChannel.id);
+              payheroProvider = 'm-pesa';
+            } else {
+              const matching = activeChannels.find((c) => Number(c.id) === targetChannelId);
+              if (
+                matching &&
+                /^(07|01|2547|2541)\d{7,8}$/.test(String(matching.short_code || '').trim())
+              ) {
+                isPochiPhoneShortcode = true;
+              }
+              const pwRes = await fetch(
+                'https://backend.payhero.co.ke/api/v2/wallets?wallet_type=payment_wallet',
+                {
+                  headers: { Authorization: authHeader },
+                  cache: 'no-store',
+                  signal: AbortSignal.timeout(2500),
+                }
+              );
+              if (pwRes.ok) {
+                const pwJson = (await pwRes.json()) as {
+                  id?: number;
+                  wallet_status?: string;
+                };
+                if (pwJson?.id && String(pwJson.wallet_status || '').toUpperCase() !== 'INACTIVE') {
+                  targetChannelId = Number(pwJson.id);
+                  payheroProvider = 'sasapay';
+                  isPochiPhoneShortcode = false;
+                }
               }
             }
           }
+        } catch {
+          // Proceed with configured targetChannelId
         }
-      } catch {
-        // Proceed with configured targetChannelId
       }
 
       const externalRef = `CBCHUB_${Date.now()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -238,9 +239,9 @@ export async function POST(req: Request) {
 
       const trackingRef = phData?.reference || externalRef;
 
-      // Verify Safaricom Daraja accepted the shortcode & issued a real CheckoutRequestID
-      if (!phData?.CheckoutRequestID) {
-        await new Promise((r) => setTimeout(r, 1600));
+      // Only run delayed rejection check if PayHero did not return CheckoutRequestID on a Pochi shortcode
+      if (!phData?.CheckoutRequestID && isPochiPhoneShortcode) {
+        await new Promise((r) => setTimeout(r, 1500));
         try {
           const stRes = await fetch(
             `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
@@ -249,7 +250,7 @@ export async function POST(req: Request) {
             {
               headers: { Authorization: authHeader },
               cache: 'no-store',
-              signal: AbortSignal.timeout(3500),
+              signal: AbortSignal.timeout(3000),
             }
           );
           if (stRes.ok) {
@@ -263,33 +264,32 @@ export async function POST(req: Request) {
             ) {
               return NextResponse.json(
                 {
-                  error: isPochiPhoneShortcode
-                    ? `Safaricom blocks automated STK Push directly to personal Pochi numbers (${summary.recipientLocal}). Please tap "2. Pochi la Biashara (${summary.recipientLocal})" right next to this tab to complete your payment, or link a Buy Goods Till / Bank Paybill / Payment Wallet in PayHero!`
-                    : `M-Pesa STK prompt could not reach ${phone} right now. Please tap "2. Pochi la Biashara (${summary.recipientLocal})" to pay immediately!`,
+                  error: `Safaricom blocks automated STK Push directly to personal Pochi numbers (${summary.recipientLocal}). Please tap "2. Pochi la Biashara (${summary.recipientLocal})" to pay immediately!`,
                 },
                 { status: 400 }
               );
             }
           }
-        } catch {
-          // Continue to standard polling if status check timed out
-        }
+        } catch {}
       }
 
       const checkoutRequestId = `PAYHERO_${trackingRef}`;
 
-      await supabaseAdmin.from('orders').insert({
+      const { error: phInsertErr } = await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
-        merchant_request_id: externalRef,
         phone_number: phone,
         resource_id: resource.id,
-        resource_title: resource.title,
         amount: actualAmountNum,
+        mpesa_receipt_number: externalRef,
         status: 'PENDING',
       });
 
-      await sendWhatsAppAdminNotification(
-        `📲 *STK PUSH SENT TO ${phone} (KES ${actualAmountNum})*\n• Destination: ${summary.recipientLocal}\n• Material: ${resource.title}`
+      if (phInsertErr) {
+        console.error('Supabase orders insert error:', phInsertErr);
+      }
+
+      void sendWhatsAppAdminNotification(
+        `📲 *STK PUSH SENT TO ${phone} (KES ${actualAmountNum})*\n• Material: ${resource.title}`
       );
 
       return NextResponse.json({
@@ -345,11 +345,10 @@ export async function POST(req: Request) {
       const checkoutRequestId = `PAYSTACK_${psData.data?.reference || reference}`;
       await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
-        merchant_request_id: reference,
         phone_number: phone,
         resource_id: resource.id,
-        resource_title: resource.title,
         amount: actualAmountNum,
+        mpesa_receipt_number: reference,
         status: 'PENDING',
       });
 
@@ -405,11 +404,10 @@ export async function POST(req: Request) {
       const checkoutRequestId = `INTASEND_${invoiceId}`;
       await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
-        merchant_request_id: String(invoiceId),
         phone_number: phone,
         resource_id: resource.id,
-        resource_title: resource.title,
         amount: actualAmountNum,
+        mpesa_receipt_number: String(invoiceId),
         status: 'PENDING',
       });
 

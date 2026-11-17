@@ -304,7 +304,7 @@ export default function HolidayTuitionCenter({
       } catch {
         // Keep polling
       }
-    }, 3200);
+    }, 1200);
 
     return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

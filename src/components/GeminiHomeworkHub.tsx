@@ -241,7 +241,7 @@ export default function GeminiHomeworkHub({
           );
         }
       } catch {}
-    }, 3000);
+    }, 1200);
 
     return () => window.clearInterval(timer);
   }, [

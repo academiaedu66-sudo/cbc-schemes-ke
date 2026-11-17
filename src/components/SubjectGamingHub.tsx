@@ -263,79 +263,80 @@ export default function SubjectGamingHub({
     return () => window.clearInterval(timer);
   }, [view, expiresAt, performAutoLogout]);
 
-  // Poll M-Pesa STK payment auto-confirmation -> immediately unlock 1-hour session!
+  // Poll every 1.2s in a SINGLE atomic call -> instantly open 20-minute session on PIN confirmation!
   useEffect(() => {
     if (!stkWaitingPin || !checkoutRequestId) return;
 
-    const timer = window.setInterval(async () => {
+    let cancelled = false;
+    let inFlight = false;
+
+    const checkAndOpenArena = async () => {
+      if (inFlight || cancelled) return;
+      inFlight = true;
       try {
-        // Step A: Trigger live gateway status verification via /api/resources/download
-        const dlRes = await fetch('/api/resources/download', {
+        const actRes = await fetch('/api/gaming', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ checkoutRequestId }),
+          body: JSON.stringify({
+            action: 'activate',
+            checkoutRequestId,
+            phone,
+            playerName: playerName || 'CBC Learner',
+            gradeKey,
+            subject,
+          }),
         });
-        const dlData = await dlRes.json();
+        const actData = await actRes.json();
+        if (cancelled) return;
 
-        if (dlData.status === 'COMPLETED') {
-          window.clearInterval(timer);
-          setStatusMessage('Payment auto-confirmed! Unlocking your 20-minute gaming session...');
-
-          // Step B: Mint verified 20-minute gaming session
-          const actRes = await fetch('/api/gaming', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'activate',
-              checkoutRequestId,
-              phone,
-              playerName: playerName || 'CBC Learner',
-              gradeKey,
-              subject,
-            }),
-          });
-          const actData = await actRes.json();
-
-          if (actRes.ok && actData.active) {
-            setStkWaitingPin(false);
-            setSessionId(actData.sessionId);
-            setExpiresAt(actData.expiresAt);
-            setRemainingSeconds(actData.remainingSeconds);
-            setPlayer(actData.player);
-            setSessionPoints(actData.sessionPoints || 0);
-            setQuestion(actData.question);
-            setSelectedOpt(null);
-            setAnswerResult(null);
-            setPendingNextQuestion(null);
-            try {
-              localStorage.setItem(
-                STORAGE_SESSION_KEY,
-                JSON.stringify({
-                  sessionId: actData.sessionId,
-                  expiresAt: actData.expiresAt,
-                  phone,
-                  playerName: playerName || 'CBC Learner',
-                })
-              );
-            } catch {}
-            setView('PLAYING');
-          } else {
-            setStkWaitingPin(false);
-            setErrorMessage(actData.error || 'Could not start gaming session.');
-          }
-        } else if (dlData.status === 'FAILED') {
+        if (actRes.ok && actData.active) {
           window.clearInterval(timer);
           setStkWaitingPin(false);
+          setStatusMessage('');
+          setSessionId(actData.sessionId);
+          setExpiresAt(actData.expiresAt);
+          setRemainingSeconds(actData.remainingSeconds);
+          setPlayer(actData.player);
+          setSessionPoints(actData.sessionPoints || 0);
+          setQuestion(actData.question);
+          setSelectedOpt(null);
+          setAnswerResult(null);
+          setPendingNextQuestion(null);
+          try {
+            localStorage.setItem(
+              STORAGE_SESSION_KEY,
+              JSON.stringify({
+                sessionId: actData.sessionId,
+                expiresAt: actData.expiresAt,
+                phone,
+                playerName: playerName || 'CBC Learner',
+              })
+            );
+          } catch {}
+          setView('PLAYING');
+        } else if (actData.status === 'FAILED') {
+          window.clearInterval(timer);
+          setStkWaitingPin(false);
+          setStatusMessage('');
           setErrorMessage(
             'M-Pesa STK prompt was cancelled or timed out. Click Activate to retry KSh 10 prompt.'
           );
         }
       } catch {
         // Continue polling
+      } finally {
+        inFlight = false;
       }
-    }, 3000);
+    };
 
-    return () => window.clearInterval(timer);
+    const initialTimer = window.setTimeout(checkAndOpenArena, 700);
+    const timer = window.setInterval(checkAndOpenArena, 1200);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(initialTimer);
+      window.clearInterval(timer);
+    };
   }, [stkWaitingPin, checkoutRequestId, phone, playerName, gradeKey, subject]);
 
   const handleStartStkActivation = async (e: React.FormEvent) => {

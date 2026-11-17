@@ -85,7 +85,7 @@ export async function POST(req: Request) {
                 mpesa_receipt_number: String(receipt).slice(0, 40),
                 updated_at: new Date().toISOString(),
               })
-              .eq('merchant_request_id', String(externalRef));
+              .eq('mpesa_receipt_number', String(externalRef));
           }
 
           // If using PayHero Service Wallet with Auto-Withdraw, disburse immediately to 0728595160
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
           }
 
           await sendWhatsAppAdminNotification(
-            `✅ *M-PESA RECEIVED IN 0728595160*\n• Receipt: ${receipt}\n• Amount: KES ${amountNum}\n• Buyer: ${payerPhone}`
+            `✅ *M-PESA RECEIVED*\n• Receipt: ${receipt}\n• Amount: KES ${amountNum}\n• Buyer: ${payerPhone}`
           );
         } else {
           if (candidateIds.length > 0) {
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
             await supabaseAdmin
               .from('orders')
               .update({ status: 'FAILED', updated_at: new Date().toISOString() })
-              .eq('merchant_request_id', String(externalRef));
+              .eq('mpesa_receipt_number', String(externalRef));
           }
         }
       }
