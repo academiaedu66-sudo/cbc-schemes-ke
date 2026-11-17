@@ -521,7 +521,7 @@ export default function HomePage() {
         id="adsterra-main-unit"
         data-cfasync="false"
         async
-        src="https://afders.org/1/9b54de7bdfa09cfb49871859cafe8b38"
+        src="https://afders.org/1/3b88d0fdca433edf909c6904c31c75f7"
       />
 
       {/* Entry Welcome Splash & Persistent Animated Welcome Ribbon */}

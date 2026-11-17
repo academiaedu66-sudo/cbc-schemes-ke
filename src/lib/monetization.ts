@@ -205,7 +205,7 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
 ];
 
 export const DEFAULT_ADSTERRA_UNIT_SRC =
-  'https://afders.org/1/9b54de7bdfa09cfb49871859cafe8b38';
+  'https://afders.org/1/3b88d0fdca433edf909c6904c31c75f7';
 export const DEFAULT_ADSTERRA_SMARTLINK_URL =
   'https://asiafilm.org/4/7b5e0232187d32c0720c40d68a02db1b';
 
