@@ -13,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://cbcmaterials.shop/sitemap.xml',
+    sitemap: 'https://www.cbcmaterials.shop/sitemap.xml',
   };
 }

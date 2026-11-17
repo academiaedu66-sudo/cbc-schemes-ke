@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://cbcmaterials.shop"),
+  metadataBase: new URL("https://www.cbcmaterials.shop"),
   title:
     "CBC Kenya Resource Hub | PP1–Grade 12 Schemes of Work, Lesson Plans, Notes & KPSEA/KJSEA Exams",
   description:
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "CBC Kenya Resource Hub | 2026 KICD Schemes, Notes & KPSEA/KJSEA Trials",
     description:
       "3,400+ Editable Word (.DOCX) + Print-Ready (.PDF) CBC teaching & revision materials from PP1 to Grade 12.",
-    url: "https://cbcmaterials.shop",
+    url: "https://www.cbcmaterials.shop",
     siteName: "CBC Kenya Resource Hub",
     locale: "en_KE",
     type: "website",

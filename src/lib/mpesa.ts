@@ -10,7 +10,7 @@ import {
 
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
 export const DEFAULT_WHATSAPP_PHONE = '254705759072';
-export const DEFAULT_PRODUCTION_ORIGIN = 'https://cbcmaterials.shop';
+export const DEFAULT_PRODUCTION_ORIGIN = 'https://www.cbcmaterials.shop';
 
 export function getMerchantPhone(stored?: StoredPaymentConfig): string {
   const raw = (

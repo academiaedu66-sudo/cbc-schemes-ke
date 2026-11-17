@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://cbcmaterials.shop';
+const BASE_URL = 'https://www.cbcmaterials.shop';
 const LAST_MODIFIED = '2026-01-15T00:00:00.000Z';
 
 export default function sitemap(): MetadataRoute.Sitemap {

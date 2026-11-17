@@ -407,7 +407,7 @@ export async function createWalletWithdrawal(params: {
             network_code: '63902',
             channel: 'mobile',
             external_reference: refCode,
-            callback_url: 'https://cbcmaterials.shop/api/mpesa/callback',
+            callback_url: 'https://www.cbcmaterials.shop/api/mpesa/callback',
           }),
           cache: 'no-store',
           signal: AbortSignal.timeout(8000),
