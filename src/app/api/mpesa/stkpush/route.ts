@@ -117,30 +117,109 @@ export async function POST(req: Request) {
     const origin = resolvePublicOrigin(req);
 
     // =========================================================================
-    // PROVIDER 1: PAYHERO KENYA (Instant STK Push -> Pochi / Till / M-Pesa 0728595160)
+    // PROVIDER 1: PAYHERO KENYA (Auto-discovers valid Till/Bank/Paybill or Payment Wallet)
     // =========================================================================
     if (provider === 'payhero') {
       const rawToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
-      const channelId = Number(
+      const authHeader = formatPayHeroAuthHeader(rawToken);
+      const accountId = (
+        stored.payheroAccountId ||
+        process.env.PAYHERO_ACCOUNT_ID ||
+        '14023'
+      ).trim();
+      let targetChannelId = Number(
         (stored.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim()
       );
+      let payheroProvider: 'm-pesa' | 'sasapay' = 'm-pesa';
+      let isPochiPhoneShortcode = false;
+
+      // Smart Channel & Payment Wallet Discovery on Account #14023
+      try {
+        const chListRes = await fetch(
+          `https://backend.payhero.co.ke/api/v2/payment_channels?account_id=${encodeURIComponent(
+            accountId
+          )}`,
+          {
+            headers: { Authorization: authHeader },
+            cache: 'no-store',
+            signal: AbortSignal.timeout(3500),
+          }
+        );
+        if (chListRes.ok) {
+          const chListJson = (await chListRes.json()) as {
+            payment_channels?: Array<{
+              id: number;
+              short_code?: string;
+              channel_type?: string;
+              is_active?: boolean;
+            }>;
+          };
+          const activeChannels = (chListJson.payment_channels || []).filter(
+            (c) => c.is_active !== false
+          );
+          const validDarajaChannel = activeChannels.find((c) => {
+            const sc = String(c.short_code || '').trim();
+            return sc.length >= 4 && !/^(07|01|2547|2541)\d{7,8}$/.test(sc);
+          });
+
+          if (validDarajaChannel) {
+            targetChannelId = Number(validDarajaChannel.id);
+            payheroProvider = 'm-pesa';
+          } else {
+            const matching = activeChannels.find((c) => Number(c.id) === targetChannelId);
+            if (
+              matching &&
+              /^(07|01|2547|2541)\d{7,8}$/.test(String(matching.short_code || '').trim())
+            ) {
+              isPochiPhoneShortcode = true;
+            }
+            // Check if PayHero Payment Wallet (SasaPay) is active as automatic STK fallback
+            const pwRes = await fetch(
+              'https://backend.payhero.co.ke/api/v2/wallets?wallet_type=payment_wallet',
+              {
+                headers: { Authorization: authHeader },
+                cache: 'no-store',
+                signal: AbortSignal.timeout(2500),
+              }
+            );
+            if (pwRes.ok) {
+              const pwJson = (await pwRes.json()) as {
+                id?: number;
+                wallet_status?: string;
+              };
+              if (pwJson?.id && String(pwJson.wallet_status || '').toUpperCase() !== 'INACTIVE') {
+                targetChannelId = Number(pwJson.id);
+                payheroProvider = 'sasapay';
+                isPochiPhoneShortcode = false;
+              }
+            }
+          }
+        }
+      } catch {
+        // Proceed with configured targetChannelId
+      }
+
       const externalRef = `CBCHUB_${Date.now()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const phPayload: Record<string, unknown> = {
+        amount: actualAmountNum,
+        phone_number: phone,
+        channel_id: targetChannelId,
+        provider: payheroProvider,
+        external_reference: externalRef,
+        customer_name: 'CBC Teacher',
+        callback_url: callbackUrl,
+      };
+      if (payheroProvider === 'sasapay') {
+        phPayload.network_code = '63902';
+      }
 
       const phRes = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
         method: 'POST',
         headers: {
-          Authorization: formatPayHeroAuthHeader(rawToken),
+          Authorization: authHeader,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          amount: actualAmountNum,
-          phone_number: phone,
-          channel_id: channelId,
-          provider: 'm-pesa',
-          external_reference: externalRef,
-          customer_name: 'CBC Teacher',
-          callback_url: callbackUrl,
-        }),
+        body: JSON.stringify(phPayload),
         cache: 'no-store',
       });
 
@@ -151,19 +230,60 @@ export async function POST(req: Request) {
             error:
               phData?.error_message ||
               phData?.message ||
-              'PayHero M-Pesa STK Push could not be initiated. Verify your Channel ID & Auth Token in /admin.',
+              'PayHero M-Pesa STK Push could not be initiated. Please use Tab 2 (Pochi la Biashara 0728595160).',
           },
           { status: 400 }
         );
       }
 
       const trackingRef = phData?.reference || externalRef;
+
+      // Verify Safaricom Daraja accepted the shortcode & issued a real CheckoutRequestID
+      if (!phData?.CheckoutRequestID) {
+        await new Promise((r) => setTimeout(r, 1600));
+        try {
+          const stRes = await fetch(
+            `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
+              trackingRef
+            )}`,
+            {
+              headers: { Authorization: authHeader },
+              cache: 'no-store',
+              signal: AbortSignal.timeout(3500),
+            }
+          );
+          if (stRes.ok) {
+            const stJson = (await stRes.json()) as {
+              status?: string;
+              CheckoutRequestID?: string;
+            };
+            if (
+              String(stJson.status || '').toUpperCase() === 'FAILED' &&
+              !stJson.CheckoutRequestID
+            ) {
+              return NextResponse.json(
+                {
+                  error: isPochiPhoneShortcode
+                    ? `Safaricom blocks automated STK Push directly to personal Pochi numbers (${summary.recipientLocal}). Please tap "2. Pochi la Biashara (${summary.recipientLocal})" right next to this tab to complete your payment, or link a Buy Goods Till / Bank Paybill / Payment Wallet in PayHero!`
+                    : `M-Pesa STK prompt could not reach ${phone} right now. Please tap "2. Pochi la Biashara (${summary.recipientLocal})" to pay immediately!`,
+                },
+                { status: 400 }
+              );
+            }
+          }
+        } catch {
+          // Continue to standard polling if status check timed out
+        }
+      }
+
       const checkoutRequestId = `PAYHERO_${trackingRef}`;
 
       await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
+        merchant_request_id: externalRef,
         phone_number: phone,
         resource_id: resource.id,
+        resource_title: resource.title,
         amount: actualAmountNum,
         status: 'PENDING',
       });
@@ -225,8 +345,10 @@ export async function POST(req: Request) {
       const checkoutRequestId = `PAYSTACK_${psData.data?.reference || reference}`;
       await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
+        merchant_request_id: reference,
         phone_number: phone,
         resource_id: resource.id,
+        resource_title: resource.title,
         amount: actualAmountNum,
         status: 'PENDING',
       });
@@ -283,8 +405,10 @@ export async function POST(req: Request) {
       const checkoutRequestId = `INTASEND_${invoiceId}`;
       await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,
+        merchant_request_id: String(invoiceId),
         phone_number: phone,
         resource_id: resource.id,
+        resource_title: resource.title,
         amount: actualAmountNum,
         status: 'PENDING',
       });

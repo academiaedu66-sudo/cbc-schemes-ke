@@ -25,15 +25,21 @@ export async function POST(req: Request) {
           String(body.response?.Status || '').toUpperCase() === 'SUCCESS'
         : Boolean(body.paymentSuccess);
 
+      const payheroUuid =
+        body?.response?.PayheroReference ||
+        body?.response?.payhero_reference ||
+        body?.reference ||
+        '';
       const payheroRef = isNested ? body.response?.CheckoutRequestID : body.reference;
       const externalRef = isNested
         ? body.response?.ExternalReference
-        : body.user_reference;
+        : body.user_reference || body.external_reference;
       const receipt =
         (isNested
           ? body.response?.MpesaReceiptNumber
           : body.providerReference) ||
         payheroRef ||
+        payheroUuid ||
         externalRef ||
         'CONFIRMED';
       const amountNum = Number(
@@ -44,6 +50,7 @@ export async function POST(req: Request) {
       );
 
       const candidateIds = [
+        payheroUuid ? `PAYHERO_${payheroUuid}` : '',
         payheroRef ? `PAYHERO_${payheroRef}` : '',
         externalRef ? `PAYHERO_${externalRef}` : '',
       ].filter(Boolean);
@@ -58,16 +65,28 @@ export async function POST(req: Request) {
         return NextResponse.json({ received: true });
       }
 
-      if (candidateIds.length > 0) {
+      if (candidateIds.length > 0 || externalRef) {
         if (success) {
-          await supabaseAdmin
-            .from('orders')
-            .update({
-              status: 'COMPLETED',
-              mpesa_receipt_number: String(receipt).slice(0, 40),
-              updated_at: new Date().toISOString(),
-            })
-            .in('checkout_request_id', candidateIds);
+          if (candidateIds.length > 0) {
+            await supabaseAdmin
+              .from('orders')
+              .update({
+                status: 'COMPLETED',
+                mpesa_receipt_number: String(receipt).slice(0, 40),
+                updated_at: new Date().toISOString(),
+              })
+              .in('checkout_request_id', candidateIds);
+          }
+          if (externalRef) {
+            await supabaseAdmin
+              .from('orders')
+              .update({
+                status: 'COMPLETED',
+                mpesa_receipt_number: String(receipt).slice(0, 40),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('merchant_request_id', String(externalRef));
+          }
 
           // If using PayHero Service Wallet with Auto-Withdraw, disburse immediately to 0728595160
           if (amountNum > 0) {
@@ -78,10 +97,18 @@ export async function POST(req: Request) {
             `✅ *M-PESA RECEIVED IN 0728595160*\n• Receipt: ${receipt}\n• Amount: KES ${amountNum}\n• Buyer: ${payerPhone}`
           );
         } else {
-          await supabaseAdmin
-            .from('orders')
-            .update({ status: 'FAILED', updated_at: new Date().toISOString() })
-            .in('checkout_request_id', candidateIds);
+          if (candidateIds.length > 0) {
+            await supabaseAdmin
+              .from('orders')
+              .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+              .in('checkout_request_id', candidateIds);
+          }
+          if (externalRef) {
+            await supabaseAdmin
+              .from('orders')
+              .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+              .eq('merchant_request_id', String(externalRef));
+          }
         }
       }
 
