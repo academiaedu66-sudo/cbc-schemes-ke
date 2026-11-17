@@ -13,32 +13,18 @@ import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
 
 export async function POST(req: Request) {
   void req.headers.get('user-agent');
-  const body = (await req.json().catch(() => ({}))) as {
-    mpesaCode?: string;
-    phoneNumber?: string;
-    resourceId?: string;
-    serviceType?: string;
-  };
-  await recordPurchaseAttempt({
-    channel: 'M-Pesa Direct Code',
-    itemTitle:
-      body.serviceType ||
-      (body.resourceId ? `Resource #${body.resourceId}` : 'M-Pesa Submission'),
-    buyerPhone: body.phoneNumber,
-    stage: 'SUBMITTED_PAYMENT',
-  }).catch(() => {});
-  return NextResponse.json(
-    {
-      error:
-        'We are sorry! All payment methods are currently under maintenance and we will be back shortly in the next 72 hours or less.',
-    },
-    { status: 503 }
-  );
-}
 
-async function _pausedManualHandler(req: Request) {
   try {
     const { mpesaCode, phoneNumber, resourceId, serviceType } = await req.json();
+
+    await recordPurchaseAttempt({
+      channel: 'M-Pesa Direct Code',
+      itemTitle:
+        serviceType ||
+        (resourceId ? `Resource #${resourceId}` : 'M-Pesa Submission'),
+      buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
+      stage: 'SUBMITTED_PAYMENT',
+    }).catch(() => {});
 
     const cleanCode = extractMpesaReceiptCode(mpesaCode || '');
 
@@ -81,6 +67,12 @@ async function _pausedManualHandler(req: Request) {
         price: 10,
         title: 'CBC Subject Gaming 20-Minute Pass (KSh 10)',
       };
+    } else if (serviceType === 'GEMINI_WEEKLY') {
+      resource = {
+        id: null,
+        price: 20,
+        title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
+      };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
         .from('resources')
@@ -105,7 +97,7 @@ async function _pausedManualHandler(req: Request) {
       `• *Amount Sent (to ${merchantLocal}):* KES ${amountKes}\n` +
       `• *Buyer Phone:* ${phone}\n` +
       `• *Material:* ${resource.title}\n` +
-      `• *Approve Unlock:* ${origin}/admin`;
+      `• *Approve Unlock:* ${origin}/mobile-admin`;
 
     const whatsappNotificationUrl = `https://wa.me/${whatsappIntl}?text=${encodeURIComponent(
       notificationText
@@ -148,7 +140,6 @@ async function _pausedManualHandler(req: Request) {
       throw new Error(insertErr.message);
     }
 
-    // Dispatch background server notification to WhatsApp inbox 254705759072 (0705759072)
     const autoDelivered = await sendWhatsAppAdminNotification(notificationText);
 
     return NextResponse.json({

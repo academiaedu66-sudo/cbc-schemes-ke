@@ -68,8 +68,8 @@ export default function SubjectGamingHub({
   const [subject, setSubject] = useState<string>('Mathematics');
   const [savedPointsLookup, setSavedPointsLookup] = useState<number | null>(null);
 
-  // KSh 10 M-Pesa Send Money Activation State (STK Marked Under Maintenance)
-  const [payTab, setPayTab] = useState<'DIRECT' | 'STK'>('DIRECT');
+  // KSh 10 M-Pesa STK Push (Primary) + Direct M-Pesa Code Activation State
+  const [payTab, setPayTab] = useState<'STK' | 'DIRECT'>('STK');
   const [mpesaCode, setMpesaCode] = useState('');
   const [copiedMpesa, setCopiedMpesa] = useState(false);
   const [whatsappNotifyUrl, setWhatsappNotifyUrl] = useState('');
@@ -338,6 +338,54 @@ export default function SubjectGamingHub({
     return () => window.clearInterval(timer);
   }, [stkWaitingPin, checkoutRequestId, phone, playerName, gradeKey, subject]);
 
+  const handleStartStkActivation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setStatusMessage('');
+
+    if (!playerName.trim()) {
+      setErrorMessage('Please enter Learner Name first.');
+      return;
+    }
+    if (!phone.trim() || phone.replace(/\D/g, '').length < 9) {
+      setErrorMessage('Enter a valid Safaricom M-Pesa number (e.g. 0712345678).');
+      return;
+    }
+
+    setStkProcessing(true);
+    trackInteraction('gaming_stk_initiate');
+
+    try {
+      const res = await fetch('/api/mpesa/stkpush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: phone,
+          serviceType: 'SUBJECT_GAMING',
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(
+          data.error ||
+            `Could not send STK prompt. Switch to "2. Send to ${COORDINATOR_MPESA_LOCAL} & Paste Code" to activate right away.`
+        );
+        return;
+      }
+
+      setCheckoutRequestId(data.checkoutRequestId);
+      setStkWaitingPin(true);
+      setStatusMessage(
+        `Check your phone (${phone}) and enter your M-Pesa PIN to pay KSh ${GAMING_FEE_KES}. Your 20-minute session unlocks automatically!`
+      );
+    } catch {
+      setErrorMessage('Network error initiating M-Pesa STK Push. Please try again.');
+    } finally {
+      setStkProcessing(false);
+    }
+  };
+
   const handleDirectMpesaActivation = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -538,12 +586,10 @@ export default function SubjectGamingHub({
               </h2>
               <p className="text-xs text-slate-300">
                 Earn <strong>1 point</strong> per correct question &amp; redeem{' '}
-                <strong>1,000 points for KSh 5</strong>! (
+                <strong>1,000 points for KSh 5</strong>! Activate a{' '}
                 <strong className="text-amber-300">
-                  Note: KSh 10 pass payments are under maintenance — back in 72 hours or
-                  less
+                  20-minute unlimited pass for just KSh 10 via instant M-Pesa STK Push!
                 </strong>
-                ).
               </p>
             </div>
           </div>
@@ -692,86 +738,242 @@ export default function SubjectGamingHub({
                 </div>
               )}
 
-              {/* VIEW 1: ALL PAYMENT METHODS UNDER MAINTENANCE (72 HOURS OR LESS) */}
+              {/* VIEW 1: KSh 10 LIVE M-PESA STK + DIRECT CODE ACTIVATION SCREEN */}
               {view === 'ACTIVATE' && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => setPayTab('DIRECT')}
-                      className={`py-2 rounded-lg text-[11px] font-black transition ${
-                        payTab === 'DIRECT'
-                          ? 'bg-white text-amber-800 shadow-xs'
-                          : 'text-slate-500'
-                      }`}
-                    >
-                      Send Money (Maintenance)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPayTab('STK')}
-                      className={`py-2 rounded-lg text-[11px] font-black transition ${
-                        payTab === 'STK'
-                          ? 'bg-white text-amber-800 shadow-xs'
-                          : 'text-slate-500'
-                      }`}
-                    >
-                      STK Push (Maintenance)
-                    </button>
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-1.5 text-xs text-slate-700">
+                    <p className="font-black text-indigo-950 uppercase flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      How CBC Subject Gaming Works:
+                    </p>
+                    <ul className="space-y-1 pl-1">
+                      <li>
+                        • <strong>Activation:</strong> Pay <strong>KSh {GAMING_FEE_KES}</strong>{' '}
+                        via M-Pesa STK Prompt — unlocks immediately once payment is
+                        auto-confirmed.
+                      </li>
+                      <li>
+                        • <strong>20-Minute Session:</strong> Play unlimited CBC questions
+                        across all subjects for <strong>20 minutes</strong> (auto-logs out
+                        after 20 minutes; your points stay saved!).
+                      </li>
+                      <li>
+                        • <strong>Earn &amp; Redeem:</strong> Every correct question ={' '}
+                        <strong>1 Point</strong>. Reach <strong>1,000 Points</strong> to
+                        redeem <strong>KSh 5</strong>!
+                      </li>
+                    </ul>
                   </div>
 
-                  <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 text-center space-y-3.5">
-                    <AlertCircle className="w-9 h-9 text-amber-600 mx-auto" />
-                    <div className="space-y-1.5">
-                      <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full">
-                        All Payment Methods Under Maintenance
-                      </span>
-                      <h4 className="text-base font-black text-slate-900">
-                        We Are Sorry — Back in 72 Hours or Less!
-                      </h4>
-                      <p className="text-xs text-slate-700 leading-relaxed max-w-md mx-auto">
-                        All payment methods for activating the 20-minute Gaming Pass (KSh{' '}
-                        {GAMING_FEE_KES}) are currently under scheduled maintenance.{' '}
-                        <strong>
-                          We sincerely apologize and will be back shortly in the next 72
-                          hours or less!
-                        </strong>{' '}
-                        All previously earned points remain safely saved under your phone
-                        number.
-                      </p>
-                    </div>
-
-                    {/* Optional Check Saved Points Balance Box */}
-                    <div className="max-w-xs mx-auto pt-1 text-left">
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">
-                        Check Your Saved Points Balance (Optional)
+                  {/* Shared Learner Profile + Subject Selection */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        Learner Name *
                       </label>
                       <input
-                        type="tel"
-                        placeholder="Enter your 07XXXXXXXX number"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-3.5 py-2 border border-amber-300 rounded-xl text-xs bg-white text-center font-semibold"
+                        type="text"
+                        required
+                        placeholder="e.g. Kevin Otieno"
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                        disabled={stkWaitingPin}
+                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm"
                       />
-                      {savedPointsLookup !== null && (
-                        <p className="text-xs font-bold text-emerald-800 text-center mt-1.5">
-                          Saved Balance: {savedPointsLookup.toLocaleString()} / 1,000 pts
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        M-Pesa Phone Number (Saves Your Points) *
+                      </label>
+                      <div className="relative">
+                        <Smartphone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="07XXXXXXXX"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          disabled={stkWaitingPin}
+                          className="w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-semibold"
+                        />
+                      </div>
+                      {savedPointsLookup !== null && savedPointsLookup > 0 && (
+                        <p className="text-[11px] font-bold text-emerald-700 mt-1">
+                          Welcome back! Saved balance: {savedPointsLookup.toLocaleString()}{' '}
+                          / 1,000 pts
                         </p>
                       )}
                     </div>
-
-                    <a
-                      href={`https://wa.me/254705759072?text=${encodeURIComponent(
-                        `Hello! Please notify me on WhatsApp once CBC Subject Gaming payments are back online.`
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3.5 px-4 rounded-xl shadow transition"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Notify Me via WhatsApp ({COORDINATOR_WHATSAPP_LOCAL}) When Back
-                    </a>
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        Grade Level
+                      </label>
+                      <select
+                        value={gradeKey}
+                        onChange={(e) => setGradeKey(e.target.value)}
+                        disabled={stkWaitingPin}
+                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
+                      >
+                        {ALL_GRADE_KEYS.map((g) => (
+                          <option key={g} value={g}>
+                            {formatGradeLabel(g)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        Starting CBC Subject
+                      </label>
+                      <select
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        disabled={stkWaitingPin}
+                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
+                      >
+                        {ALL_GAMING_SUBJECTS.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Payment Method Switcher */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMessage('');
+                        setPayTab('STK');
+                      }}
+                      className={`py-2 rounded-lg text-xs font-black transition cursor-pointer ${
+                        payTab === 'STK'
+                          ? 'bg-white text-emerald-800 shadow-xs'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      1. M-Pesa STK Prompt (KSh {GAMING_FEE_KES})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMessage('');
+                        setPayTab('DIRECT');
+                      }}
+                      className={`py-2 rounded-lg text-xs font-black transition cursor-pointer ${
+                        payTab === 'DIRECT'
+                          ? 'bg-white text-emerald-800 shadow-xs'
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      2. Send to {COORDINATOR_MPESA_LOCAL} &amp; Paste Code
+                    </button>
+                  </div>
+
+                  {statusMessage && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center gap-2.5">
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                      <span>{statusMessage}</span>
+                    </div>
+                  )}
+
+                  {errorMessage && (
+                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  {payTab === 'STK' ? (
+                    <form onSubmit={handleStartStkActivation} className="space-y-3">
+                      <button
+                        type="submit"
+                        disabled={stkProcessing || stkWaitingPin}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-black text-sm py-4 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        {(stkProcessing || stkWaitingPin) && (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        )}
+                        {stkWaitingPin
+                          ? 'Waiting for M-Pesa PIN Auto-Confirmation...'
+                          : `Activate 20-Minute Gaming Pass (KSh ${GAMING_FEE_KES} STK Push)`}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleDirectMpesaActivation} className="space-y-3">
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-2 text-xs">
+                        <div>
+                          <p className="font-bold text-emerald-950">
+                            Send KSh {GAMING_FEE_KES} via M-Pesa Send Money to:
+                          </p>
+                          <p className="font-mono font-black text-sm text-slate-900">
+                            {COORDINATOR_MPESA_LOCAL}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(COORDINATOR_MPESA_LOCAL);
+                            setCopiedMpesa(true);
+                            setTimeout(() => setCopiedMpesa(false), 2000);
+                          }}
+                          className="inline-flex items-center gap-1 bg-white border border-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-800 cursor-pointer"
+                        >
+                          {copiedMpesa ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" /> Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" /> Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <input
+                        type="text"
+                        required
+                        placeholder="Paste M-Pesa Code (e.g. SJK84M2P9Q) or SMS"
+                        value={mpesaCode}
+                        onChange={(e) => setMpesaCode(e.target.value)}
+                        className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono uppercase"
+                      />
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="submit"
+                          disabled={stkProcessing || stkWaitingPin}
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-black text-xs sm:text-sm py-3.5 px-4 rounded-xl shadow transition cursor-pointer"
+                        >
+                          {stkProcessing
+                            ? 'Submitting Code...'
+                            : stkWaitingPin
+                              ? 'Verifying Payment Automatically...'
+                              : `Submit M-Pesa Code & Unlock 20-Min Pass`}
+                        </button>
+
+                        {stkWaitingPin && whatsappNotifyUrl && (
+                          <a
+                            href={whatsappNotifyUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-3.5 rounded-xl"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            WhatsApp Fast-Approve
+                          </a>
+                        )}
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
 
@@ -968,12 +1170,12 @@ export default function SubjectGamingHub({
                       setMpesaCode('');
                       setStatusMessage('');
                       setErrorMessage('');
-                      setPayTab('DIRECT');
+                      setPayTab('STK');
                       setView('ACTIVATE');
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm px-6 py-3.5 rounded-xl shadow transition cursor-pointer"
                   >
-                    View Payment Maintenance Notice →
+                    Activate Another 20-Minute Session (KSh {GAMING_FEE_KES}) &rarr;
                   </button>
                 </div>
               )}

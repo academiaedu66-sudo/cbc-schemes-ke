@@ -8,8 +8,10 @@ import {
   normalizeKenyanPhone,
   resolvePublicOrigin,
   sendWhatsAppAdminNotification,
+  shouldThrottleQuery,
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
+import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 import { recordMonetizationEvent } from '@/lib/monetization';
 import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
 import { triggerAutomaticBackup } from '@/lib/security';
@@ -253,20 +255,76 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ status: 'PENDING' });
       }
 
-      if (order.status === 'FAILED') {
+      let orderStatus = order.status as string;
+      let orderReceipt = order.mpesa_receipt_number as string | null;
+
+      // Live PayHero status verification if webhook hasn't updated the row yet
+      if (
+        orderStatus === 'PENDING' &&
+        reqId.startsWith('PAYHERO_') &&
+        !shouldThrottleQuery(reqId, 4000)
+      ) {
+        try {
+          const stored = await getStoredPaymentConfig();
+          const rawToken = (
+            stored.payheroAuthToken ||
+            process.env.PAYHERO_AUTH_TOKEN ||
+            ''
+          ).trim();
+          if (rawToken) {
+            const reference = reqId.replace(/^PAYHERO_/, '');
+            const phRes = await fetch(
+              `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(
+                reference
+              )}`,
+              {
+                headers: { Authorization: formatPayHeroAuthHeader(rawToken) },
+                cache: 'no-store',
+              }
+            );
+            const phJson = await phRes.json();
+            const st = String(phJson?.status || '').toUpperCase();
+            if (st === 'SUCCESS' || st === 'COMPLETED') {
+              const receipt = String(
+                phJson?.provider_reference ||
+                  phJson?.third_party_reference ||
+                  reference
+              ).slice(0, 40);
+              await supabaseAdmin
+                .from('orders')
+                .update({
+                  status: 'COMPLETED',
+                  mpesa_receipt_number: receipt,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('checkout_request_id', reqId);
+              orderStatus = 'COMPLETED';
+              orderReceipt = receipt;
+            } else if (st === 'FAILED' || st === 'CANCELLED' || st === 'CANCELED') {
+              await supabaseAdmin
+                .from('orders')
+                .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+                .eq('checkout_request_id', reqId);
+              orderStatus = 'FAILED';
+            }
+          }
+        } catch {}
+      }
+
+      if (orderStatus === 'FAILED') {
         return NextResponse.json({
           status: 'FAILED',
           error:
-            'M-Pesa code could not be verified. Please check your KSh 20 code and try again.',
+            'M-Pesa payment was cancelled or could not be verified. Please retry STK Push or paste a valid M-Pesa code.',
         });
       }
 
-      if (order.status === 'COMPLETED') {
+      if (orderStatus === 'COMPLETED') {
         const { subscription, unlockedAnswer } = await activateWeeklySubscription({
           fullName: body.fullName || 'CBC Learner',
           gradeLabel: body.gradeLabel || 'CBC',
           phone: body.phone || order.phone_number || '',
-          mpesaReceipt: order.mpesa_receipt_number || reqId,
+          mpesaReceipt: orderReceipt || reqId,
           checkoutRequestId: reqId,
           answerId: body.answerId,
         });

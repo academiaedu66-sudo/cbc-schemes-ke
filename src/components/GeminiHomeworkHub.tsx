@@ -12,6 +12,7 @@ import {
   MessageCircle,
   Send,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Unlock,
   UserCheck,
@@ -122,6 +123,7 @@ export default function GeminiHomeworkHub({
   const [merchantPhone, setMerchantPhone] = useState('0728595160');
   const [whatsappPhone, setWhatsappPhone] = useState('254705759072');
   const [showPayBox, setShowPayBox] = useState(false);
+  const [payTab, setPayTab] = useState<'STK' | 'DIRECT'>('STK');
   const [mpesaCode, setMpesaCode] = useState('');
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [submittingPayment, setSubmittingPayment] = useState(false);
@@ -348,6 +350,51 @@ export default function GeminiHomeworkHub({
         stage: 'OPENED_CHECKOUT',
       }),
     }).catch(() => {});
+  };
+
+  const handleInitiateKsh20Stk = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone.trim() || phone.replace(/\D/g, '').length < 9) {
+      setPaymentStatus('FAILED');
+      setPaymentMsg('Please enter a valid Safaricom M-Pesa phone number (e.g. 0712345678).');
+      return;
+    }
+
+    setSubmittingPayment(true);
+    setPaymentStatus('IDLE');
+    setPaymentMsg('');
+
+    try {
+      const res = await fetch('/api/mpesa/stkpush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: phone.trim(),
+          serviceType: 'GEMINI_WEEKLY',
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPaymentStatus('FAILED');
+        setPaymentMsg(
+          data.error ||
+            `Could not send STK prompt. Switch to "2. Send Money & Paste Code" to unlock immediately.`
+        );
+        return;
+      }
+
+      setCheckoutRequestId(data.checkoutRequestId);
+      setPaymentStatus('PENDING');
+      setPaymentMsg(
+        `Check your phone (${phone.trim()}) and enter your M-Pesa PIN to pay KSh ${WEEKLY_FEE_KES}. Your full answer unlocks automatically!`
+      );
+    } catch {
+      setPaymentStatus('FAILED');
+      setPaymentMsg('Network error initiating M-Pesa STK Push.');
+    } finally {
+      setSubmittingPayment(false);
+    }
   };
 
   const handleSubmitKsh20Code = async (e: React.FormEvent) => {
@@ -790,124 +837,212 @@ export default function GeminiHomeworkHub({
                               </div>
 
                               {showPayBox && (
-                                <form
-                                  onSubmit={handleSubmitKsh20Code}
-                                  className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-3.5 text-xs"
-                                >
-                                  <div className="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
-                                    <div className="space-y-0.5">
-                                      <p className="text-[11px] font-bold text-emerald-300 uppercase">
-                                        Step 1: M-Pesa &rarr; Send Money (KSh{' '}
-                                        {WEEKLY_FEE_KES})
-                                      </p>
-                                      <p className="text-sm font-black font-mono text-white">
-                                        Phone: {merchantPhone} • Amount: KSh{' '}
-                                        {WEEKLY_FEE_KES}
-                                      </p>
-                                      <p className="text-[10px] text-amber-300">
-                                        (STK Push is temporarily on maintenance — use
-                                        M-Pesa Send Money to {merchantPhone})
-                                      </p>
-                                    </div>
+                                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 space-y-3.5 text-xs">
+                                  {/* STK Push (Primary) vs Direct M-Pesa Code Switcher */}
+                                  <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        navigator.clipboard?.writeText(merchantPhone);
-                                        setCopiedPhone(true);
-                                        setTimeout(() => setCopiedPhone(false), 2000);
+                                        setPaymentMsg('');
+                                        setPayTab('STK');
                                       }}
-                                      className="bg-emerald-500 text-slate-950 font-black px-3 py-2 rounded-lg inline-flex items-center gap-1 cursor-pointer"
-                                    >
-                                      {copiedPhone ? (
-                                        <Check className="w-3.5 h-3.5" />
-                                      ) : (
-                                        <Copy className="w-3.5 h-3.5" />
-                                      )}
-                                      {copiedPhone ? 'Copied!' : `Copy ${merchantPhone}`}
-                                    </button>
-                                  </div>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                      <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
-                                        Your M-Pesa Phone Number *
-                                      </label>
-                                      <input
-                                        type="tel"
-                                        required
-                                        placeholder="0712345678"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
-                                        Paste M-Pesa Code or Full SMS *
-                                      </label>
-                                      <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. SJK84M2P9Q"
-                                        value={mpesaCode}
-                                        onChange={(e) => setMpesaCode(e.target.value)}
-                                        className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono uppercase"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {paymentMsg && (
-                                    <div
-                                      className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${
-                                        paymentStatus === 'FAILED'
-                                          ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
-                                          : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
+                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${
+                                        payTab === 'STK'
+                                          ? 'bg-emerald-500 text-slate-950 shadow'
+                                          : 'text-slate-400 hover:text-white'
                                       }`}
                                     >
-                                      {paymentStatus === 'PENDING' ? (
-                                        <Loader2 className="w-4 h-4 animate-spin text-amber-300 shrink-0 mt-0.5" />
-                                      ) : (
-                                        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                                      )}
-                                      <span>{paymentMsg}</span>
-                                    </div>
-                                  )}
-
-                                  <div className="flex flex-wrap items-center gap-2.5">
-                                    <button
-                                      type="submit"
-                                      disabled={
-                                        submittingPayment || paymentStatus === 'PENDING'
-                                      }
-                                      className="flex-1 bg-amber-400 hover:bg-amber-300 disabled:bg-slate-700 text-slate-950 font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
-                                    >
-                                      {submittingPayment ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        <Unlock className="w-4 h-4" />
-                                      )}
-                                      {paymentStatus === 'PENDING'
-                                        ? 'Verifying KSh 20 Payment Automatically...'
-                                        : 'Verify KSh 20 & Reveal Full Answer'}
+                                      1. M-Pesa STK Prompt (KSh {WEEKLY_FEE_KES})
                                     </button>
-
-                                    {paymentStatus === 'PENDING' && (
-                                      <a
-                                        href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
-                                          `Hello! I just paid KSh 20 Weekly Gemini Subscription (Code: ${mpesaCode
-                                            .trim()
-                                            .toUpperCase()}) for ${fullName} (${gradeLabel}). Kindly approve my full answer.`
-                                        )}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3.5 rounded-xl inline-flex items-center gap-1.5"
-                                      >
-                                        <MessageCircle className="w-4 h-4" />
-                                        WhatsApp Fast-Approve
-                                      </a>
-                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPaymentMsg('');
+                                        setPayTab('DIRECT');
+                                      }}
+                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${
+                                        payTab === 'DIRECT'
+                                          ? 'bg-amber-400 text-slate-950 shadow'
+                                          : 'text-slate-400 hover:text-white'
+                                      }`}
+                                    >
+                                      2. Send Money &amp; Paste Code
+                                    </button>
                                   </div>
-                                </form>
+
+                                  {payTab === 'STK' ? (
+                                    <form
+                                      onSubmit={handleInitiateKsh20Stk}
+                                      className="space-y-3.5"
+                                    >
+                                      <div>
+                                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                          Enter M-Pesa Phone Number for KSh {WEEKLY_FEE_KES} Prompt *
+                                        </label>
+                                        <div className="relative">
+                                          <Smartphone className="w-4 h-4 text-emerald-400 absolute left-3 top-2.5" />
+                                          <input
+                                            type="tel"
+                                            required
+                                            placeholder="0712345678"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {paymentMsg && (
+                                        <div
+                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${
+                                            paymentStatus === 'FAILED'
+                                              ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
+                                              : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
+                                          }`}
+                                        >
+                                          {paymentStatus === 'PENDING' ? (
+                                            <Loader2 className="w-4 h-4 animate-spin text-amber-300 shrink-0 mt-0.5" />
+                                          ) : (
+                                            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                                          )}
+                                          <span>{paymentMsg}</span>
+                                        </div>
+                                      )}
+
+                                      <button
+                                        type="submit"
+                                        disabled={
+                                          submittingPayment || paymentStatus === 'PENDING'
+                                        }
+                                        className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 text-slate-950 font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                                      >
+                                        {submittingPayment || paymentStatus === 'PENDING' ? (
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                          <Unlock className="w-4 h-4" />
+                                        )}
+                                        {paymentStatus === 'PENDING'
+                                          ? 'Waiting for M-Pesa PIN Confirmation...'
+                                          : `Send KSh ${WEEKLY_FEE_KES} M-Pesa STK Prompt & Reveal All`}
+                                      </button>
+                                    </form>
+                                  ) : (
+                                    <form
+                                      onSubmit={handleSubmitKsh20Code}
+                                      className="space-y-3.5"
+                                    >
+                                      <div className="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+                                        <div className="space-y-0.5">
+                                          <p className="text-[11px] font-bold text-emerald-300 uppercase">
+                                            Step 1: M-Pesa &rarr; Send Money (KSh{' '}
+                                            {WEEKLY_FEE_KES})
+                                          </p>
+                                          <p className="text-sm font-black font-mono text-white">
+                                            Phone: {merchantPhone} • Amount: KSh{' '}
+                                            {WEEKLY_FEE_KES}
+                                          </p>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            navigator.clipboard?.writeText(merchantPhone);
+                                            setCopiedPhone(true);
+                                            setTimeout(() => setCopiedPhone(false), 2000);
+                                          }}
+                                          className="bg-emerald-500 text-slate-950 font-black px-3 py-2 rounded-lg inline-flex items-center gap-1 cursor-pointer"
+                                        >
+                                          {copiedPhone ? (
+                                            <Check className="w-3.5 h-3.5" />
+                                          ) : (
+                                            <Copy className="w-3.5 h-3.5" />
+                                          )}
+                                          {copiedPhone ? 'Copied!' : `Copy ${merchantPhone}`}
+                                        </button>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                          <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                            Your M-Pesa Phone Number *
+                                          </label>
+                                          <input
+                                            type="tel"
+                                            required
+                                            placeholder="0712345678"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">
+                                            Paste M-Pesa Code or Full SMS *
+                                          </label>
+                                          <input
+                                            type="text"
+                                            required
+                                            placeholder="e.g. SJK84M2P9Q"
+                                            value={mpesaCode}
+                                            onChange={(e) => setMpesaCode(e.target.value)}
+                                            className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono uppercase"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {paymentMsg && (
+                                        <div
+                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${
+                                            paymentStatus === 'FAILED'
+                                              ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
+                                              : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
+                                          }`}
+                                        >
+                                          {paymentStatus === 'PENDING' ? (
+                                            <Loader2 className="w-4 h-4 animate-spin text-amber-300 shrink-0 mt-0.5" />
+                                          ) : (
+                                            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                                          )}
+                                          <span>{paymentMsg}</span>
+                                        </div>
+                                      )}
+
+                                      <div className="flex flex-wrap items-center gap-2.5">
+                                        <button
+                                          type="submit"
+                                          disabled={
+                                            submittingPayment || paymentStatus === 'PENDING'
+                                          }
+                                          className="flex-1 bg-amber-400 hover:bg-amber-300 disabled:bg-slate-700 text-slate-950 font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                          {submittingPayment ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                          ) : (
+                                            <Unlock className="w-4 h-4" />
+                                          )}
+                                          {paymentStatus === 'PENDING'
+                                            ? 'Verifying KSh 20 Payment Automatically...'
+                                            : 'Verify KSh 20 & Reveal Full Answer'}
+                                        </button>
+
+                                        {paymentStatus === 'PENDING' && (
+                                          <a
+                                            href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+                                              `Hello! I just paid KSh 20 Weekly Gemini Subscription (Code: ${mpesaCode
+                                                .trim()
+                                                .toUpperCase()}) for ${fullName} (${gradeLabel}). Kindly approve my full answer.`
+                                            )}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3.5 rounded-xl inline-flex items-center gap-1.5"
+                                          >
+                                            <MessageCircle className="w-4 h-4" />
+                                            WhatsApp Fast-Approve
+                                          </a>
+                                        )}
+                                      </div>
+                                    </form>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>

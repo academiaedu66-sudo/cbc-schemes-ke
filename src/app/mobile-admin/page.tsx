@@ -153,6 +153,7 @@ interface MobileWalletOverview {
   completedOrdersCount: number;
   liveB2cReady: boolean;
   hasPaystackKey?: boolean;
+  hasPayheroToken?: boolean;
   payheroChannelId: string;
   adNetworkConnected: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
@@ -907,22 +908,25 @@ export default function MobileAdminAppPage() {
     try {
       const promises: Promise<Response>[] = [];
 
-      // 1. Save Paystack Kenya (Primary) or PayHero credentials if entered
+      // 1. Save PayHero Kenya (Primary) or Paystack credentials if entered
       if (
-        linkPaystackSecret.trim() ||
         linkPayheroChannelId.trim() ||
-        linkPayheroToken.trim()
+        linkPayheroToken.trim() ||
+        linkPaystackSecret.trim()
       ) {
         promises.push(
           fetch('/api/admin/payment-config', {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              activeGateway: linkPaystackSecret.trim() ? 'paystack' : 'payhero',
+              activeGateway:
+                linkPayheroToken.trim() || linkPayheroChannelId.trim()
+                  ? 'payhero'
+                  : 'paystack',
               recipientMpesa: '254728595160',
-              paystackSecretKey: linkPaystackSecret.trim(),
               payheroChannelId: linkPayheroChannelId.trim(),
               payheroAuthToken: linkPayheroToken.trim(),
+              paystackSecretKey: linkPaystackSecret.trim(),
               payheroAutoWithdraw: true,
             }),
           })
@@ -1811,11 +1815,11 @@ export default function MobileAdminAppPage() {
                   </div>
                 </div>
 
-                {/* PART B: PAYHERO LIVE M-PESA B2C DISBURSEMENT */}
+                {/* PART B: PAYHERO KENYA LIVE M-PESA STK & B2C DISBURSEMENT */}
                 <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-black text-emerald-300 uppercase text-[11px]">
-                      Step B: Paystack Kenya Live Secret Key
+                      Step B: PayHero Kenya Live M-Pesa (Primary)
                     </span>
                     <span
                       className={`text-[10px] font-black px-2 py-0.5 rounded-full ${walletOverview?.liveB2cReady
@@ -1823,35 +1827,44 @@ export default function MobileAdminAppPage() {
                           : 'bg-amber-500/20 text-amber-300'
                         }`}
                     >
-                      {walletOverview?.liveB2cReady ? 'LIVE B2C ✓' : 'PASTE KEY'}
+                      {walletOverview?.liveB2cReady ? 'LIVE B2C ✓' : 'PASTE TOKEN'}
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-snug">
-                    In your{' '}
+                    Connected to{' '}
                     <a
-                      href="https://dashboard.paystack.com/#/settings/developer"
+                      href="https://app.payhero.co.ke"
                       target="_blank"
                       rel="noreferrer"
                       className="text-emerald-400 font-black underline"
                     >
-                      Paystack Settings &rarr; API Keys &amp; Webhooks
-                    </a>
-                    , copy your <strong>Secret Key</strong> (<code>sk_live_...</code>) and
-                    paste below:
+                      PayHero Kenya
+                    </a>{' '}
+                    for instant M-Pesa STK Push &amp; B2C Wallet Withdrawals into{' '}
+                    <code>0728***160</code>:
                   </p>
 
-                  <input
-                    type="password"
-                    placeholder={
-                      walletOverview?.hasPaystackKey
-                        ? 'Paystack Secret Key Saved ✓ (Paste new to update)'
-                        : 'Paste sk_live_xxxxxxxxxxxxxxxxxxxx'
-                    }
-                    value={linkPaystackSecret}
-                    onChange={(e) => setLinkPaystackSecret(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
-                  />
+                  <div className="grid grid-cols-1 gap-2">
+                    <input
+                      type="text"
+                      placeholder="PayHero Channel ID (e.g. 15436)"
+                      value={linkPayheroChannelId}
+                      onChange={(e) => setLinkPayheroChannelId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
+                    />
+                    <input
+                      type="password"
+                      placeholder={
+                        walletOverview?.hasPayheroToken
+                          ? 'PayHero Basic Auth Token Saved ✓ (Paste new to update)'
+                          : 'Paste PayHero Basic Auth Token (Basic ...)'
+                      }
+                      value={linkPayheroToken}
+                      onChange={(e) => setLinkPayheroToken(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
+                    />
+                  </div>
                 </div>
 
                 <button

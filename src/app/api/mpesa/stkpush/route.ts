@@ -47,17 +47,6 @@ export async function POST(req: Request) {
       stage: 'SUBMITTED_PAYMENT',
     }).catch(() => {});
 
-    // All public payment methods are temporarily in 72-hour maintenance (keep admin testAmount active)
-    if (!testAmount) {
-      return NextResponse.json(
-        {
-          error:
-            'We are sorry! All payment methods are currently under maintenance and we will be back shortly in the next 72 hours or less.',
-        },
-        { status: 503 }
-      );
-    }
-
     if (!phoneNumber || (!resourceId && !testAmount && !serviceType)) {
       return NextResponse.json(
         { error: 'Phone number and selection are required.' },
@@ -96,6 +85,12 @@ export async function POST(req: Request) {
         id: null,
         price: 10,
         title: 'CBC Subject Gaming 20-Minute Pass (KSh 10)',
+      };
+    } else if (serviceType === 'GEMINI_WEEKLY') {
+      resource = {
+        id: null,
+        price: 20,
+        title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

@@ -48,6 +48,7 @@ export interface WalletOverview {
   completedOrdersCount: number;
   liveB2cReady: boolean;
   hasPaystackKey: boolean;
+  hasPayheroToken: boolean;
   payheroChannelId: string;
   adNetworkConnected: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
@@ -204,6 +205,7 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     completedOrdersCount: completedList.length,
     liveB2cReady,
     hasPaystackKey,
+    hasPayheroToken,
     payheroChannelId: payConfig.payheroChannelId || '',
     adNetworkConnected,
     adNetworkProvider: monConfig.adNetworkProvider || 'monetag',
@@ -298,24 +300,71 @@ export async function createWalletWithdrawal(params: {
       : `Bank payout queued (${cleanDest})`;
   let status: WalletWithdrawalRecord['status'] = 'COMPLETED';
 
-  // Attempt live Paystack Kenya M-Pesa Transfer (Primary) or PayHero B2C (Fallback)
+  // Attempt live PayHero Kenya M-Pesa B2C (Primary) or Paystack Kenya Transfer (Fallback)
   if (params.method === 'MPESA' && intlMpesa) {
     const payCfg = await getStoredPaymentConfig();
-    const paystackKey = (
-      payCfg.paystackSecretKey ||
-      process.env.PAYSTACK_SECRET_KEY ||
-      ''
-    ).trim();
     const rawToken = (
       payCfg.payheroAuthToken ||
       process.env.PAYHERO_AUTH_TOKEN ||
       ''
     ).trim();
+    const paystackKey = (
+      payCfg.paystackSecretKey ||
+      process.env.PAYSTACK_SECRET_KEY ||
+      ''
+    ).trim();
 
-    if (paystackKey) {
+    if (rawToken) {
+      try {
+        const res = await fetch('https://backend.payhero.co.ke/api/v2/withdraw', {
+          method: 'POST',
+          headers: {
+            Authorization: formatPayHeroAuthHeader(rawToken),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: Math.max(10, Math.floor(reqAmount)),
+            phone_number: intlMpesa,
+            network_code: '63902',
+            channel: 'mobile',
+            external_reference: refCode,
+            callback_url: 'https://www.cbcmaterials.shop/api/mpesa/callback',
+          }),
+          cache: 'no-store',
+          signal: AbortSignal.timeout(8000),
+        });
+
+        const resJson = (await res.json().catch(() => ({}))) as {
+          reference?: string;
+          message?: string;
+          error_message?: string;
+        };
+
+        if (res.ok) {
+          gatewayDisbursed = true;
+          status = 'COMPLETED';
+          gatewayMessage = `Safaricom M-Pesa B2C Disbursed via PayHero to ${toLocalKenyanFormat(
+            intlMpesa
+          )}! Check your phone for the M-Pesa SMS notification (${
+            resJson.reference || refCode
+          }).`;
+        } else {
+          status = 'PENDING_SETTLEMENT';
+          gatewayMessage = `PayHero B2C response (${refCode}): ${
+            resJson.error_message ||
+            resJson.message ||
+            'Ensure your PayHero Service Wallet has sufficient KES balance to send M-Pesa.'
+          }`;
+        }
+      } catch {
+        status = 'PENDING_SETTLEMENT';
+        gatewayMessage = `Logged (${refCode}) — queued for M-Pesa settlement to ${toLocalKenyanFormat(
+          intlMpesa
+        )}.`;
+      }
+    } else if (paystackKey) {
       try {
         const localMpesa = toLocalKenyanFormat(intlMpesa);
-        // 1. Create or resolve M-Pesa Transfer Recipient on Paystack Kenya
         let recipientCode = '';
         for (const acctCandidate of [localMpesa, intlMpesa, `+${intlMpesa}`]) {
           const recRes = await fetch('https://api.paystack.co/transferrecipient', {
@@ -346,9 +395,8 @@ export async function createWalletWithdrawal(params: {
 
         if (!recipientCode) {
           status = 'PENDING_SETTLEMENT';
-          gatewayMessage = `Paystack recipient setup pending (${refCode}) — verify your Paystack Kenya account is in Live Mode with M-Pesa Transfers enabled.`;
+          gatewayMessage = `Paystack recipient setup pending (${refCode}).`;
         } else {
-          // 2. Initiate Instant M-Pesa Transfer (Paystack amounts are in cents: KES * 100)
           const trRes = await fetch('https://api.paystack.co/transfer', {
             method: 'POST',
             headers: {
@@ -375,75 +423,23 @@ export async function createWalletWithdrawal(params: {
             gatewayDisbursed = true;
             status =
               trJson.data?.status === 'otp' ? 'PENDING_SETTLEMENT' : 'COMPLETED';
-            gatewayMessage =
-              trJson.data?.status === 'otp'
-                ? `Paystack sent an OTP to confirm transfer ${refCode} (disable Transfer OTP in Paystack -> Settings -> Preferences for instant 1-tap M-Pesa SMS!).`
-                : `Paystack M-Pesa Transfer Sent to ${localMpesa}! Check your phone for the Safaricom M-Pesa SMS (${
-                    trJson.data?.transfer_code || refCode
-                  }).`;
+            gatewayMessage = `M-Pesa Transfer Sent to ${localMpesa} (${
+              trJson.data?.transfer_code || refCode
+            }).`;
           } else {
             status = 'PENDING_SETTLEMENT';
-            gatewayMessage = `Paystack response (${refCode}): ${
-              trJson.message ||
-              'Ensure your Paystack KES Balance has settled funds for transfer.'
+            gatewayMessage = `Transfer response (${refCode}): ${
+              trJson.message || 'Pending balance settlement.'
             }`;
           }
         }
       } catch {
         status = 'PENDING_SETTLEMENT';
-        gatewayMessage = `Logged (${refCode}) — network timeout reaching Paystack Transfer API.`;
-      }
-    } else if (rawToken) {
-      try {
-        const res = await fetch('https://backend.payhero.co.ke/api/v2/withdraw', {
-          method: 'POST',
-          headers: {
-            Authorization: formatPayHeroAuthHeader(rawToken),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: Math.max(10, Math.floor(reqAmount)),
-            phone_number: intlMpesa,
-            network_code: '63902',
-            channel: 'mobile',
-            external_reference: refCode,
-            callback_url: 'https://www.cbcmaterials.shop/api/mpesa/callback',
-          }),
-          cache: 'no-store',
-          signal: AbortSignal.timeout(8000),
-        });
-
-        const resJson = (await res.json().catch(() => ({}))) as {
-          reference?: string;
-          message?: string;
-          error_message?: string;
-        };
-
-        if (res.ok) {
-          gatewayDisbursed = true;
-          status = 'COMPLETED';
-          gatewayMessage = `Safaricom M-Pesa B2C Disbursed to ${toLocalKenyanFormat(
-            intlMpesa
-          )}! Check your phone for the M-Pesa SMS notification (${
-            resJson.reference || refCode
-          }).`;
-        } else {
-          status = 'PENDING_SETTLEMENT';
-          gatewayMessage = `PayHero B2C response (${refCode}): ${
-            resJson.error_message ||
-            resJson.message ||
-            'Ensure your PayHero Service Wallet has sufficient KES balance to send M-Pesa.'
-          }`;
-        }
-      } catch {
-        status = 'PENDING_SETTLEMENT';
-        gatewayMessage = `Logged (${refCode}) — queued for M-Pesa settlement to ${toLocalKenyanFormat(
-          intlMpesa
-        )}.`;
+        gatewayMessage = `Logged (${refCode}) — network timeout reaching gateway.`;
       }
     } else {
       status = 'PENDING_SETTLEMENT';
-      gatewayMessage = `Queued (${refCode}) — Paste your Paystack Secret Key (sk_live_...) in "Link Real M-Pesa B2C & Ad Networks" below to send real KES automatically to ${toLocalKenyanFormat(
+      gatewayMessage = `Queued (${refCode}) — Paste your PayHero Basic Auth Token in "Link Real M-Pesa B2C & Ad Networks" below to send real KES automatically to ${toLocalKenyanFormat(
         intlMpesa
       )}!`;
     }
