@@ -206,6 +206,8 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
 
 export const DEFAULT_ADSTERRA_UNIT_SRC =
   'https://afders.org/1/9b54de7bdfa09cfb49871859cafe8b38';
+export const DEFAULT_ADSTERRA_SMARTLINK_URL =
+  'https://asiafilm.org/4/7b5e0232187d32c0720c40d68a02db1b';
 
 export function extractScriptUrlIfTag(rawInput?: string): string {
   const clean = (rawInput || '').trim();
@@ -220,7 +222,9 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
   const envAdScript =
     extractScriptUrlIfTag(process.env.NEXT_PUBLIC_AD_NETWORK_SCRIPT_URL) ||
     DEFAULT_ADSTERRA_UNIT_SRC;
-  const envSmartlink = (process.env.NEXT_PUBLIC_SMARTLINK_URL || '').trim();
+  const envSmartlink =
+    (process.env.NEXT_PUBLIC_SMARTLINK_URL || '').trim() ||
+    DEFAULT_ADSTERRA_SMARTLINK_URL;
 
   return {
     enabled: true,

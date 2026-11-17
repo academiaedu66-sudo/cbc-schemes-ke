@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ExternalLink, Megaphone, Sparkles, TrendingUp, X } from 'lucide-react';
 import {
+  DEFAULT_ADSTERRA_SMARTLINK_URL,
   DEFAULT_ADSTERRA_UNIT_SRC,
   DEFAULT_SPONSORED_CAMPAIGNS,
   extractScriptUrlIfTag,
@@ -59,7 +60,7 @@ const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
   adNetworkProvider: 'adsterra',
   adNetworkScriptUrl: DEFAULT_ADSTERRA_UNIT_SRC,
   adNetworkBannerScriptUrl: '',
-  smartlinkUrl: '',
+  smartlinkUrl: DEFAULT_ADSTERRA_SMARTLINK_URL,
   smartlinkLabel: 'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →',
   placements: {
     topLeaderboard: true,
@@ -418,11 +419,19 @@ export function AdSlot({
 
   if (!isPlacementEnabled) return null;
 
+  const smartlinkPlacements = new Set<AdPlacement>([
+    'tsc_services_hub',
+    'holiday_side_hustles',
+    'gemini_qa_hub',
+    'preview_modal',
+    'smartlink',
+  ]);
+
   const destinationHref =
     config.adNetworkEnabled &&
     config.smartlinkUrl &&
     campaign?.targetUrl === '/advertise' &&
-    variantIndex % 2 === 1
+    (smartlinkPlacements.has(placement) || variantIndex % 2 === 1)
       ? config.smartlinkUrl
       : campaign?.targetUrl || '/advertise';
 
