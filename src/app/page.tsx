@@ -516,14 +516,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
-      {/* Public-Only Adsterra Unit (Never loaded on /admin, /mobile-admin, or /monetization!) */}
-      <script
-        id="adsterra-main-unit"
-        data-cfasync="false"
-        async
-        src="https://afders.org/1/3b88d0fdca433edf909c6904c31c75f7"
-      />
-
       {/* Entry Welcome Splash & Persistent Animated Welcome Ribbon */}
       <WelcomeAnimation />
 

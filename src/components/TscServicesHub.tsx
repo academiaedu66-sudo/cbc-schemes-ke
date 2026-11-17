@@ -171,17 +171,10 @@ export default function TscServicesHub({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalTriggerCount]);
 
-  // Clicking any individual TSC service inside the hub ALSO earns via monetization!
   const handleSelectService = (svc: TscServiceItem) => {
     trackAdClick('tsc_services_hub');
     trackInteraction(`tsc_service_${svc.id}`);
     setLaunchingService(svc);
-
-    // If an external Monetag / Adsterra smartlink is active, open partner offer in background tab too
-    if (config.enabled && config.adNetworkEnabled && config.smartlinkUrl) {
-      trackAdClick('smartlink');
-      window.open(config.smartlinkUrl, '_blank', 'noopener,noreferrer');
-    }
   };
 
   return (

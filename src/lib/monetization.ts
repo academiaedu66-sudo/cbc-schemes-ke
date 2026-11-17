@@ -204,10 +204,16 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
   },
 ];
 
-export const DEFAULT_ADSTERRA_UNIT_SRC =
-  'https://afders.org/1/3b88d0fdca433edf909c6904c31c75f7';
-export const DEFAULT_ADSTERRA_SMARTLINK_URL =
-  'https://asiafilm.org/4/7b5e0232187d32c0720c40d68a02db1b';
+export const DEFAULT_ADSTERRA_UNIT_SRC = '';
+export const DEFAULT_ADSTERRA_SMARTLINK_URL = '';
+
+const BLOCKED_HIJACK_AD_PATTERNS = /afders\.org|asiafilm\.org|popunder|onclickads/i;
+
+export function sanitizeAdUrl(rawInput?: string): string {
+  const clean = extractScriptUrlIfTag(rawInput);
+  if (!clean || BLOCKED_HIJACK_AD_PATTERNS.test(clean)) return '';
+  return clean;
+}
 
 export function extractScriptUrlIfTag(rawInput?: string): string {
   const clean = (rawInput || '').trim();
@@ -219,12 +225,6 @@ export function extractScriptUrlIfTag(rawInput?: string): string {
 
 export function getDefaultMonetizationConfig(): MonetizationConfig {
   const envAdsense = (process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || '').trim();
-  const envAdScript =
-    extractScriptUrlIfTag(process.env.NEXT_PUBLIC_AD_NETWORK_SCRIPT_URL) ||
-    DEFAULT_ADSTERRA_UNIT_SRC;
-  const envSmartlink =
-    (process.env.NEXT_PUBLIC_SMARTLINK_URL || '').trim() ||
-    DEFAULT_ADSTERRA_SMARTLINK_URL;
 
   return {
     enabled: true,
@@ -237,18 +237,18 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
     adsenseStickySlotId: '',
     adsTxtCustomLines: '',
 
-    adNetworkEnabled: true,
-    adNetworkProvider: 'adsterra',
-    adNetworkScriptUrl: envAdScript,
+    adNetworkEnabled: false,
+    adNetworkProvider: 'custom',
+    adNetworkScriptUrl: '',
     adNetworkBannerScriptUrl: '',
-    smartlinkUrl: envSmartlink,
-    smartlinkLabel: 'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →',
+    smartlinkUrl: '',
+    smartlinkLabel: 'Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages →',
 
     placements: {
       topLeaderboard: true,
       inFeedNative: true,
-      previewModalAd: true,
-      stickyBottomBar: true,
+      previewModalAd: false,
+      stickyBottomBar: false,
       partnerBonusStrip: true,
     },
 
@@ -326,6 +326,12 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
     };
 
     merged.adsenseClientId = normalizeAdsensePublisherId(merged.adsenseClientId);
+    merged.adNetworkScriptUrl = sanitizeAdUrl(merged.adNetworkScriptUrl);
+    merged.adNetworkBannerScriptUrl = sanitizeAdUrl(merged.adNetworkBannerScriptUrl);
+    merged.smartlinkUrl = sanitizeAdUrl(merged.smartlinkUrl);
+    if (!merged.adNetworkScriptUrl && !merged.smartlinkUrl) {
+      merged.adNetworkEnabled = false;
+    }
     cachedConfig = { data: merged, expiresAt: Date.now() + 15000 };
     return merged;
   } catch {

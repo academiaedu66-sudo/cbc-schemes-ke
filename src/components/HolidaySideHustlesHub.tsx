@@ -861,11 +861,6 @@ export default function HolidaySideHustlesHub({
     trackAdClick('holiday_side_hustles');
     trackInteraction(`side_hustle_${item.category.toLowerCase()}_click`);
     setSelectedPlatform(item);
-
-    if (config.enabled && config.adNetworkEnabled && config.smartlinkUrl) {
-      trackAdClick('smartlink');
-      window.open(config.smartlinkUrl, '_blank', 'noopener,noreferrer');
-    }
   };
 
   return (

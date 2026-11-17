@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ExternalLink, Megaphone, Sparkles, TrendingUp, X } from 'lucide-react';
+import { ExternalLink, Megaphone, Sparkles, TrendingUp } from 'lucide-react';
 import {
   DEFAULT_ADSTERRA_SMARTLINK_URL,
   DEFAULT_ADSTERRA_UNIT_SRC,
@@ -56,17 +56,17 @@ const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
   adsenseInFeedSlotId: '',
   adsensePreviewSlotId: '',
   adsenseStickySlotId: '',
-  adNetworkEnabled: true,
-  adNetworkProvider: 'adsterra',
+  adNetworkEnabled: false,
+  adNetworkProvider: 'custom',
   adNetworkScriptUrl: DEFAULT_ADSTERRA_UNIT_SRC,
   adNetworkBannerScriptUrl: '',
   smartlinkUrl: DEFAULT_ADSTERRA_SMARTLINK_URL,
-  smartlinkLabel: 'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →',
+  smartlinkLabel: 'Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages →',
   placements: {
     topLeaderboard: true,
     inFeedNative: true,
-    previewModalAd: true,
-    stickyBottomBar: true,
+    previewModalAd: false,
+    stickyBottomBar: false,
     partnerBonusStrip: true,
   },
   campaigns: DEFAULT_SPONSORED_CAMPAIGNS,
@@ -128,22 +128,37 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   const viewRecordedRef = useRef(false);
   const lastInteractionTsRef = useRef<Record<string, number>>({});
 
-  // Guarantee 0% external ad popups/overlays on Anti-Hacker Security & Admin routes!
+  // Site-Wide Anti-Hijack Button Shield: Permanently block & strip popunder scripts and click-hijacking overlays on ALL pages!
   useEffect(() => {
-    if (!isProtectedAdminRoute || typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    const leftoverAdScript =
-      document.getElementById('adsterra-main-unit') ||
-      document.getElementById('cbc-adnetwork-global-js') ||
-      document.getElementById('cbc-adnetwork-banner-js') ||
-      document.querySelector('script[src*="afders.org"]');
+    const purgeHijackScriptsAndOverlays = () => {
+      const badScripts = document.querySelectorAll(
+        '#adsterra-main-unit, #cbc-adnetwork-global-js, #cbc-adnetwork-banner-js, script[src*="afders.org"], script[src*="asiafilm.org"]'
+      );
+      badScripts.forEach((el) => el.remove());
 
-    if (leftoverAdScript) {
-      // Remove tag and force a clean isolated reload into the Admin/Security page so zero ad click listeners remain in memory
-      leftoverAdScript.remove();
-      window.location.reload();
-    }
-  }, [isProtectedAdminRoute]);
+      // Remove any injected full-screen transparent click-hijack overlays (z-index >= 999999)
+      document.querySelectorAll('body > iframe, body > a, body > div').forEach((node) => {
+        const el = node as HTMLElement;
+        if (el.id === '__next') return;
+        const style = window.getComputedStyle(el);
+        const z = Number.parseInt(style.zIndex || '0', 10);
+        if (
+          style.position === 'fixed' &&
+          Number.isFinite(z) &&
+          z >= 999999
+        ) {
+          el.remove();
+        }
+      });
+    };
+
+    purgeHijackScriptsAndOverlays();
+    const observer = new MutationObserver(purgeHijackScriptsAndOverlays);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [pathname]);
 
   useEffect(() => {
     let active = true;
@@ -219,54 +234,9 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     }
   }, [config.enabled, config.adsenseEnabled, config.adsenseClientId]);
 
-  // Inject Monetag / Adsterra / Custom CPM & Interaction Ad Network script ONLY on public storefront pages
-  useEffect(() => {
-    if (isProtectedAdminRoute) return;
-    if (!config.enabled || !config.adNetworkEnabled) return;
-    if (typeof document === 'undefined') return;
-    if (
-      window.location.pathname.startsWith('/admin') ||
-      window.location.pathname.startsWith('/mobile-admin') ||
-      window.location.pathname.startsWith('/monetization')
-    ) {
-      return;
-    }
-
-    const primaryUrl = extractScriptUrlIfTag(config.adNetworkScriptUrl);
-    if (
-      primaryUrl &&
-      !document.querySelector(`script[src="${primaryUrl}"]`) &&
-      !document.getElementById('cbc-adnetwork-global-js')
-    ) {
-      const s = document.createElement('script');
-      s.id = 'cbc-adnetwork-global-js';
-      s.async = true;
-      s.src = primaryUrl;
-      s.setAttribute('data-cfasync', 'false');
-      document.head.appendChild(s);
-    }
-
-    const bannerUrl = extractScriptUrlIfTag(config.adNetworkBannerScriptUrl);
-    if (
-      bannerUrl &&
-      bannerUrl !== primaryUrl &&
-      !document.querySelector(`script[src="${bannerUrl}"]`) &&
-      !document.getElementById('cbc-adnetwork-banner-js')
-    ) {
-      const b = document.createElement('script');
-      b.id = 'cbc-adnetwork-banner-js';
-      b.async = true;
-      b.src = bannerUrl;
-      b.setAttribute('data-cfasync', 'false');
-      document.body.appendChild(b);
-    }
-  }, [
-    isProtectedAdminRoute,
-    config.enabled,
-    config.adNetworkEnabled,
-    config.adNetworkScriptUrl,
-    config.adNetworkBannerScriptUrl,
-  ]);
+  // Global popunder / click-hijack script injection is PERMANENTLY DISABLED so buttons never redirect customers.
+  void isProtectedAdminRoute;
+  void extractScriptUrlIfTag;
 
   const trackInteraction = useCallback((interactionType: string) => {
     const now = Date.now();
@@ -419,21 +389,7 @@ export function AdSlot({
 
   if (!isPlacementEnabled) return null;
 
-  const smartlinkPlacements = new Set<AdPlacement>([
-    'tsc_services_hub',
-    'holiday_side_hustles',
-    'gemini_qa_hub',
-    'preview_modal',
-    'smartlink',
-  ]);
-
-  const destinationHref =
-    config.adNetworkEnabled &&
-    config.smartlinkUrl &&
-    campaign?.targetUrl === '/advertise' &&
-    (smartlinkPlacements.has(placement) || variantIndex % 2 === 1)
-      ? config.smartlinkUrl
-      : campaign?.targetUrl || '/advertise';
+  const destinationHref = campaign?.targetUrl || '/advertise';
 
   const isExternal = /^https?:\/\//i.test(destinationHref);
   const styles = ACCENT_STYLES[campaign?.accentColor || 'emerald'];
@@ -518,135 +474,29 @@ export function PartnerBonusStrip() {
 
   if (!config.enabled || !config.placements.partnerBonusStrip) return null;
 
-  const hasSmartlink = Boolean(config.adNetworkEnabled && config.smartlinkUrl);
-  const href = hasSmartlink ? config.smartlinkUrl : '/advertise';
-  const label = hasSmartlink
-    ? config.smartlinkLabel ||
-      'Sponsored Teacher Offer: Free CBC Revision & EdTech Tools →'
-    : 'Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages →';
-
   return (
     <div className="my-4 bg-slate-900 text-white rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs">
       <div className="flex items-center gap-2 text-xs">
         <span className="inline-flex items-center gap-1 bg-amber-400 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">
           <Sparkles className="w-3 h-3" />
-          Partner Offer
+          Partner Spotlight
         </span>
-        <span className="font-semibold text-slate-100">{label}</span>
+        <span className="font-semibold text-slate-100">
+          Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages &rarr;
+        </span>
       </div>
-      {hasSmartlink ? (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer sponsored"
-          onClick={() => trackAdClick('smartlink')}
-          className="inline-flex items-center gap-1 text-xs font-extrabold text-amber-300 hover:text-amber-200 underline underline-offset-2"
-        >
-          Open Offer <ExternalLink className="w-3.5 h-3.5" />
-        </a>
-      ) : (
-        <Link
-          href={href}
-          onClick={() => trackAdClick('updates_hub')}
-          className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
-        >
-          Advertise With Us <TrendingUp className="w-3.5 h-3.5" />
-        </Link>
-      )}
+      <Link
+        href="/advertise"
+        onClick={() => trackAdClick('updates_hub')}
+        className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
+      >
+        Advertise With Us <TrendingUp className="w-3.5 h-3.5" />
+      </Link>
     </div>
   );
 }
 
 export function StickyEarnerBar() {
-  const { config, trackAdImpression, trackAdClick } = useMonetization();
-  const [dismissed, setDismissed] = useState(false);
-  const sentImpression = useRef(false);
-
-  const stickyCampaign = useMemo(() => {
-    return (
-      config.campaigns.find((c) => c.enabled && c.placement === 'sticky_footer') ||
-      config.campaigns.find((c) => c.enabled) ||
-      null
-    );
-  }, [config.campaigns]);
-
-  useEffect(() => {
-    if (
-      dismissed ||
-      !config.enabled ||
-      !config.placements.stickyBottomBar ||
-      !stickyCampaign ||
-      sentImpression.current
-    ) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      sentImpression.current = true;
-      trackAdImpression('sticky_footer');
-    }, 2500);
-    return () => window.clearTimeout(timer);
-  }, [config.enabled, config.placements.stickyBottomBar, dismissed, stickyCampaign, trackAdImpression]);
-
-  if (
-    dismissed ||
-    !config.enabled ||
-    !config.placements.stickyBottomBar ||
-    !stickyCampaign
-  ) {
-    return null;
-  }
-
-  const href =
-    config.adNetworkEnabled && config.smartlinkUrl
-      ? config.smartlinkUrl
-      : stickyCampaign.targetUrl;
-  const isExternal = /^https?:\/\//i.test(href);
-
-  return (
-    <div className="fixed bottom-4 left-4 right-4 md:right-auto md:max-w-xl z-30 bg-slate-900/95 backdrop-blur text-white border border-slate-700 rounded-2xl px-4 py-3 shadow-xl flex items-center justify-between gap-3">
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded">
-            {stickyCampaign.badge}
-          </span>
-          <span className="text-[10px] text-slate-400 font-medium truncate">
-            {stickyCampaign.subtext}
-          </span>
-        </div>
-        <p className="text-xs font-bold text-white truncate">
-          {stickyCampaign.headline}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        {isExternal ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            onClick={() => trackAdClick('sticky_footer')}
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-          >
-            {stickyCampaign.ctaText}
-          </a>
-        ) : (
-          <Link
-            href={href}
-            onClick={() => trackAdClick('sticky_footer')}
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-          >
-            {stickyCampaign.ctaText}
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={() => setDismissed(true)}
-          aria-label="Dismiss ad banner"
-          className="text-slate-400 hover:text-white p-1 rounded-lg transition"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
+  // Disabled permanently so no floating ad bar ever overlaps or blocks mobile buttons
+  return null;
 }
