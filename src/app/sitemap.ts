@@ -1,33 +1,54 @@
 import type { MetadataRoute } from 'next';
+import {
+  getAllGradeSeoInfos,
+  getCachedAllSitemapResources,
+  SITE_URL,
+} from '@/lib/seo-catalog';
 
-const BASE_URL = 'https://www.cbcmaterials.shop';
-const LAST_MODIFIED = '2026-01-15T00:00:00.000Z';
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const nowIso = new Date().toISOString();
+  const gradeHubs = getAllGradeSeoInfos();
+  const materials = await getCachedAllSitemapResources();
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
+  const staticEntries: MetadataRoute.Sitemap = [
     {
-      url: BASE_URL,
-      lastModified: LAST_MODIFIED,
+      url: SITE_URL,
+      lastModified: nowIso,
       changeFrequency: 'daily',
-      priority: 1,
+      priority: 1.0,
     },
+    ...gradeHubs.map((g) => ({
+      url: `${SITE_URL}/grades/${g.slug}`,
+      lastModified: nowIso,
+      changeFrequency: 'daily' as const,
+      priority: 0.95,
+    })),
     {
-      url: `${BASE_URL}/advertise`,
-      lastModified: LAST_MODIFIED,
+      url: `${SITE_URL}/advertise`,
+      lastModified: nowIso,
       changeFrequency: 'weekly',
-      priority: 0.85,
+      priority: 0.75,
     },
     {
-      url: `${BASE_URL}/privacy-policy`,
-      lastModified: LAST_MODIFIED,
+      url: `${SITE_URL}/privacy-policy`,
+      lastModified: '2026-01-15T00:00:00.000Z',
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.4,
     },
     {
-      url: `${BASE_URL}/terms`,
-      lastModified: LAST_MODIFIED,
+      url: `${SITE_URL}/terms`,
+      lastModified: '2026-01-15T00:00:00.000Z',
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.4,
     },
   ];
+
+  const materialEntries: MetadataRoute.Sitemap = materials.map((m) => ({
+    url: `${SITE_URL}/materials/${m.id}`,
+    lastModified: m.created_at || nowIso,
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }));
+
+  return [...staticEntries, ...materialEntries];
 }

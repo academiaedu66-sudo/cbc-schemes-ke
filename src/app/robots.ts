@@ -5,7 +5,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/ads.txt', '/advertise', '/privacy-policy', '/terms'],
+        allow: [
+          '/',
+          '/grades/',
+          '/materials/',
+          '/ads.txt',
+          '/advertise',
+          '/privacy-policy',
+          '/terms',
+        ],
         disallow: ['/admin', '/mobile-admin', '/monetization', '/api/admin/'],
       },
       {
@@ -13,6 +21,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
+    host: 'https://www.cbcmaterials.shop',
     sitemap: 'https://www.cbcmaterials.shop/sitemap.xml',
   };
 }

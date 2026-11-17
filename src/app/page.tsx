@@ -37,6 +37,7 @@ import SubjectGamingHub, {
 import TscServicesHub from '@/components/TscServicesHub';
 import HolidaySideHustlesHub from '@/components/HolidaySideHustlesHub';
 import GeminiHomeworkHub from '@/components/GeminiHomeworkHub';
+import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
 import {
   AdSlot,
@@ -513,6 +514,39 @@ export default function HomePage() {
   const whatsappConfirmHref = buildOrderWhatsAppHref(
     submittedReceipt || extractCodeClient(mpesaCode) || mpesaCode.trim().toUpperCase()
   );
+
+  // Support Google Sitelinks Searchbox (?q=...) & SEO Hub deep-links (?grade=, ?subject=, ?buy=, ?preview=)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const qParam = params.get('q');
+    const gradeParam = params.get('grade');
+    const subjectParam = params.get('subject');
+    if (qParam) setSearchQuery(qParam);
+    if (gradeParam) setSelectedGrade(gradeParam);
+    if (subjectParam) setSelectedSubject(subjectParam);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || resources.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const buyId = params.get('buy');
+    const previewId = params.get('preview');
+    if (buyId) {
+      const found = resources.find((r) => r.id === buyId);
+      if (found) {
+        openCheckoutFor(found);
+        window.history.replaceState({}, '', '/');
+      }
+    } else if (previewId) {
+      const found = resources.find((r) => r.id === previewId);
+      if (found) {
+        setPreviewItem(found);
+        window.history.replaceState({}, '', '/');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resources]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
@@ -1270,6 +1304,9 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {/* Rich Structured Data (WebSite SearchAction, EducationalOrganization, FAQPage) & Grade Hub Directory */}
+      <SeoKnowledgeSection />
 
       {/* SEO & AdSense Compliance Footer */}
       <SiteFooter />

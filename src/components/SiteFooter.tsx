@@ -2,6 +2,23 @@ import React from 'react';
 import Link from 'next/link';
 import { BookOpen, Megaphone, MessageCircle, ShieldCheck } from 'lucide-react';
 
+const FOOTER_GRADE_SLUGS = [
+  { slug: 'pp1', label: 'PP1' },
+  { slug: 'pp2', label: 'PP2' },
+  { slug: 'grade-1', label: 'Grade 1' },
+  { slug: 'grade-2', label: 'Grade 2' },
+  { slug: 'grade-3', label: 'Grade 3' },
+  { slug: 'grade-4', label: 'Grade 4' },
+  { slug: 'grade-5', label: 'Grade 5' },
+  { slug: 'grade-6', label: 'Grade 6 (KPSEA)' },
+  { slug: 'grade-7', label: 'Grade 7 (JSS)' },
+  { slug: 'grade-8', label: 'Grade 8 (JSS)' },
+  { slug: 'grade-9', label: 'Grade 9 (KJSEA)' },
+  { slug: 'grade-10', label: 'Grade 10' },
+  { slug: 'grade-11', label: 'Grade 11' },
+  { slug: 'grade-12', label: 'Grade 12' },
+];
+
 export default function SiteFooter() {
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-16 pb-20 md:pb-10">
@@ -13,15 +30,15 @@ export default function SiteFooter() {
             <span>CBC Kenya Resource Hub</span>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed max-w-md">
-            Kenya&apos;s trusted KICD-aligned curriculum portal providing Editable Word
-            (.DOCX) and Print-Ready (.PDF) Schemes of Work, Lesson Plans, Lesson Notes,
-            Records of Work, Opener/Mid/End-Term Assessments, and KPSEA &amp; KJSEA
-            Trial Papers for PP1, PP2, and Grades 1–12.
+            Kenya&apos;s trusted KICD-aligned curriculum portal (cbcmaterials.shop) providing
+            Editable Word (.DOCX) and Print-Ready (.PDF) Schemes of Work, Lesson Plans,
+            Lesson Notes, Records of Work, Opener/Mid/End-Term Assessments, and KPSEA &amp;
+            KJSEA Trial Papers for PP1, PP2, and Grades 1–12.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
             <span className="inline-flex items-center gap-1.5 bg-slate-800 text-emerald-300 px-3 py-1.5 rounded-lg font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              M-Pesa Direct: 0728595160
+              Pochi / M-Pesa: 0728595160
             </span>
             <a
               href="https://wa.me/254705759072?text=Hello%2C%20I%20have%20an%20inquiry%20on%20CBC%20Kenya%20Resource%20Hub"
@@ -35,24 +52,28 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        {/* Curriculum Levels */}
-        <div className="space-y-2">
+        {/* Grade Catalog Quick Links */}
+        <div className="space-y-2.5">
           <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">
-            Curriculum Coverage
+            CBC Grade Catalogs
           </h4>
-          <ul className="space-y-1.5 text-xs text-slate-400">
-            <li>Pre-Primary: PP1 &amp; PP2 (ECDE)</li>
-            <li>Lower Primary: Grades 1–3 (KEYA)</li>
-            <li>Upper Primary: Grades 4–6 (KPSEA)</li>
-            <li>Junior School (JSS): Grades 7–9 (KJSEA)</li>
-            <li>Senior School Pathways: Grades 10–12</li>
-          </ul>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {FOOTER_GRADE_SLUGS.map((g) => (
+              <Link
+                key={g.slug}
+                href={`/grades/${g.slug}`}
+                className="bg-slate-800/80 hover:bg-emerald-800 text-slate-300 hover:text-white px-2 py-1 rounded transition"
+              >
+                {g.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Legal, Advertising & Monetization Compliance Links */}
+        {/* Legal, Sitemap & Advertising Links */}
         <div className="space-y-2">
           <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">
-            Advertising &amp; Policies
+            Portal &amp; Policies
           </h4>
           <ul className="space-y-2 text-xs">
             <li>
@@ -75,23 +96,31 @@ export default function SiteFooter() {
               </Link>
             </li>
             <li>
+              <a href="/sitemap.xml" className="text-slate-400 hover:text-white transition">
+                XML Sitemap (3,400+ CBC Files)
+              </a>
+            </li>
+            <li>
               <a href="/ads.txt" className="text-slate-400 hover:text-white transition">
                 Authorized Sellers (ads.txt)
               </a>
             </li>
             <li>
-              <Link href="/mobile-admin" className="text-slate-400 hover:text-white transition">
+              <Link
+                href="/mobile-admin"
+                rel="nofollow"
+                className="text-slate-500 hover:text-slate-300 transition"
+              >
                 Admin Mobile App
               </Link>
             </li>
             <li>
-              <Link href="/monetization" className="text-slate-400 hover:text-white transition">
-                Monetization &amp; Earnings Studio
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin" className="text-slate-400 hover:text-white transition">
-                Publisher &amp; Admin Studio
+              <Link
+                href="/admin"
+                rel="nofollow"
+                className="text-slate-500 hover:text-slate-300 transition"
+              >
+                Publisher Studio
               </Link>
             </li>
           </ul>
@@ -99,8 +128,8 @@ export default function SiteFooter() {
       </div>
 
       <div className="border-t border-slate-800/80 py-4 text-center text-[11px] text-slate-500 px-4">
-        &copy; 2026 CBC Kenya Resource Hub. Aligned with KICD Rationalized Designs. All
-        rights reserved.
+        &copy; 2026 CBC Kenya Resource Hub (www.cbcmaterials.shop). Aligned with KICD
+        Rationalized Designs. All rights reserved.
       </div>
     </footer>
   );
