@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Copy,
+  Download,
   ExternalLink,
+  Image as ImageIcon,
   Loader2,
   Megaphone,
+  RefreshCw,
   Search,
   Settings,
   Share2,
@@ -48,6 +51,7 @@ export default function MobileSocialAutoPoster({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [postingNow, setPostingNow] = useState(false);
+  const [posterTick, setPosterTick] = useState<number>(1);
 
   const [platforms, setPlatforms] = useState<SocialPlatformEntry[]>([]);
   const [metaPixelId, setMetaPixelId] = useState('');
@@ -64,7 +68,7 @@ export default function MobileSocialAutoPoster({
     SocialBroadcastHistoryItem[]
   >([]);
 
-  // Search & Content Picker
+  // Search & Content / Service Picker
   const [searchQuery, setSearchQuery] = useState('');
   const [materials, setMaterials] = useState<MaterialSearchItem[]>([]);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('AUTO');
@@ -76,10 +80,46 @@ export default function MobileSocialAutoPoster({
     captionUsed: string;
     reelCommentUsed: string;
     targetUrl: string;
+    posterVerticalUrl: string;
+    posterCardUrl: string;
+    localPosterPath: string;
     materialTitle: string;
     intents: PlatformLaunchIntent[];
   } | null>(null);
-  const [copiedType, setCopiedType] = useState<'caption' | 'reel' | null>(null);
+  const [copiedType, setCopiedType] = useState<'caption' | 'reel' | 'link' | null>(
+    null
+  );
+
+  // Live Poster Preview URL + Working Clickable Destination Link
+  const livePosterPreviewSrc = useMemo(() => {
+    if (selectedMaterialId === 'SERVICE_GAMING') {
+      return `/api/social/poster-image?service=GAMING&format=vertical&t=${posterTick}`;
+    }
+    if (selectedMaterialId === 'SERVICE_TUITION') {
+      return `/api/social/poster-image?service=TUITION&format=vertical&t=${posterTick}`;
+    }
+    if (selectedMaterialId === 'SERVICE_GEMINI') {
+      return `/api/social/poster-image?service=GEMINI&format=vertical&t=${posterTick}`;
+    }
+    if (selectedMaterialId === 'SERVICE_PORTAL') {
+      return `/api/social/poster-image?materialId=PORTAL&format=vertical&t=${posterTick}`;
+    }
+    return `/api/social/poster-image?materialId=${encodeURIComponent(
+      selectedMaterialId
+    )}&format=vertical&t=${posterTick}`;
+  }, [selectedMaterialId, posterTick]);
+
+  const liveClickableLink = useMemo(() => {
+    if (lastResult?.targetUrl) return lastResult.targetUrl;
+    if (
+      selectedMaterialId &&
+      selectedMaterialId !== 'AUTO' &&
+      !selectedMaterialId.startsWith('SERVICE_')
+    ) {
+      return `https://www.cbcmaterials.shop/materials/${selectedMaterialId}`;
+    }
+    return 'https://www.cbcmaterials.shop';
+  }, [lastResult?.targetUrl, selectedMaterialId]);
 
   const authHeaders = useCallback(
     () => ({
@@ -168,7 +208,6 @@ export default function MobileSocialAutoPoster({
     }
   };
 
-  // Instant 1-tap ON / OFF switch ("Allow posting or not") per platform
   const handleTogglePlatform = async (id: SocialPlatformId) => {
     const updated = platforms.map((p) =>
       p.id === id ? { ...p, allowPosting: !p.allowPosting } : p
@@ -189,7 +228,79 @@ export default function MobileSocialAutoPoster({
     );
   };
 
-  // ONE-CLICK MASTER POST TO ALL ENABLED PLATFORMS!
+  /**
+   * Generates the HD Poster PNG file in memory and invokes native mobile Reels / Status sharing
+   * (`navigator.share({ files: [posterFile], title, text, url })`) with clickable cbcmaterials.shop link!
+   */
+  const shareGeneratedImageToReelsOrStatus = async (params: {
+    posterPath: string;
+    title: string;
+    caption: string;
+    targetUrl: string;
+  }): Promise<boolean> => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return false;
+    }
+
+    try {
+      const imgRes = await fetch(params.posterPath, { cache: 'no-store' });
+      if (!imgRes.ok) return false;
+      const blob = await imgRes.blob();
+      const file = new File([blob], 'cbcmaterials-shop-reel-status.png', {
+        type: 'image/png',
+      });
+
+      const navAny = navigator as Navigator & {
+        canShare?: (data?: ShareData) => boolean;
+      };
+
+      if (
+        typeof navigator.share === 'function' &&
+        typeof navAny.canShare === 'function' &&
+        navAny.canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          files: [file],
+          title: params.title,
+          text: `${params.caption}\n\n👉 Click Here: ${params.targetUrl}`,
+        });
+        return true;
+      }
+
+      if (typeof navigator.share === 'function') {
+        await navigator.share({
+          title: params.title,
+          text: params.caption,
+          url: params.targetUrl,
+        });
+        return true;
+      }
+    } catch {
+      // User dismissed native share sheet or browser fallback needed
+    }
+    return false;
+  };
+
+  const handleDownloadPoster = async (posterPath: string) => {
+    try {
+      const res = await fetch(posterPath, { cache: 'no-store' });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = `cbcmaterials-shop-poster-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objUrl);
+      onToast('HD Poster Image downloaded to your gallery!');
+    } catch {
+      onToast('Could not download poster image.');
+    }
+  };
+
+  // ONE-CLICK MASTER AUTO-GENERATE HD IMAGE + POST TO REELS / STATUS / ALL ON PLATFORMS!
   const handleOneClickPostAll = async () => {
     const enabledList = platforms.filter((p) => p.allowPosting);
     if (enabledList.length === 0) {
@@ -216,34 +327,43 @@ export default function MobileSocialAutoPoster({
       }
 
       const intents: PlatformLaunchIntent[] = data.intents || [];
-      setLastResult({
+      const resultObj = {
         message: data.message,
         captionUsed: data.captionUsed,
         reelCommentUsed: data.reelCommentUsed,
         targetUrl: data.targetUrl,
+        posterVerticalUrl: data.posterVerticalUrl,
+        posterCardUrl: data.posterCardUrl,
+        localPosterPath: data.localPosterPath || livePosterPreviewSrc,
         materialTitle: data.materialTitle,
         intents,
-      });
+      };
+      setLastResult(resultObj);
+      setPosterTick((t) => t + 1);
+
       if (data.config?.recentBroadcasts) {
         setRecentBroadcasts(data.config.recentBroadcasts);
       }
 
-      // Copy rich monetized caption + link straight into phone clipboard so Reels/TikTok/IG/Status paste in 1 tap!
+      // 1. Copy full clickable link caption to clipboard immediately
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        await navigator.clipboard.writeText(data.captionUsed || '').catch(() => {});
+        await navigator.clipboard
+          .writeText(data.captionUsed || data.targetUrl)
+          .catch(() => {});
       }
 
-      // Automatically open composer windows for ON platforms that aren't already server-posted
-      const pendingBrowserIntents = intents.filter((i) => !i.autoPostedOnServer);
-      if (typeof window !== 'undefined' && pendingBrowserIntents.length > 0) {
-        // Open primary ON platform immediately on the user tap gesture (never blocked by mobile browsers!)
-        window.open(
-          pendingBrowserIntents[0].launchUrl,
-          '_blank',
-          'noopener,noreferrer'
-        );
-        // Attempt remaining ON platforms; also show 1-tap launch pills below so mobile OS popup blockers never stop multi-posting!
-        for (let idx = 1; idx < pendingBrowserIntents.length; idx++) {
+      // 2. Auto-generate & push the HD Poster Image + Clickable Link straight into Phone Reels / Status Share Sheet!
+      const sharedNatively = await shareGeneratedImageToReelsOrStatus({
+        posterPath: resultObj.localPosterPath,
+        title: resultObj.materialTitle,
+        caption: resultObj.captionUsed,
+        targetUrl: resultObj.targetUrl,
+      });
+
+      // 3. On desktop / browsers without native file share, open enabled platform composers (which auto-pull the clickable OpenGraph HD card!)
+      if (!sharedNatively && typeof window !== 'undefined') {
+        const pendingBrowserIntents = intents.filter((i) => !i.autoPostedOnServer);
+        for (let idx = 0; idx < pendingBrowserIntents.length; idx++) {
           window.open(
             pendingBrowserIntents[idx].launchUrl,
             '_blank',
@@ -254,7 +374,7 @@ export default function MobileSocialAutoPoster({
 
       setExpanded(true);
       onToast(
-        `Posting across ${intents.length} ON platform(s)! Caption + Link copied to clipboard.`
+        'HD Poster Image + Clickable cbcmaterials.shop Link ready & dispatched!'
       );
     } catch {
       onToast('Network error running social broadcast.');
@@ -273,20 +393,147 @@ export default function MobileSocialAutoPoster({
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-[#1877F2] text-white px-2.5 py-0.5 rounded-full">
               <Share2 className="w-3 h-3" />
-              All-Platforms Auto-Poster
+              HD Image + Link Auto-Poster
             </span>
             <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">
               {enabledPlatforms.length} ON / {platforms.length - enabledPlatforms.length} OFF
             </span>
           </div>
           <h2 className="text-sm font-black text-white leading-snug">
-            1-Click Post Website Ads to All Your Platforms
+            Auto-Generate Poster Image &amp; Post to Reels, Status &amp; All Platforms
           </h2>
           <p className="text-[11px] text-slate-300 leading-relaxed">
-            All clicks &amp; views route monetization to your{' '}
-            <strong className="text-blue-300">Facebook Profile &amp; Reels</strong>. Toggle
-            each platform <strong>ON</strong> or <strong>OFF</strong> anytime.
+            Auto-generates a clear HD image with working clickable{' '}
+            <a
+              href={liveClickableLink}
+              target="_blank"
+              rel="noreferrer"
+              className="text-amber-300 underline font-black"
+            >
+              cbcmaterials.shop
+            </a>{' '}
+            links for your Facebook Reels, WhatsApp Status &amp; enabled platforms.
           </p>
+        </div>
+      </div>
+
+      {/* Quick Service / Material Selector Bar */}
+      <div className="space-y-1.5">
+        <select
+          value={selectedMaterialId}
+          onChange={(e) => {
+            setSelectedMaterialId(e.target.value);
+            setPosterTick((t) => t + 1);
+          }}
+          className="w-full px-3 py-2.5 bg-slate-950/90 border border-slate-700 rounded-2xl text-xs font-black text-emerald-300"
+        >
+          <option value="AUTO">
+            ⚡ AUTO-ROTATE: Fresh CBC Material + All Services (cbcmaterials.shop)
+          </option>
+          <option value="SERVICE_PORTAL">
+            🌐 FULL PORTAL AD: 3,400+ Schemes, Notes &amp; Exams (cbcmaterials.shop)
+          </option>
+          <option value="SERVICE_GAMING">
+            🎮 GAMING ARENA AD: Play All 21 CBC Subjects &amp; Earn Cash
+          </option>
+          <option value="SERVICE_TUITION">
+            🎓 TUITION AD: Book Home/Online CBC Teachers (All 47 Counties)
+          </option>
+          <option value="SERVICE_GEMINI">
+            🤖 ASK GEMINI AD: Step-by-Step AI CBC Homework Solutions
+          </option>
+          {materials.map((m) => (
+            <option key={m.id} value={m.id}>
+              📄 {m.title} (KES {m.price})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* LIVE AUTO-GENERATED HD REELS / STATUS POSTER PREVIEW + WORKING CLICKABLE LINK */}
+      <div className="bg-slate-950/85 border border-slate-800 rounded-2xl p-3 flex flex-col sm:flex-row items-center gap-3">
+        <a
+          href={lastResult?.targetUrl || liveClickableLink}
+          target="_blank"
+          rel="noreferrer"
+          title="Click to test live destination on cbcmaterials.shop"
+          className="relative w-32 sm:w-28 aspect-[9/16] rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg shrink-0 group block bg-slate-900"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lastResult?.localPosterPath || livePosterPreviewSrc}
+            alt="Auto-generated CBC Materials Reels & Status Poster"
+            className="w-full h-full object-cover"
+          />
+          <span className="absolute bottom-1 inset-x-1 bg-black/80 text-[9px] font-black text-emerald-300 text-center py-0.5 rounded">
+            TAP TO TEST LINK ↗
+          </span>
+        </a>
+
+        <div className="flex-1 min-w-0 space-y-2 w-full">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+              <ImageIcon className="w-3.5 h-3.5" />
+              Auto-Generated HD Reels &amp; Status Image
+            </span>
+            <button
+              type="button"
+              onClick={() => setPosterTick((t) => t + 1)}
+              className="text-[10px] font-bold text-slate-300 hover:text-white inline-flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-lg cursor-pointer"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Refresh Image
+            </button>
+          </div>
+
+          {/* Clickable Working Link Verification Box */}
+          <div className="bg-slate-900 border border-blue-500/40 rounded-xl p-2 space-y-1">
+            <span className="block text-[9px] font-black uppercase text-blue-300">
+              Working Clickable Destination Link:
+            </span>
+            <a
+              href={lastResult?.targetUrl || liveClickableLink}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] font-black text-amber-300 hover:underline break-all flex items-center gap-1"
+            >
+              <span>{lastResult?.targetUrl || liveClickableLink}</span>
+              <ExternalLink className="w-3 h-3 shrink-0" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() =>
+                handleDownloadPoster(
+                  lastResult?.localPosterPath || livePosterPreviewSrc
+                )
+              }
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-[10px] py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 cursor-pointer"
+            >
+              <Download className="w-3 h-3 text-emerald-400" />
+              Save HD Image
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const linkToCopy = lastResult?.targetUrl || liveClickableLink;
+                navigator.clipboard?.writeText(linkToCopy);
+                setCopiedType('link');
+                setTimeout(() => setCopiedType(null), 2000);
+                onToast('Clickable cbcmaterials.shop link copied!');
+              }}
+              className="bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-[10px] py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 cursor-pointer"
+            >
+              {copiedType === 'link' ? (
+                <Check className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+              Copy Link
+            </button>
+          </div>
         </div>
       </div>
 
@@ -315,12 +562,12 @@ export default function MobileSocialAutoPoster({
           {postingNow ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Posting to {enabledPlatforms.length} Platform(s)...
+              Generating HD Image &amp; Posting...
             </>
           ) : (
             <>
               <Zap className="w-4 h-4 text-amber-300" />
-              1-CLICK POST TO ALL ({enabledPlatforms.length} ON)
+              POST IMAGE + LINK TO REELS / STATUS ({enabledPlatforms.length} ON)
             </>
           )}
         </button>
@@ -340,20 +587,43 @@ export default function MobileSocialAutoPoster({
         </button>
       </div>
 
-      {/* LIVE MULTI-PLATFORM LAUNCH STATUS (Appears right after clicking 1-Click Post!) */}
+      {/* LIVE MULTI-PLATFORM LAUNCH STATUS (Appears right after clicking Post!) */}
       {lastResult && (
         <div className="bg-slate-950/90 border border-emerald-500/50 rounded-2xl p-3.5 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5">
-              <p className="text-[11px] font-black text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                {lastResult.message}
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">
-                Ad Item: <strong className="text-slate-200">{lastResult.materialTitle}</strong>
-              </p>
-            </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-black text-emerald-400 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              {lastResult.message}
+            </p>
+            <p className="text-[10px] text-slate-300">
+              Clickable Link:{' '}
+              <a
+                href={lastResult.targetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-300 underline font-black break-all"
+              >
+                {lastResult.targetUrl}
+              </a>
+            </p>
           </div>
+
+          {/* Direct Re-Trigger Image + Link to Phone Reels / WhatsApp Status Share Sheet */}
+          <button
+            type="button"
+            onClick={() =>
+              shareGeneratedImageToReelsOrStatus({
+                posterPath: lastResult.localPosterPath,
+                title: lastResult.materialTitle,
+                caption: lastResult.captionUsed,
+                targetUrl: lastResult.targetUrl,
+              })
+            }
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 shadow cursor-pointer"
+          >
+            <Share2 className="w-4 h-4" />
+            Send HD Image + Clickable Link to Facebook Reels / WhatsApp Status
+          </button>
 
           {/* Copy Caption / Copy Reels First Comment */}
           <div className="grid grid-cols-2 gap-2">
@@ -363,7 +633,7 @@ export default function MobileSocialAutoPoster({
                 navigator.clipboard?.writeText(lastResult.captionUsed);
                 setCopiedType('caption');
                 setTimeout(() => setCopiedType(null), 2000);
-                onToast('Full Post/Reels Caption copied!');
+                onToast('Full Post/Status Caption + Link copied!');
               }}
               className="bg-slate-900 border border-slate-700 text-slate-200 font-bold text-[11px] py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
             >
@@ -372,7 +642,7 @@ export default function MobileSocialAutoPoster({
               ) : (
                 <Copy className="w-3.5 h-3.5 text-blue-400" />
               )}
-              Copy Full Post Ad
+              Copy Caption + Link
             </button>
             <button
               type="button"
@@ -393,10 +663,10 @@ export default function MobileSocialAutoPoster({
             </button>
           </div>
 
-          {/* Per-Platform Direct Launch Buttons (for mobile popup-blocker bypass) */}
+          {/* Per-Platform Clickable Image Card / Composer Buttons */}
           <div className="space-y-1.5">
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Enabled Platforms Dispatch ({lastResult.intents.length} ON):
+              Post Clickable Image Card Across Enabled Platforms ({lastResult.intents.length} ON):
             </p>
             <div className="grid grid-cols-1 gap-1.5">
               {lastResult.intents.map((item) => (
@@ -423,7 +693,7 @@ export default function MobileSocialAutoPoster({
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[11px] font-black text-amber-300 shrink-0">
-                    {item.autoPostedOnServer ? 'Posted ✓' : 'Post →'}
+                    {item.autoPostedOnServer ? 'Auto-Posted ✓' : 'Post Now →'}
                     <ExternalLink className="w-3.5 h-3.5" />
                   </span>
                 </a>
@@ -438,10 +708,10 @@ export default function MobileSocialAutoPoster({
       {/* ===================================================================== */}
       {expanded && (
         <div className="pt-2 border-t border-slate-800/90 space-y-4">
-          {/* 1. Search / Choose Website Material to Advertise */}
+          {/* 1. Search Specific Material */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
             <label className="block text-[11px] font-black uppercase tracking-wider text-amber-300">
-              1. Automated Content Search (What to Post)
+              1. Search Specific Material or Customize Caption
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -469,26 +739,11 @@ export default function MobileSocialAutoPoster({
               </button>
             </div>
 
-            <select
-              value={selectedMaterialId}
-              onChange={(e) => setSelectedMaterialId(e.target.value)}
-              className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-emerald-300"
-            >
-              <option value="AUTO">
-                ⚡ AUTO-ROTATE (Automatically picks fresh CBC materials on every click)
-              </option>
-              {materials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title} (KES {m.price})
-                </option>
-              ))}
-            </select>
-
             <textarea
               rows={2}
               value={customCaption}
               onChange={(e) => setCustomCaption(e.target.value)}
-              placeholder="Optional custom message (leave blank to auto-generate high-converting CBC Link Ad with your Facebook & WhatsApp links!)"
+              placeholder="Optional custom message (leave blank to auto-generate high-converting CBC Link Ad with clickable https://www.cbcmaterials.shop link!)"
               className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder:text-slate-500"
             />
           </div>
@@ -498,7 +753,7 @@ export default function MobileSocialAutoPoster({
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-black uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
                 <Megaphone className="w-3.5 h-3.5" />
-                2. Your Social Media Links &amp; Allow Posting (ON / OFF)
+                2. Social Media Links &amp; Allow Posting (ON / OFF)
               </label>
               <div className="flex gap-1.5">
                 <button
@@ -558,7 +813,6 @@ export default function MobileSocialAutoPoster({
                       </span>
                     </div>
 
-                    {/* ON / OFF ALLOW POSTING BUTTON */}
                     <button
                       type="button"
                       onClick={() => handleTogglePlatform(plat.id)}
@@ -594,7 +848,7 @@ export default function MobileSocialAutoPoster({
             </button>
           </div>
 
-          {/* 3. Facebook Monetization Pixel & Zero-Touch Auto-API Keys (Optional) */}
+          {/* 3. Facebook Monetization Pixel & Zero-Touch Auto-API Keys */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
             <button
               type="button"
@@ -641,7 +895,7 @@ export default function MobileSocialAutoPoster({
                     placeholder={
                       hasFbToken
                         ? 'Token saved — paste new token only to replace'
-                        : 'Paste Meta Graph Page Access Token for 24/7 background Reels auto-comments'
+                        : 'Paste Meta Graph Page Access Token for 24/7 background HD Photo + Reels auto-posting'
                     }
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
                   />

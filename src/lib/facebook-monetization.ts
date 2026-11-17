@@ -522,8 +522,29 @@ export async function runAutomaticFacebookLinkAdSync(params: {
           materialTitle: featuredAd.title,
           targetUrl: featuredAd.targetUrl,
           status: 'PUBLISHED',
-          detail: 'Published rich clickable website content link ad to Facebook Feed',
+          detail: 'Published clickable OpenGraph image card + link ad to Facebook Feed',
         });
+      }
+
+      // Also publish the auto-generated HD Vertical Poster Image with clickable caption link!
+      const posterUrl = `https://www.cbcmaterials.shop/api/social/poster-image?materialId=${encodeURIComponent(
+        featuredAd.id
+      )}&format=vertical`;
+      const photoRes = await fetch(
+        `https://graph.facebook.com/v21.0/${encodeURIComponent(actorId)}/photos`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: posterUrl,
+            caption: featuredAd.reelCaptionAd,
+            access_token: accessToken,
+          }),
+        }
+      );
+      if (photoRes.ok) {
+        feedPostsPublished++;
+        ledger.totalFeedAdsPublished += 1;
       } else if (feedJson?.error?.message) {
         ledger.recentLogs.unshift({
           id: `log_err_${Date.now()}`,

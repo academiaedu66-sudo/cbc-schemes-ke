@@ -283,6 +283,9 @@ export async function executeMultiPlatformBroadcast(params: {
   captionUsed: string;
   reelCommentUsed: string;
   targetUrl: string;
+  posterVerticalUrl: string;
+  posterCardUrl: string;
+  localPosterPath: string;
   materialTitle: string;
   enabledCount: number;
   intents: PlatformLaunchIntent[];
@@ -291,36 +294,107 @@ export async function executeMultiPlatformBroadcast(params: {
   const config = await getSocialBroadcasterConfig();
   const activePlatforms = config.platforms.filter((p) => p.allowPosting);
 
-  // Resolve target material (specific ID or rotating featured material)
+  const selKey = (params.materialId || 'AUTO').trim();
+
+  // Resolve target material or website service
   let targetTitle = '2026 CBC Schemes, Notes, Exams & Gaming Hub (PP1–Grade 12)';
-  let targetUrl =
-    params.customTargetUrl?.trim() ||
-    'https://www.cbcmaterials.shop/?utm_source=social_broadcast&utm_medium=facebook_monetized';
+  let targetUrl = params.customTargetUrl?.trim() || 'https://www.cbcmaterials.shop';
+  let posterQuery = 'materialId=PORTAL';
   let feedCaption = params.customCaption?.trim() || '';
   let reelComment = '';
 
-  if (params.materialId && params.materialId !== 'AUTO') {
+  if (selKey === 'SERVICE_GAMING') {
+    targetTitle = 'CBC All-Subjects Gaming Arena (PP1–Grade 12 • Play & Earn Rewards)';
+    targetUrl = 'https://www.cbcmaterials.shop';
+    posterQuery = 'service=GAMING';
+    reelComment =
+      `🎮 PLAY ALL 21 CBC SUBJECTS & EARN REWARDS:\n` +
+      `https://www.cbcmaterials.shop \n` +
+      `👍 Follow on Facebook: ${DEFAULT_FACEBOOK_PROFILE_URL} \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `🎮 PLAY & REVISE ALL 21 CBC SUBJECTS ON WWW.CBCMATERIALS.SHOP!\n` +
+        `✅ End-of-Strand Textbook Exercises (PP1 – Grade 12) • Zero Question Repetition!\n` +
+        `✅ 1 Correct Question = 1 Point • 1,000 Points = KSh 5 Cash Reward (KSh 10 for 20-Min Pass)!\n\n` +
+        `👉 Tap This Clickable Link to Start Playing:\nhttps://www.cbcmaterials.shop \n\n` +
+        `💬 WhatsApp Support: https://wa.me/254705759072 \n` +
+        `#CBCKenya #KPSEA2026 #KJSEA2026 #KenyanStudents #CBCGaming #CBCMaterials`;
+    }
+  } else if (selKey === 'SERVICE_TUITION') {
+    targetTitle = 'Personal & Holiday CBC Tuition Teachers (All 47 Counties)';
+    targetUrl = 'https://www.cbcmaterials.shop/#holiday-tuition-hub';
+    posterQuery = 'service=TUITION';
+    reelComment =
+      `🎓 BOOK HOME OR ONLINE CBC TUITION / REGISTER AS A TEACHER:\n` +
+      `https://www.cbcmaterials.shop \n` +
+      `💬 WhatsApp Coordinator: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `🎓 NEED A VERIFIED HOME OR ONLINE CBC TUITION TEACHER? (PP1 – GRADE 12)\n` +
+        `✅ Parents & Learners matched with top subject teachers across all 47 Counties!\n` +
+        `✅ Qualified CBC Teachers: Register (KSh 500) for Priority Student Matching!\n\n` +
+        `👉 Click Here to Book or Register:\nhttps://www.cbcmaterials.shop \n\n` +
+        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `#HolidayTuitionKenya #TSCTeachers #CBCKenya #KenyanParents #CBCMaterials`;
+    }
+  } else if (selKey === 'SERVICE_GEMINI') {
+    targetTitle = 'Ask Gemini AI CBC Homework & Step-by-Step Revision Hub';
+    targetUrl = 'https://www.cbcmaterials.shop';
+    posterQuery = 'service=GEMINI';
+    reelComment =
+      `🤖 ASK GEMINI STEP-BY-STEP CBC HOMEWORK HELP:\n` +
+      `https://www.cbcmaterials.shop \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `🤖 STUCK ON HOMEWORK? ASK GEMINI ON WWW.CBCMATERIALS.SHOP!\n` +
+        `✅ Instant step-by-step worked answers for Maths, Sciences, English, Kiswahili & all CBC subjects (PP1–Grade 12)!\n\n` +
+        `👉 Click Here to Try Free & Unlock Full Answers:\nhttps://www.cbcmaterials.shop \n\n` +
+        `💬 WhatsApp Support: https://wa.me/254705759072 \n` +
+        `#CBCKenya #HomeworkHelpKenya #KPSEA #KJSEA #CBCMaterials`;
+    }
+  } else if (selKey === 'SERVICE_PORTAL') {
+    targetTitle = '3,400+ 2026 CBC Schemes, Notes, Lesson Plans & KPSEA/KJSEA Exams';
+    targetUrl = 'https://www.cbcmaterials.shop';
+    posterQuery = 'materialId=PORTAL';
+    reelComment =
+      `📚 GET ALL 3,400+ CBC SCHEMES, NOTES & EXAMS (WORD + PDF):\n` +
+      `https://www.cbcmaterials.shop \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `🇰🇪 OFFICIAL KENYA CBC PORTAL — WWW.CBCMATERIALS.SHOP!\n` +
+        `✅ 3,400+ Rationalized 2026 Schemes of Work, Lesson Plans, Notes & KPSEA/KJSEA Exams (PP1–Grade 12)\n` +
+        `✅ Editable Word (.DOCX) + Print-Ready (.PDF) • Instant 1-Second M-Pesa Auto-Download!\n` +
+        `✅ Plus: All-Subjects Gaming Arena, Holiday Tuition & Ask Gemini Q&A!\n\n` +
+        `👉 Click Here to Open:\nhttps://www.cbcmaterials.shop \n\n` +
+        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `#CBCKenya #CBCMaterials #TSCTeachers #KPSEA2026 #KJSEA2026`;
+    }
+  } else if (selKey !== 'AUTO') {
     const { data: item } = await supabaseAdmin
       .from('resources')
       .select('id, title, grade, category, subject, price')
-      .eq('id', params.materialId)
+      .eq('id', selKey)
       .maybeSingle();
 
     if (item) {
       targetTitle = String(item.title);
       targetUrl = `https://www.cbcmaterials.shop/materials/${item.id}`;
+      posterQuery = `materialId=${encodeURIComponent(String(item.id))}`;
       const price = Number(item.price) || 50;
       reelComment =
         `📚 DOWNLOAD INSTANTLY (Editable Word + PDF — KES ${price}):\n` +
         `${targetUrl} \n` +
-        `👍 Follow on Facebook: ${DEFAULT_FACEBOOK_PROFILE_URL} \n` +
+        `🌐 All Services: https://www.cbcmaterials.shop \n` +
         `💬 WhatsApp: https://wa.me/254705759072`;
       if (!feedCaption) {
         feedCaption =
           `🔥 2026 READY: ${item.title}\n` +
           `✅ Editable MS Word (.DOCX) + Print-Ready (.PDF) • Unlocks in 1 Second via M-Pesa (KES ${price})!\n` +
-          `👉 Download Here:\n${targetUrl} \n` +
-          `🌐 Full Catalog: https://www.cbcmaterials.shop \n` +
+          `👉 Tap Clickable Link to Download:\n${targetUrl} \n` +
+          `🌐 Full Website: https://www.cbcmaterials.shop \n` +
           `🎬 Watch Daily CBC Revision Reels on Our Facebook: ${DEFAULT_FACEBOOK_REELS_URL} \n` +
           `💬 WhatsApp Direct: 0705759072\n` +
           `#CBCKenya #KPSEA2026 #KJSEA2026 #TSCTeachers #CBCMaterials`;
@@ -333,12 +407,20 @@ export async function executeMultiPlatformBroadcast(params: {
     const top = rotated[0];
     targetTitle = top.title;
     targetUrl = top.targetUrl;
+    posterQuery =
+      top.id !== 'portal-flagship'
+        ? `materialId=${encodeURIComponent(top.id)}`
+        : 'materialId=PORTAL';
     feedCaption = top.feedPostAd;
     reelComment = top.reelFirstCommentAd;
   }
   if (!reelComment) {
-    reelComment = `📚 Download here 👉 ${targetUrl} | Follow our Facebook Reels: ${DEFAULT_FACEBOOK_REELS_URL}`;
+    reelComment = `📚 Open now 👉 ${targetUrl} | All CBC Materials: https://www.cbcmaterials.shop`;
   }
+
+  const localPosterPath = `/api/social/poster-image?${posterQuery}&format=vertical`;
+  const posterVerticalUrl = `https://www.cbcmaterials.shop${localPosterPath}`;
+  const posterCardUrl = `https://www.cbcmaterials.shop/api/social/poster-image?${posterQuery}&format=card`;
 
   const serverAutoPosted: string[] = [];
   const fbFeedOn = activePlatforms.some((p) => p.id === 'facebook_feed');
@@ -366,7 +448,7 @@ export async function executeMultiPlatformBroadcast(params: {
     }
   }
 
-  // 2. Run Telegram Bot API Direct Broadcast if Telegram is ON and configured
+  // 2. Run Telegram Bot API Direct HD Photo + Clickable Link Broadcast if Telegram is ON
   let telegramServerOk = false;
   const tgPlatform = activePlatforms.find((p) => p.id === 'telegram');
   if (
@@ -378,20 +460,20 @@ export async function executeMultiPlatformBroadcast(params: {
       const tgRes = await fetch(
         `https://api.telegram.org/bot${encodeURIComponent(
           config.telegramBotToken.trim()
-        )}/sendMessage`,
+        )}/sendPhoto`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: config.telegramChatId.trim(),
-            text: feedCaption,
-            disable_web_page_preview: false,
+            photo: posterVerticalUrl,
+            caption: `${targetTitle}\n\n👉 Click to Open: ${targetUrl}\n🌐 Portal: https://www.cbcmaterials.shop\n💬 WhatsApp: https://wa.me/254705759072`,
           }),
         }
       );
       if (tgRes.ok) {
         telegramServerOk = true;
-        serverAutoPosted.push('Telegram Channel (Bot API)');
+        serverAutoPosted.push('Telegram Channel (HD Image + Link)');
       }
     } catch {}
   }
@@ -560,15 +642,18 @@ export async function executeMultiPlatformBroadcast(params: {
     captionUsed: feedCaption,
     reelCommentUsed: reelComment,
     targetUrl,
+    posterVerticalUrl,
+    posterCardUrl,
+    localPosterPath,
     materialTitle: targetTitle,
     enabledCount: activePlatforms.length,
     intents,
     message:
       activePlatforms.length === 0
         ? 'All platforms are currently switched OFF. Turn ON at least one platform to post!'
-        : `Broadcast ready across ${activePlatforms.length} ON platform(s)${
+        : `HD Poster Image + Clickable Link ready across ${activePlatforms.length} ON platform(s)${
             serverAutoPosted.length > 0
-              ? ` (${serverAutoPosted.join(', ')} auto-posted directly!)`
+              ? ` (${serverAutoPosted.join(', ')} auto-posted!)`
               : ''
           }!`,
   };

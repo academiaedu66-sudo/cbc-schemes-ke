@@ -76,11 +76,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: 'CBC Kenya Resource Hub',
       locale: 'en_KE',
       type: 'article',
+      images: [
+        {
+          url: `${SITE_URL}/api/social/poster-image?materialId=${encodeURIComponent(
+            item.id
+          )}&format=card`,
+          width: 1200,
+          height: 630,
+          alt: `${item.title} — www.cbcmaterials.shop`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${item.title} | cbcmaterials.shop`,
+      title: `${item.title} | www.cbcmaterials.shop`,
       description: desc,
+      images: [
+        `${SITE_URL}/api/social/poster-image?materialId=${encodeURIComponent(
+          item.id
+        )}&format=card`,
+      ],
     },
   };
 }
