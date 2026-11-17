@@ -44,6 +44,20 @@ export interface PublicMonetizationConfig {
     stickyBottomBar: boolean;
     partnerBonusStrip: boolean;
   };
+  facebookPublic?: {
+    enabled: boolean;
+    profileId: string;
+    profileUrl: string;
+    reelsUrl: string;
+    whatsappUrl: string;
+    metaPixelId: string;
+  };
+  connectedSocialLinks?: Array<{
+    id: string;
+    name: string;
+    shortBadge: string;
+    url: string;
+  }>;
   campaigns: SponsoredCampaign[];
 }
 
@@ -60,14 +74,23 @@ const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
   adNetworkProvider: 'custom',
   adNetworkScriptUrl: DEFAULT_ADSTERRA_UNIT_SRC,
   adNetworkBannerScriptUrl: '',
-  smartlinkUrl: DEFAULT_ADSTERRA_SMARTLINK_URL,
-  smartlinkLabel: 'Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages →',
+  smartlinkUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+  smartlinkLabel: 'Follow Our Official Facebook Profile & Watch Daily CBC Revision Reels →',
   placements: {
     topLeaderboard: true,
     inFeedNative: true,
     previewModalAd: false,
     stickyBottomBar: false,
     partnerBonusStrip: true,
+  },
+  facebookPublic: {
+    enabled: true,
+    profileId: '61591027359399',
+    profileUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
+    reelsUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+    whatsappUrl:
+      'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
+    metaPixelId: '',
   },
   campaigns: DEFAULT_SPONSORED_CAMPAIGNS,
 };
@@ -114,6 +137,8 @@ function sendTrackBeacon(payload: {
 declare global {
   interface Window {
     adsbygoogle?: unknown[];
+    fbq?: (...args: unknown[]) => void;
+    _fbq?: unknown;
   }
 }
 
@@ -234,6 +259,34 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     }
   }, [config.enabled, config.adsenseEnabled, config.adsenseClientId]);
 
+  // Inject Official Meta (Facebook) Pixel dynamically when configured so all website views, clicks & purchases attribute to Facebook
+  useEffect(() => {
+    const pixelId = config.facebookPublic?.metaPixelId?.trim();
+    if (!config.enabled || !config.facebookPublic?.enabled || !pixelId) return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/mobile-admin') ||
+      window.location.pathname.startsWith('/monetization')
+    ) {
+      return;
+    }
+
+    const fbScriptId = 'cbc-facebook-pixel-js';
+    if (!document.getElementById(fbScriptId)) {
+      const inlineInit = document.createElement('script');
+      inlineInit.id = fbScriptId;
+      inlineInit.text = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${JSON.stringify(
+        pixelId
+      )});fbq('track','PageView');`;
+      document.head.appendChild(inlineInit);
+    }
+  }, [
+    config.enabled,
+    config.facebookPublic?.enabled,
+    config.facebookPublic?.metaPixelId,
+  ]);
+
   // Global popunder / click-hijack script injection is PERMANENTLY DISABLED so buttons never redirect customers.
   void isProtectedAdminRoute;
   void extractScriptUrlIfTag;
@@ -245,6 +298,11 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     if (now - prev < 1200) return;
     lastInteractionTsRef.current[interactionType] = now;
     sendTrackBeacon({ eventType: 'interaction', interactionType });
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      try {
+        window.fbq('track', 'ViewContent', { content_name: interactionType });
+      } catch {}
+    }
   }, []);
 
   const trackAdImpression = useCallback((placement: AdPlacement) => {
@@ -253,6 +311,11 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
 
   const trackAdClick = useCallback((placement: AdPlacement) => {
     sendTrackBeacon({ eventType: 'click', placement });
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      try {
+        window.fbq('track', 'Lead', { content_name: placement });
+      } catch {}
+    }
   }, []);
 
   const value = useMemo<MonetizationContextValue>(

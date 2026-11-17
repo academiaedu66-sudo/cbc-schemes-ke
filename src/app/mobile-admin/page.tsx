@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import MobileSocialAutoPoster from '@/components/MobileSocialAutoPoster';
 import {
   Activity,
   ArrowUpRight,
@@ -1252,6 +1253,13 @@ export default function MobileAdminAppPage() {
 
       {/* Main Mobile Container */}
       <main className="max-w-lg mx-auto px-4 py-4 space-y-4">
+        {/* 1-CLICK MULTI-PLATFORM SOCIAL AUTO-POSTER + ALL SOCIAL LINKS & ON/OFF SWITCHES */}
+        <MobileSocialAutoPoster
+          adminEmail={email}
+          adminPassword={password}
+          onToast={showToast}
+        />
+
         {/* ================================================================= */}
         {/* GLOBAL LIVE "MOBILE CLICK" 2-STEP VERIFICATION PROMPT             */}
         {/* ================================================================= */}

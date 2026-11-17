@@ -61,6 +61,11 @@ export default function SeoKnowledgeSection() {
       '@type': 'EducationalOrganization',
       name: 'CBC Kenya Resource Hub',
       url: 'https://www.cbcmaterials.shop',
+      sameAs: [
+        'https://www.facebook.com/profile.php?id=61591027359399',
+        'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+        'https://wa.me/254705759072',
+      ],
       description:
         'Kenya’s KICD-rationalized Competency-Based Curriculum (CBC) portal providing 3,400+ Editable Word (.DOCX) and PDF Schemes of Work, Lesson Plans, Notes, KPSEA & KJSEA Exams, Holiday Tuition matching, and AI Homework support across PP1 to Grade 12.',
       areaServed: {

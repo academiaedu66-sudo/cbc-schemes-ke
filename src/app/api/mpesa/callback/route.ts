@@ -7,6 +7,8 @@ import {
 } from '@/lib/mpesa';
 import { getStoredPaymentConfig } from '@/lib/payment-config';
 import { confirmWithdrawalCallback } from '@/lib/wallet';
+import { getStoredMonetizationConfig } from '@/lib/monetization';
+import { sendMetaConversionsEvent } from '@/lib/facebook-monetization';
 
 export async function POST(req: Request) {
   try {
@@ -92,6 +94,20 @@ export async function POST(req: Request) {
           if (amountNum > 0) {
             await triggerInstantPayHeroPayout(amountNum, String(receipt));
           }
+
+          // Report completed M-Pesa Purchase directly to Facebook Monetization / Conversions API
+          void getStoredMonetizationConfig()
+            .then((monCfg) =>
+              sendMetaConversionsEvent({
+                pixelId: monCfg.facebookMonetization?.metaPixelId,
+                capiAccessToken:
+                  monCfg.facebookMonetization?.metaConversionsApiToken,
+                eventName: 'Purchase',
+                valueKes: amountNum || 50,
+                contentName: `M-Pesa Order ${receipt}`,
+              })
+            )
+            .catch(() => {});
 
           await sendWhatsAppAdminNotification(
             `✅ *M-PESA RECEIVED*\n• Receipt: ${receipt}\n• Amount: KES ${amountNum}\n• Buyer: ${payerPhone}`

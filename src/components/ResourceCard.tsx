@@ -134,6 +134,20 @@ export default function ResourceCard({
                 GAMING (ALL SUBJECTS)
               </button>
             )}
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                `https://www.cbcmaterials.shop/materials/${resource.id}?utm_source=facebook_card_share`
+              )}&quote=${encodeURIComponent(
+                `📚 Download 2026 ${gradeBadge} ${resource.subject || "CBC"} (${resource.title}) in Editable Word & PDF on cbcmaterials.shop!`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              title="Share / Post Link Ad on Facebook"
+              className="inline-flex items-center gap-1 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 text-[#1877F2] font-extrabold text-[11px] px-2.5 py-1.5 rounded-lg transition"
+            >
+              <span className="font-black">f</span>
+              Share
+            </a>
             <button
               type="button"
               onClick={() => onPreview(resource)}

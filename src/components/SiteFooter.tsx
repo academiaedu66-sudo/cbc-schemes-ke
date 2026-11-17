@@ -1,6 +1,9 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { BookOpen, Megaphone, MessageCircle, ShieldCheck } from 'lucide-react';
+import { useMonetization } from '@/components/MonetizationEngine';
 
 const FOOTER_GRADE_SLUGS = [
   { slug: 'pp1', label: 'PP1' },
@@ -20,6 +23,14 @@ const FOOTER_GRADE_SLUGS = [
 ];
 
 export default function SiteFooter() {
+  const { config, trackInteraction } = useMonetization();
+  const extraSocials = (config.connectedSocialLinks || []).filter(
+    (s) =>
+      s.id !== 'facebook_feed' &&
+      s.id !== 'facebook_reels' &&
+      s.id !== 'whatsapp'
+  );
+
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-16 pb-20 md:pb-10">
       <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -41,14 +52,60 @@ export default function SiteFooter() {
               Pochi / M-Pesa: 0728595160
             </span>
             <a
-              href="https://wa.me/254705759072?text=Hello%2C%20I%20have%20an%20inquiry%20on%20CBC%20Kenya%20Resource%20Hub"
+              href={
+                config.facebookPublic?.profileUrl ||
+                'https://www.facebook.com/profile.php?id=61591027359399'
+              }
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackInteraction('facebook_footer_profile_click')}
+              className="inline-flex items-center gap-1.5 bg-[#1877F2] hover:bg-[#166FE5] text-white px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none">
+                f
+              </span>
+              Official Facebook Profile
+            </a>
+            <a
+              href={
+                config.facebookPublic?.reelsUrl ||
+                'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab'
+              }
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('facebook_footer_reels_click')}
+              className="inline-flex items-center gap-1.5 bg-blue-900/80 hover:bg-blue-800 border border-blue-700 text-blue-100 px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              Watch Facebook Reels
+            </a>
+            <a
+              href={
+                config.facebookPublic?.whatsappUrl ||
+                'https://wa.me/254705759072?text=Hello%2C%20I%20have%20an%20inquiry%20on%20CBC%20Kenya%20Resource%20Hub'
+              }
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('whatsapp_footer_click')}
               className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition"
             >
               <MessageCircle className="w-4 h-4" />
               WhatsApp: 0705759072
             </a>
+            {extraSocials.map((soc) => (
+              <a
+                key={soc.id}
+                href={soc.url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackInteraction(`social_footer_${soc.id}`)}
+                className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 px-3 py-1.5 rounded-lg font-semibold transition"
+              >
+                <span className="text-[10px] font-black bg-indigo-600 text-white px-1.5 py-0.5 rounded">
+                  {soc.shortBadge}
+                </span>
+                <span>{soc.name.split(' ')[0]}</span>
+              </a>
+            ))}
           </div>
         </div>
 

@@ -8,6 +8,10 @@ import {
   resetStoredMonetizationStats,
   type TrackEventType,
 } from '@/lib/monetization';
+import {
+  runAutomaticFacebookLinkAdSync,
+  sendMetaConversionsEvent,
+} from '@/lib/facebook-monetization';
 
 const VALID_EVENTS = new Set<TrackEventType>([
   'view',
@@ -15,6 +19,8 @@ const VALID_EVENTS = new Set<TrackEventType>([
   'interaction',
   'click',
 ]);
+
+let lastAutoReelsSyncTs = 0;
 
 export async function GET(req: NextRequest) {
   if (!isAdminAuthorized(req)) {
@@ -36,7 +42,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   // Read headers upfront for clean Next.js 16 dynamic bailout
-  void req.headers.get('user-agent');
+  const ua = req.headers.get('user-agent') || '';
+  const referer = req.headers.get('referer') || 'https://www.cbcmaterials.shop';
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    undefined;
 
   try {
     const body = (await req.json().catch(() => ({}))) as {
@@ -50,11 +61,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid eventType' }, { status: 400 });
     }
 
-    await recordMonetizationEvent({
-      eventType,
-      placement: body.placement,
-      interactionType: body.interactionType,
-    });
+    const [, config] = await Promise.all([
+      recordMonetizationEvent({
+        eventType,
+        placement: body.placement,
+        interactionType: body.interactionType,
+      }),
+      getStoredMonetizationConfig(),
+    ]);
+
+    // Forward every website view, interaction & click straight to Facebook Conversions API (non-blocking)
+    if (config.facebookMonetization?.enabled) {
+      const fbEventName =
+        eventType === 'view'
+          ? 'PageView'
+          : eventType === 'click'
+            ? 'Lead'
+            : 'ViewContent';
+      void sendMetaConversionsEvent({
+        pixelId: config.facebookMonetization.metaPixelId,
+        capiAccessToken: config.facebookMonetization.metaConversionsApiToken,
+        eventName: fbEventName,
+        sourceUrl: referer,
+        userAgent: ua,
+        clientIp: ip,
+        contentName: body.interactionType || body.placement || 'CBC Website Activity',
+      });
+
+      // Opportunistic 30-minute background auto-sync: automatically pastes website link ads into any newly uploaded Facebook Reels!
+      const now = Date.now();
+      if (
+        eventType === 'view' &&
+        config.facebookMonetization.autoPostReelsComments &&
+        config.facebookMonetization.fbPageAccessToken &&
+        now - lastAutoReelsSyncTs > 30 * 60 * 1000
+      ) {
+        lastAutoReelsSyncTs = now;
+        void runAutomaticFacebookLinkAdSync({
+          fbActorId:
+            config.facebookMonetization.profileId ||
+            config.facebookMonetization.profileUrl,
+          fbAccessToken: config.facebookMonetization.fbPageAccessToken,
+          publishFeedPost: false,
+          injectReelsLinks: true,
+        });
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch {

@@ -643,11 +643,24 @@ export default function HomePage() {
               Admin Studio
             </Link>
             <a
+              href="https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('facebook_reels_header_click')}
+              className="bg-[#1877F2] hover:bg-[#166FE5] text-white px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-xs"
+            >
+              <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none">
+                f
+              </span>
+              Facebook &amp; Reels
+            </a>
+            <a
               href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
                 'Hello, I need CBC curriculum materials'
               )}`}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackInteraction('whatsapp_header_click')}
               className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5"
             >
               <MessageCircle className="w-4 h-4" />
@@ -1314,19 +1327,33 @@ export default function HomePage() {
       {/* Dismissible Sticky Bottom Monetization Bar */}
       <StickyEarnerBar />
 
-      {/* Floating WhatsApp Support Button -> 0705759072 (254705759072) */}
-      <a
-        href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
-          'Hello, I need help with CBC curriculum materials'
-        )}`}
-        target="_blank"
-        rel="noreferrer"
-        onClick={() => trackInteraction('whatsapp_help_click')}
-        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3 rounded-full shadow-lg transition"
-      >
-        <MessageCircle className="w-4 h-4" />
-        <span>WhatsApp Help: {whatsappLocalPhone}</span>
-      </a>
+      {/* Floating Facebook Reels + WhatsApp Profile Dock */}
+      <div className="fixed bottom-5 right-5 z-40 flex flex-col sm:flex-row items-end sm:items-center gap-2">
+        <a
+          href="https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab"
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => trackInteraction('facebook_floating_click')}
+          className="inline-flex items-center gap-2 bg-[#1877F2] hover:bg-[#166FE5] text-white font-bold text-xs px-4 py-3 rounded-full shadow-lg transition"
+        >
+          <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none">
+            f
+          </span>
+          <span>Follow on Facebook &amp; Reels</span>
+        </a>
+        <a
+          href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+            'Hello, I need help with CBC curriculum materials'
+          )}`}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => trackInteraction('whatsapp_help_click')}
+          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3 rounded-full shadow-lg transition"
+        >
+          <MessageCircle className="w-4 h-4" />
+          <span>WhatsApp: {whatsappLocalPhone}</span>
+        </a>
+      </div>
 
       {/* Rich Material Preview Modal */}
       <PreviewModal

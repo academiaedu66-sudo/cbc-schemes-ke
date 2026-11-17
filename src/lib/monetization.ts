@@ -66,7 +66,22 @@ export interface MonetizationConfig {
     usdToKesRate: number;
   };
 
-  // 5. Direct Sponsored & Affiliate Campaigns
+  // 5. Facebook & WhatsApp Profile Monetization + Automatic Reels/Feed Link Ads
+  facebookMonetization: {
+    enabled: boolean;
+    profileId: string;
+    profileUrl: string;
+    reelsUrl: string;
+    whatsappUrl: string;
+    metaPixelId: string;
+    metaConversionsApiToken: string; // Server-only secret
+    fbPageAccessToken: string; // Server-only Graph API token for auto-pasting links into Reels & Feed
+    autoPostReelsComments: boolean;
+    autoPostFeedAds: boolean;
+    routeAdClicksToFacebook: boolean;
+  };
+
+  // 6. Direct Sponsored & Affiliate Campaigns
   campaigns: SponsoredCampaign[];
   updatedAt?: string;
 }
@@ -98,108 +113,107 @@ export interface MonetizationStats {
 
 export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
   {
-    id: 'sponsor-top-advertise',
+    id: 'sponsor-top-facebook-reels',
     enabled: true,
     placement: 'top_leaderboard',
-    badge: 'SPONSORED SPOTLIGHT',
+    badge: 'OFFICIAL FACEBOOK & REELS HUB',
     headline:
-      'Promote Your School, Bookshop, College or Tuition Program to 50,000+ Kenyan Teachers & Parents',
+      'Follow Our Official Facebook Profile & Watch Daily CBC Revision Reels, Exam Tips & Free Teacher Updates!',
     subtext:
-      'High-visibility banner & native catalog placements starting from KES 1,500/week • Instant activation via M-Pesa 0728595160.',
-    ctaText: 'Book Ad Slot →',
-    targetUrl: '/advertise',
-    accentColor: 'emerald',
+      'Join thousands of Kenyan Teachers, Parents & Learners on Facebook + Chat directly on WhatsApp (0705759072) for instant CBC Schemes, Notes & KPSEA/KJSEA Trials.',
+    ctaText: 'Follow & Watch on Facebook →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+    accentColor: 'blue',
+  },
+  {
+    id: 'sponsor-infeed-facebook-follow',
+    enabled: true,
+    placement: 'infeed_grid',
+    badge: 'FACEBOOK COMMUNITY',
+    headline:
+      'Watch Quick CBC Lesson Breakdowns, Exam Predictions & Teaching Tips on Our Facebook Reels!',
+    subtext:
+      'Follow our official Facebook profile for daily PP1–Grade 12 updates, share with fellow teachers, or message us on WhatsApp.',
+    ctaText: 'Open Facebook Reels →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+    accentColor: 'blue',
   },
   {
     id: 'sponsor-infeed-kicd-books',
     enabled: true,
     placement: 'infeed_grid',
-    badge: 'FEATURED PARTNER',
+    badge: 'WHATSAPP DIRECT DESK',
     headline:
-      'Order Approved KICD Orange Book Textbooks, Lab Apparatus & KPSEA/KJSEA Revision Kits',
+      'Need Custom School-Branded Schemes, Bulk School Licenses or Holiday Tuition Teachers?',
     subtext:
-      'Wholesale school & parent discounts across PP1–Grade 12 coursebooks (KLB, Longhorn, Oxford, Moran, Spotlight). Partner inquiries welcome.',
-    ctaText: 'Inquire / Partner →',
+      'Connect directly with our Coordinator on WhatsApp or follow our Facebook Page for instant 2026 CBC support across all 47 counties.',
+    ctaText: 'Chat on WhatsApp →',
     targetUrl:
-      'https://wa.me/254705759072?text=Hello%2C%20I%20saw%20the%20Featured%20Partner%20slot%20on%20CBC%20Kenya%20Resource%20Hub%20and%20would%20like%20to%20inquire',
-    accentColor: 'blue',
-  },
-  {
-    id: 'sponsor-infeed-advertise-2',
-    enabled: true,
-    placement: 'infeed_grid',
-    badge: 'ADVERTISE HERE',
-    headline:
-      'Reach Principals, HODs & Subject Teachers Searching for 2026 CBC Materials Daily',
-    subtext:
-      'Place your EdTech app, school admissions banner, or stationery shop right inside subject feeds. Pay via M-Pesa 0728595160.',
-    ctaText: 'View Ad Rates →',
-    targetUrl: '/advertise',
-    accentColor: 'purple',
+      'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20would%20like%20assistance',
+    accentColor: 'emerald',
   },
   {
     id: 'sponsor-preview-modal',
     enabled: true,
     placement: 'preview_modal',
-    badge: 'TEACHER RESOURCE PARTNER',
+    badge: 'FOLLOW ON FACEBOOK',
     headline:
-      'Need Custom School-Branded Schemes, Bulk School Licenses or Advertising on This Portal?',
+      'Enjoying This Sample Preview? Follow Our Official Facebook Profile for Daily CBC Revision Reels & Updates!',
     subtext:
-      'Get your school logo pre-filled across all PP1–Grade 12 documents or feature your institution to thousands of educators.',
-    ctaText: 'Chat on WhatsApp →',
-    targetUrl:
-      'https://wa.me/254705759072?text=Hello%2C%20I%20need%20school%20bulk%20CBC%20materials%20or%20ad%20placement%20info',
-    accentColor: 'amber',
+      'Tap to follow us on Facebook or chat on WhatsApp for school-branded Word (.DOCX) + PDF bundles.',
+    ctaText: 'Visit Our Facebook →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
+    accentColor: 'blue',
   },
   {
     id: 'sponsor-sticky-bar',
     enabled: true,
     placement: 'sticky_footer',
-    badge: 'AD SLOT',
+    badge: 'FACEBOOK & WHATSAPP',
     headline:
-      'Own a School, Bookshop or Tutor Service? Advertise on CBC Resource Hub from KES 250/day!',
-    subtext: 'Instant live banner activation via M-Pesa 0728595160',
-    ctaText: 'Advertise Now',
-    targetUrl: '/advertise',
-    accentColor: 'emerald',
+      'Follow Our Official Facebook Reels & WhatsApp Hub for Daily 2026 CBC Exam & Teaching Updates!',
+    subtext: 'Official Facebook Profile connected live to cbcmaterials.shop',
+    ctaText: 'Open Facebook →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
+    accentColor: 'blue',
   },
   {
     id: 'sponsor-tsc-hub',
     enabled: true,
     placement: 'tsc_services_hub',
-    badge: 'TSC TEACHERS OFFER',
+    badge: 'TSC TEACHERS FACEBOOK HUB',
     headline:
-      'Preparing TPAD 2 Lesson Observations? Download Ready-to-Print KICD Schemes, Lesson Plans & Records of Work!',
+      'Follow Our Official Facebook Profile for Instant TSC Circular Alerts, TPAD 2 Tips & Recruitment Updates!',
     subtext:
-      'Or advertise your Sacco, Teacher Loan, Laptop Offer, or College Intake directly to TSC teachers here.',
-    ctaText: 'Explore / Advertise →',
-    targetUrl: '/advertise',
+      'Watch daily teacher updates on our Facebook Reels & connect with fellow Kenyan educators.',
+    ctaText: 'Follow on Facebook →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
     accentColor: 'blue',
   },
   {
     id: 'sponsor-side-hustles',
     enabled: true,
     placement: 'holiday_side_hustles',
-    badge: 'FREELANCER PARTNER',
+    badge: 'TEACHER EARNINGS & FACEBOOK',
     headline:
-      'Are You a Qualified Teacher? Also Earn Locally by Registering as a Holiday / Personal Tutor (KSh 500)!',
+      'Follow Our Facebook Reels for Weekly Teacher Side-Hustle Walkthroughs & Holiday Tuition Priority Alerts!',
     subtext:
-      'Combine remote USD AI-training & paid surveys with local CBC holiday tuition students — or advertise your freelance training/tools here.',
-    ctaText: 'Advertise / Partner →',
-    targetUrl: '/advertise',
+      'Stay updated on Facebook + register as a verified CBC Holiday / Personal Tutor (KSh 500).',
+    ctaText: 'Watch on Facebook Reels →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
     accentColor: 'emerald',
   },
   {
     id: 'sponsor-gemini-qa-hub',
     enabled: true,
     placement: 'gemini_qa_hub',
-    badge: 'STUDENT REVISION SPOTLIGHT',
+    badge: 'STUDENT FACEBOOK REELS',
     headline:
-      'Boost Your Marks! Download Full KPSEA, KJSEA, Opener & End-Term Marking Schemes + Hire a Personal CBC Tutor',
+      'Watch Worked Mathematics, Science & English Exam Solutions on Our Official Facebook Reels!',
     subtext:
-      'Complete editable Word & PDF revision papers across PP1–Grade 12 or advertise your school/tuition center here.',
-    ctaText: 'Explore Revision Kits →',
-    targetUrl: '/advertise',
+      'Follow our Facebook profile for step-by-step KPSEA, KJSEA & Senior School revision clips.',
+    ctaText: 'Watch Revision Reels →',
+    targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
     accentColor: 'purple',
   },
 ];
@@ -259,6 +273,21 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
       usdToKesRate: 129.5,
     },
 
+    facebookMonetization: {
+      enabled: true,
+      profileId: '61591027359399',
+      profileUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
+      reelsUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+      whatsappUrl:
+        'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
+      metaPixelId: (process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim(),
+      metaConversionsApiToken: (process.env.META_CONVERSIONS_API_TOKEN || '').trim(),
+      fbPageAccessToken: (process.env.FACEBOOK_PAGE_ACCESS_TOKEN || '').trim(),
+      autoPostReelsComments: true,
+      autoPostFeedAds: true,
+      routeAdClicksToFacebook: true,
+    },
+
     campaigns: DEFAULT_SPONSORED_CAMPAIGNS,
   };
 }
@@ -308,6 +337,35 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
     }
 
     const parsed = JSON.parse(await data.text()) as Partial<MonetizationConfig>;
+    const fbMerged = {
+      ...defaults.facebookMonetization,
+      ...(parsed.facebookMonetization || {}),
+    };
+    if (!fbMerged.profileUrl) {
+      fbMerged.profileUrl = defaults.facebookMonetization.profileUrl;
+    }
+    if (!fbMerged.reelsUrl) {
+      fbMerged.reelsUrl = defaults.facebookMonetization.reelsUrl;
+    }
+    if (!fbMerged.profileId) {
+      fbMerged.profileId = defaults.facebookMonetization.profileId;
+    }
+
+    let mergedCampaigns =
+      Array.isArray(parsed.campaigns) && parsed.campaigns.length > 0
+        ? parsed.campaigns
+        : defaults.campaigns;
+
+    // Ensure Facebook Reels spotlight campaigns are present when Facebook routing is enabled
+    if (fbMerged.enabled && fbMerged.routeAdClicksToFacebook) {
+      const hasFbCampaign = mergedCampaigns.some((c) =>
+        String(c.targetUrl || '').includes('facebook.com')
+      );
+      if (!hasFbCampaign) {
+        mergedCampaigns = defaults.campaigns;
+      }
+    }
+
     const merged: MonetizationConfig = {
       ...defaults,
       ...parsed,
@@ -319,10 +377,8 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
         ...defaults.ratesKes,
         ...(parsed.ratesKes || {}),
       },
-      campaigns:
-        Array.isArray(parsed.campaigns) && parsed.campaigns.length > 0
-          ? parsed.campaigns
-          : defaults.campaigns,
+      facebookMonetization: fbMerged,
+      campaigns: mergedCampaigns,
     };
 
     merged.adsenseClientId = normalizeAdsensePublisherId(merged.adsenseClientId);
