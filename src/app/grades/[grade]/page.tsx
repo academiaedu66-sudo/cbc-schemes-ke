@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import {
   ArrowLeft,
   BookOpen,
@@ -65,7 +65,7 @@ export default async function GradeSeoHubPage({ params }: Props) {
   const info = slugToGradeInfo(grade);
 
   if (!info) {
-    notFound();
+    redirect('/');
   }
 
   const items = await getCachedGradeCatalog(info.slug);

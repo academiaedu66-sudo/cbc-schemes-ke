@@ -145,21 +145,22 @@ export async function generateRotatingFacebookLinkAds(
   const ads: GeneratedFacebookLinkAd[] = selected.map((r) => {
     const gLabel = formatGradeTag(Number(r.grade), String(r.title || ''));
     const price = Number(r.price) || 50;
-    const targetUrl = `https://www.cbcmaterials.shop/materials/${r.id}?utm_source=facebook_reels&utm_medium=monetized_ad&utm_campaign=auto_catalog`;
+    const targetUrl = `https://www.cbcmaterials.shop/materials/${r.id}`;
     const waText = `Hello! I saw your Facebook post for "${r.title}" (KES ${price}) on cbcmaterials.shop and would like to get it.`;
     const whatsappUrl = `https://wa.me/${DEFAULT_WHATSAPP_PHONE_INTL}?text=${encodeURIComponent(waText)}`;
 
     const reelFirstCommentAd =
       `📚 DOWNLOAD INSTANTLY (${gLabel} • Editable Word + PDF — KES ${price}):\n` +
-      `👉 ${targetUrl}\n` +
-      `🎮 Play All-Subjects CBC Gaming & Book Tuition: https://www.cbcmaterials.shop/?utm_source=facebook_comment\n` +
+      `${targetUrl} \n` +
+      `🎮 Play All-Subjects CBC Gaming & Book Tuition:\n` +
+      `https://www.cbcmaterials.shop \n` +
       `💬 WhatsApp Direct: https://wa.me/${DEFAULT_WHATSAPP_PHONE_INTL}`;
 
     const reelCaptionAd =
       `🔥 2026 ${gLabel} ${r.subject || 'CBC'} ${r.category || 'Materials'} Ready! (${r.title})\n` +
       `✅ Editable Word (.DOCX) + Print-Ready (.PDF) • Unlocks in 1 Second via M-Pesa!\n` +
-      `👇 Tap the link below / in the first comment to download:\n` +
-      `${targetUrl}\n` +
+      `👇 Tap the link below to download:\n` +
+      `${targetUrl} \n` +
       `📲 WhatsApp Support: 0705759072\n` +
       `#CBCKenya #KPSEA2026 #KJSEA2026 #KenyanTeachers #TSCTeachers #CBCMaterials`;
 
@@ -169,8 +170,9 @@ export async function generateRotatingFacebookLinkAds(
       `✔️ Includes BOTH Editable MS Word (.DOCX) & Print-Ready (.PDF)\n` +
       `✔️ Rationalized Term 1, 2 & 3 Coverage • Instant M-Pesa Auto-Download (KES ${price})\n` +
       `✔️ Plus: All-Subjects CBC Revision Gaming Arena & Verified Holiday Tuition Teachers!\n\n` +
-      `👉 Download Now: ${targetUrl}\n` +
-      `💬 Chat on WhatsApp: ${whatsappUrl}\n\n` +
+      `👉 Download Now:\n${targetUrl} \n\n` +
+      `🌐 Full Website: https://www.cbcmaterials.shop \n` +
+      `💬 Chat on WhatsApp: https://wa.me/${DEFAULT_WHATSAPP_PHONE_INTL} \n\n` +
       `#CBCKenya #CBCMaterials #KPSEA #KJSEA #SeniorSchoolKenya #KenyanParents #TSCKenya`;
 
     const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import {
   ArrowLeft,
   BookOpen,
@@ -90,7 +90,7 @@ export default async function MaterialSeoDetailPage({ params }: Props) {
   const item = await getCachedMaterialById(id);
 
   if (!item) {
-    notFound();
+    redirect('/');
   }
 
   const gKey =

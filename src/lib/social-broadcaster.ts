@@ -308,19 +308,20 @@ export async function executeMultiPlatformBroadcast(params: {
 
     if (item) {
       targetTitle = String(item.title);
-      targetUrl = `https://www.cbcmaterials.shop/materials/${item.id}?utm_source=social_broadcast&utm_medium=facebook_monetized`;
+      targetUrl = `https://www.cbcmaterials.shop/materials/${item.id}`;
       const price = Number(item.price) || 50;
       reelComment =
         `📚 DOWNLOAD INSTANTLY (Editable Word + PDF — KES ${price}):\n` +
-        `👉 ${targetUrl}\n` +
-        `👍 Follow on Facebook: ${DEFAULT_FACEBOOK_PROFILE_URL}\n` +
+        `${targetUrl} \n` +
+        `👍 Follow on Facebook: ${DEFAULT_FACEBOOK_PROFILE_URL} \n` +
         `💬 WhatsApp: https://wa.me/254705759072`;
       if (!feedCaption) {
         feedCaption =
           `🔥 2026 READY: ${item.title}\n` +
           `✅ Editable MS Word (.DOCX) + Print-Ready (.PDF) • Unlocks in 1 Second via M-Pesa (KES ${price})!\n` +
-          `👉 Download Here: ${targetUrl}\n` +
-          `🎬 Watch Daily CBC Revision Reels on Our Facebook: ${DEFAULT_FACEBOOK_REELS_URL}\n` +
+          `👉 Download Here:\n${targetUrl} \n` +
+          `🌐 Full Catalog: https://www.cbcmaterials.shop \n` +
+          `🎬 Watch Daily CBC Revision Reels on Our Facebook: ${DEFAULT_FACEBOOK_REELS_URL} \n` +
           `💬 WhatsApp Direct: 0705759072\n` +
           `#CBCKenya #KPSEA2026 #KJSEA2026 #TSCTeachers #CBCMaterials`;
       }

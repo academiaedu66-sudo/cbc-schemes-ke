@@ -115,7 +115,7 @@ export async function getCachedGradeCatalog(gradeSlug: string): Promise<SeoResou
   while (true) {
     const { data, error } = await supabaseAdmin
       .from('resources')
-      .select('id, title, grade, level, category, subject, term, price, format, description, strands, created_at')
+      .select('id, title, grade, level, category, subject, term, price, format, file_path, created_at')
       .eq('grade', info.dbGrade)
       .order('category', { ascending: true })
       .order('subject', { ascending: true })
@@ -131,16 +131,25 @@ export async function getCachedGradeCatalog(gradeSlug: string): Promise<SeoResou
   return rows;
 }
 
-export async function getCachedMaterialById(id: string): Promise<SeoResourceRow | null> {
+export async function getCachedMaterialById(rawId: string): Promise<SeoResourceRow | null> {
   'use cache';
   cacheLife('hours');
 
-  if (!/^[0-9a-f-]{20,}$/i.test(id)) return null;
+  let decoded = rawId;
+  try {
+    decoded = decodeURIComponent(rawId);
+  } catch {}
+
+  const uuidMatch = decoded.match(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+  );
+  const cleanId = uuidMatch ? uuidMatch[0] : decoded.trim();
+  if (!/^[0-9a-f-]{20,}$/i.test(cleanId)) return null;
 
   const { data, error } = await supabaseAdmin
     .from('resources')
-    .select('id, title, grade, level, category, subject, term, price, format, description, strands, created_at')
-    .eq('id', id)
+    .select('id, title, grade, level, category, subject, term, price, format, file_path, created_at')
+    .eq('id', cleanId)
     .maybeSingle();
 
   if (error || !data) return null;
@@ -157,7 +166,7 @@ export async function getCachedRelatedMaterials(
 
   const { data } = await supabaseAdmin
     .from('resources')
-    .select('id, title, grade, level, category, subject, term, price, format, description, strands, created_at')
+    .select('id, title, grade, level, category, subject, term, price, format, file_path, created_at')
     .eq('grade', dbGrade)
     .eq('subject', subject)
     .neq('id', excludeId)
