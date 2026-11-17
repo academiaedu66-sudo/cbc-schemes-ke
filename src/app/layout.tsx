@@ -82,6 +82,7 @@ export const metadata: Metadata = {
   other: {
     "geo.region": "KE",
     "geo.placename": "Kenya",
+    monetag: "4b974ebe97045e1613a11e325ff4e2a4",
   },
 };
 
