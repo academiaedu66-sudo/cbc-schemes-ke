@@ -1031,14 +1031,32 @@ export default function SubjectGamingHub({
 
                   {/* Question Card */}
                   <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 space-y-4 shadow-xs">
-                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-indigo-700">
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        {question.gradeLabel} • {question.subject}
-                      </span>
-                      <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
-                        +{POINTS_PER_QUESTION} Point
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-indigo-700">
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          {question.gradeLabel} • {question.subject}
+                        </span>
+                        <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                          +{POINTS_PER_QUESTION} Point
+                        </span>
+                      </div>
+
+                      {question.strand && (
+                        <div className="bg-indigo-50/80 border border-indigo-200/80 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-1.5 text-[11px]">
+                          <div className="font-bold text-indigo-950">
+                            <span className="text-indigo-700">{question.strand}</span>
+                            {question.substrand && (
+                              <span className="text-slate-700"> → {question.substrand}</span>
+                            )}
+                          </div>
+                          {question.strandProgress && (
+                            <span className="bg-white border border-indigo-200 text-indigo-800 font-black px-2 py-0.5 rounded-md shrink-0">
+                              {question.strandProgress}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <p className="text-sm sm:text-base font-black text-slate-900 leading-snug">

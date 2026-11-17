@@ -39,11 +39,15 @@ function ensurePlayer(
       questionsCorrect: 0,
       sessionsActivated: 0,
       totalRedeemedKes: 0,
+      curriculumCursor: {},
+      seenQuestionKeys: [],
       updatedAt: new Date().toISOString(),
     };
   } else {
     if (playerName) players[phone].playerName = playerName;
     if (gradeKey) players[phone].gradeKey = gradeKey;
+    players[phone].curriculumCursor = players[phone].curriculumCursor || {};
+    players[phone].seenQuestionKeys = players[phone].seenQuestionKeys || [];
   }
   return players[phone];
 }
@@ -88,11 +92,18 @@ export async function GET(req: NextRequest) {
       sess.playerName,
       sess.gradeKey
     );
-    const question = generateNextGameQuestion({
-      sessionId: sess.sessionId,
-      subject: sess.subject,
-      gradeKey: sess.gradeKey,
-    });
+
+    let question = sess.currentQuestion || null;
+    if (!question || question.subject !== sess.subject) {
+      question = generateNextGameQuestion({
+        sessionId: sess.sessionId,
+        subject: sess.subject,
+        gradeKey: sess.gradeKey,
+        session: sess,
+        player,
+      });
+      await saveGamingLedger(ledger);
+    }
 
     return NextResponse.json({
       active: true,
@@ -270,16 +281,31 @@ export async function POST(req: NextRequest) {
           );
         }
 
+        const prevSub = existingSession.subject;
+        const prevGrade = existingSession.gradeKey;
         existingSession.subject = subject || existingSession.subject;
         existingSession.gradeKey = gradeKey || existingSession.gradeKey;
+        if (
+          existingSession.subject !== prevSub ||
+          existingSession.gradeKey !== prevGrade
+        ) {
+          existingSession.currentQuestion = null;
+        }
         const player = ensurePlayer(ledger.players, phone, playerName, gradeKey);
-        await saveGamingLedger(ledger);
 
-        const question = generateNextGameQuestion({
-          sessionId: existingSession.sessionId,
-          subject: existingSession.subject,
-          gradeKey: existingSession.gradeKey,
-        });
+        const question =
+          existingSession.currentQuestion &&
+          existingSession.currentQuestion.subject === existingSession.subject
+            ? existingSession.currentQuestion
+            : generateNextGameQuestion({
+                sessionId: existingSession.sessionId,
+                subject: existingSession.subject,
+                gradeKey: existingSession.gradeKey,
+                session: existingSession,
+                player,
+              });
+
+        await saveGamingLedger(ledger);
 
         return NextResponse.json({
           active: true,
@@ -316,15 +342,20 @@ export async function POST(req: NextRequest) {
         sessionPoints: 0,
         sessionAnswered: 0,
         usedQuestionNonces: [],
+        usedQuestionKeys: [],
+        subjectCursors: {},
+        currentQuestion: null,
       };
-
-      await saveGamingLedger(ledger);
 
       const question = generateNextGameQuestion({
         sessionId,
         subject,
         gradeKey,
+        session: ledger.sessions[sessionId],
+        player,
       });
+
+      await saveGamingLedger(ledger);
 
       return NextResponse.json({
         active: true,
@@ -365,15 +396,28 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const player = ensurePlayer(
+        ledger.players,
+        sess.phone,
+        sess.playerName,
+        sess.gradeKey
+      );
+
       if (sess.usedQuestionNonces.includes(verified.nonce)) {
-        const nextQ = generateNextGameQuestion({
-          sessionId,
-          subject: sess.subject,
-          gradeKey: sess.gradeKey,
-        });
+        let nextQ = sess.currentQuestion || null;
+        if (!nextQ || nextQ.nonce === verified.nonce) {
+          nextQ = generateNextGameQuestion({
+            sessionId,
+            subject: sess.subject,
+            gradeKey: sess.gradeKey,
+            session: sess,
+            player,
+          });
+          await saveGamingLedger(ledger);
+        }
         return NextResponse.json({
           alreadyAnswered: true,
-          player: ledger.players[sess.phone],
+          player,
           remainingSeconds: Math.max(0, Math.floor((sess.expiresAt - now) / 1000)),
           nextQuestion: nextQ,
         });
@@ -383,13 +427,7 @@ export async function POST(req: NextRequest) {
       if (sess.usedQuestionNonces.length > 120) {
         sess.usedQuestionNonces = sess.usedQuestionNonces.slice(-120);
       }
-
-      const player = ensurePlayer(
-        ledger.players,
-        sess.phone,
-        sess.playerName,
-        sess.gradeKey
-      );
+      sess.currentQuestion = null;
 
       const isCorrect = selectedIndex === verified.correctIndex;
       sess.sessionAnswered += 1;
@@ -403,13 +441,15 @@ export async function POST(req: NextRequest) {
       }
       player.updatedAt = new Date().toISOString();
 
-      await saveGamingLedger(ledger);
-
       const nextQuestion = generateNextGameQuestion({
         sessionId,
         subject: sess.subject,
         gradeKey: sess.gradeKey,
+        session: sess,
+        player,
       });
+
+      await saveGamingLedger(ledger);
 
       return NextResponse.json({
         correct: isCorrect,
@@ -444,13 +484,24 @@ export async function POST(req: NextRequest) {
 
       sess.subject = subject;
       if (gradeKey) sess.gradeKey = gradeKey;
-      await saveGamingLedger(ledger);
+      sess.currentQuestion = null;
+
+      const player = ensurePlayer(
+        ledger.players,
+        sess.phone,
+        sess.playerName,
+        sess.gradeKey
+      );
 
       const nextQuestion = generateNextGameQuestion({
         sessionId,
         subject: sess.subject,
         gradeKey: sess.gradeKey,
+        session: sess,
+        player,
       });
+
+      await saveGamingLedger(ledger);
 
       return NextResponse.json({
         active: true,
