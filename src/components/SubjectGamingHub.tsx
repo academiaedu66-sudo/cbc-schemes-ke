@@ -859,7 +859,7 @@ export default function SubjectGamingHub({
                           : 'text-slate-600'
                       }`}
                     >
-                      1. M-Pesa STK Prompt (KSh {GAMING_FEE_KES})
+                      1. M-Pesa STK Push (KSh {GAMING_FEE_KES})
                     </button>
                     <button
                       type="button"
@@ -873,7 +873,7 @@ export default function SubjectGamingHub({
                           : 'text-slate-600'
                       }`}
                     >
-                      2. Send to {COORDINATOR_MPESA_LOCAL} &amp; Paste Code
+                      2. Pochi la Biashara ({COORDINATOR_MPESA_LOCAL})
                     </button>
                   </div>
 
@@ -911,10 +911,10 @@ export default function SubjectGamingHub({
                       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-2 text-xs">
                         <div>
                           <p className="font-bold text-emerald-950">
-                            Send KSh {GAMING_FEE_KES} via M-Pesa Send Money to:
+                            Lipa na M-Pesa &rarr; Pochi la Biashara (KSh {GAMING_FEE_KES}):
                           </p>
                           <p className="font-mono font-black text-sm text-slate-900">
-                            {COORDINATOR_MPESA_LOCAL}
+                            Phone: {COORDINATOR_MPESA_LOCAL}
                           </p>
                         </div>
                         <button

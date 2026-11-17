@@ -154,6 +154,7 @@ interface MobileWalletOverview {
   liveB2cReady: boolean;
   hasPaystackKey?: boolean;
   hasPayheroToken?: boolean;
+  payheroAccountId?: string;
   payheroChannelId: string;
   adNetworkConnected: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
@@ -239,6 +240,7 @@ export default function MobileAdminAppPage() {
   // In-App Real Money Linker (PayHero B2C + Monetag/Adsterra/AdSense)
   const [showRealMoneyLinker, setShowRealMoneyLinker] = useState(false);
   const [linkPaystackSecret, setLinkPaystackSecret] = useState('');
+  const [linkPayheroAccountId, setLinkPayheroAccountId] = useState('');
   const [linkPayheroChannelId, setLinkPayheroChannelId] = useState('');
   const [linkPayheroToken, setLinkPayheroToken] = useState('');
   const [linkAdProvider, setLinkAdProvider] = useState<
@@ -508,6 +510,7 @@ export default function MobileAdminAppPage() {
           if (walJson.overview) {
             setWalletOverview(walJson.overview);
             if (!linkerHydratedRef.current) {
+              setLinkPayheroAccountId(walJson.overview.payheroAccountId || '');
               setLinkPayheroChannelId(walJson.overview.payheroChannelId || '');
               setLinkAdProvider(walJson.overview.adNetworkProvider || 'monetag');
               setLinkAdScriptUrl(walJson.overview.adNetworkScriptUrl || '');
@@ -910,6 +913,7 @@ export default function MobileAdminAppPage() {
 
       // 1. Save PayHero Kenya (Primary) or Paystack credentials if entered
       if (
+        linkPayheroAccountId.trim() ||
         linkPayheroChannelId.trim() ||
         linkPayheroToken.trim() ||
         linkPaystackSecret.trim()
@@ -920,14 +924,17 @@ export default function MobileAdminAppPage() {
             headers,
             body: JSON.stringify({
               activeGateway:
-                linkPayheroToken.trim() || linkPayheroChannelId.trim()
+                linkPayheroToken.trim() ||
+                linkPayheroChannelId.trim() ||
+                linkPayheroAccountId.trim()
                   ? 'payhero'
                   : 'paystack',
               recipientMpesa: '254728595160',
+              payheroAccountId: linkPayheroAccountId.trim(),
               payheroChannelId: linkPayheroChannelId.trim(),
               payheroAuthToken: linkPayheroToken.trim(),
               paystackSecretKey: linkPaystackSecret.trim(),
-              payheroAutoWithdraw: true,
+              payheroAutoWithdraw: false,
             }),
           })
         );
@@ -1845,26 +1852,33 @@ export default function MobileAdminAppPage() {
                     <code>0728***160</code>:
                   </p>
 
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <input
                       type="text"
-                      placeholder="PayHero Channel ID (e.g. 15436)"
+                      placeholder="Account ID (e.g. 14023)"
+                      value={linkPayheroAccountId}
+                      onChange={(e) => setLinkPayheroAccountId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Channel ID (e.g. 15436)"
                       value={linkPayheroChannelId}
                       onChange={(e) => setLinkPayheroChannelId(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
                     />
-                    <input
-                      type="password"
-                      placeholder={
-                        walletOverview?.hasPayheroToken
-                          ? 'PayHero Basic Auth Token Saved ✓ (Paste new to update)'
-                          : 'Paste PayHero Basic Auth Token (Basic ...)'
-                      }
-                      value={linkPayheroToken}
-                      onChange={(e) => setLinkPayheroToken(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
-                    />
                   </div>
+                  <input
+                    type="password"
+                    placeholder={
+                      walletOverview?.hasPayheroToken
+                        ? 'PayHero Basic Auth Token Saved ✓ (Paste new to update)'
+                        : 'Paste PayHero Basic Auth Token'
+                    }
+                    value={linkPayheroToken}
+                    onChange={(e) => setLinkPayheroToken(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-white font-mono text-[11px]"
+                  />
                 </div>
 
                 <button

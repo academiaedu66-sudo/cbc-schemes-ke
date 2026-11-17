@@ -7,6 +7,7 @@ export interface StoredPaymentConfig {
   activeGateway: 'auto' | 'payhero' | 'daraja_live' | 'paystack' | 'intasend';
   recipientMpesa?: string; // defaults to 254728595160
   // PayHero Kenya (supports Pochi la Biashara / Till / Service Wallet + Instant M-Pesa Withdraw)
+  payheroAccountId?: string;
   payheroAuthToken?: string;
   payheroChannelId?: string;
   payheroAutoWithdraw?: boolean;
@@ -79,15 +80,26 @@ export async function saveStoredPaymentConfig(
   cachedConfig = { data: nextConfig, expiresAt: Date.now() + 15000 };
 }
 
+function padBase64Token(b64: string): string {
+  const clean = b64.replace(/\s+/g, '').replace(/=+$/, '');
+  if (!clean) return '';
+  const padLen = (4 - (clean.length % 4)) % 4;
+  return `${clean}${'='.repeat(padLen)}`;
+}
+
 export function formatPayHeroAuthHeader(rawToken: string): string {
   const trimmed = rawToken.trim();
   if (!trimmed) return '';
   if (/^basic\s+/i.test(trimmed)) {
-    return `Basic ${trimmed.replace(/^basic\s+/i, '').trim()}`;
+    const inner = trimmed.replace(/^basic\s+/i, '').trim();
+    if (inner.includes(':')) {
+      return `Basic ${Buffer.from(inner).toString('base64')}`;
+    }
+    return `Basic ${padBase64Token(inner)}`;
   }
   // If user pasted api_username:api_password, base64 encode it
   if (trimmed.includes(':')) {
     return `Basic ${Buffer.from(trimmed).toString('base64')}`;
   }
-  return `Basic ${trimmed}`;
+  return `Basic ${padBase64Token(trimmed)}`;
 }

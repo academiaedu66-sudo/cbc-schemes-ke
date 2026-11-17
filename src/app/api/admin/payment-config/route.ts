@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     config: {
       activeGateway: stored.activeGateway || 'auto',
       recipientMpesa: stored.recipientMpesa || '254728595160',
+      payheroAccountId: stored.payheroAccountId || '',
       payheroChannelId: stored.payheroChannelId || '',
       payheroAuthTokenMasked: maskSecret(stored.payheroAuthToken),
       hasPayheroToken: Boolean(stored.payheroAuthToken?.trim()),
@@ -58,6 +59,10 @@ export async function POST(req: NextRequest) {
       ...current,
       activeGateway: body.activeGateway || current.activeGateway || 'auto',
       recipientMpesa: (body.recipientMpesa || current.recipientMpesa || '254728595160').trim(),
+      payheroAccountId:
+        body.payheroAccountId !== undefined
+          ? String(body.payheroAccountId).trim()
+          : current.payheroAccountId,
       payheroChannelId:
         body.payheroChannelId !== undefined
           ? String(body.payheroChannelId).trim()

@@ -894,24 +894,24 @@ export default function HolidayTuitionCenter({
                     <button
                       type="button"
                       onClick={() => setPayTab('STK')}
-                      className={`py-2 rounded-lg text-xs font-black transition ${
+                      className={`py-2 rounded-lg text-xs font-black transition cursor-pointer ${
                         payTab === 'STK'
                           ? 'bg-white text-emerald-800 shadow-xs'
                           : 'text-slate-600'
                       }`}
                     >
-                      1. M-Pesa STK Prompt
+                      1. M-Pesa STK Push
                     </button>
                     <button
                       type="button"
                       onClick={() => setPayTab('DIRECT')}
-                      className={`py-2 rounded-lg text-xs font-black transition ${
+                      className={`py-2 rounded-lg text-xs font-black transition cursor-pointer ${
                         payTab === 'DIRECT'
                           ? 'bg-white text-emerald-800 shadow-xs'
                           : 'text-slate-600'
                       }`}
                     >
-                      2. Send to {COORDINATOR_MPESA_LOCAL} &amp; Paste Code
+                      2. Pochi la Biashara ({COORDINATOR_MPESA_LOCAL})
                     </button>
                   </div>
 
@@ -965,7 +965,8 @@ export default function HolidayTuitionCenter({
                     <form onSubmit={handleDirectMpesaSubmit} className="space-y-4">
                       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-xs text-slate-700">
                         <p className="font-bold text-emerald-950">
-                          Send KSh {feeKes.toLocaleString()} via M-Pesa Send Money to:
+                          Pay KSh {feeKes.toLocaleString()} via Lipa na M-Pesa &rarr; Pochi
+                          la Biashara:
                         </p>
                         <div className="flex items-center justify-between bg-white border border-emerald-200 rounded-lg px-3 py-2">
                           <span className="font-mono font-black text-base text-slate-900">

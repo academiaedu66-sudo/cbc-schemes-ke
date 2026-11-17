@@ -1358,7 +1358,7 @@ export default function HomePage() {
                     }`}
                   >
                     <Smartphone className="w-3.5 h-3.5" />
-                    M-Pesa STK Prompt
+                    1. M-Pesa STK Push
                   </button>
                   <button
                     type="button"
@@ -1373,7 +1373,7 @@ export default function HomePage() {
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Enter M-Pesa Code
+                    2. Pochi la Biashara
                   </button>
                 </div>
 
@@ -1454,17 +1454,22 @@ export default function HomePage() {
                   </form>
                 ) : (
                   <form onSubmit={handleDirectMpesaSubmit} className="space-y-3.5">
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-2 text-slate-700">
-                      <p className="font-bold text-slate-900">
-                        Direct M-Pesa Payment ({merchantLocalPhone}):
+                    <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 text-xs space-y-2 text-slate-700">
+                      <p className="font-black text-emerald-950">
+                        Pay via Pochi la Biashara ({merchantLocalPhone}):
                       </p>
                       <ol className="list-decimal list-inside space-y-1.5">
                         <li>
-                          Send <strong>KES {modalItem.price}</strong> via{' '}
-                          <strong>M-Pesa</strong> to{' '}
-                          <strong className="font-mono text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                          Open <strong>M-Pesa / *334#</strong> &rarr;{' '}
+                          <strong>Lipa na M-Pesa</strong> &rarr;{' '}
+                          <strong>Pochi la Biashara</strong>
+                        </li>
+                        <li>
+                          Enter Phone{' '}
+                          <strong className="font-mono text-emerald-900 bg-white border border-emerald-300 px-2 py-0.5 rounded">
                             {merchantLocalPhone}
                           </strong>{' '}
+                          &amp; Amount <strong>KES {modalItem.price}</strong>{' '}
                           <button
                             type="button"
                             onClick={copyMerchantNumber}
@@ -1482,7 +1487,8 @@ export default function HomePage() {
                           </button>
                         </li>
                         <li>
-                          Paste your <strong>M-Pesa Receipt Code</strong> (or SMS) below:
+                          Paste your <strong>M-Pesa Confirmation Code</strong> (or SMS)
+                          below:
                         </li>
                       </ol>
                     </div>

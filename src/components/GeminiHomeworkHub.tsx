@@ -852,7 +852,7 @@ export default function GeminiHomeworkHub({
                                           : 'text-slate-400 hover:text-white'
                                       }`}
                                     >
-                                      1. M-Pesa STK Prompt (KSh {WEEKLY_FEE_KES})
+                                      1. M-Pesa STK Push (KSh {WEEKLY_FEE_KES})
                                     </button>
                                     <button
                                       type="button"
@@ -866,7 +866,7 @@ export default function GeminiHomeworkHub({
                                           : 'text-slate-400 hover:text-white'
                                       }`}
                                     >
-                                      2. Send Money &amp; Paste Code
+                                      2. Pochi la Biashara ({merchantPhone})
                                     </button>
                                   </div>
 
@@ -934,11 +934,11 @@ export default function GeminiHomeworkHub({
                                       <div className="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
                                         <div className="space-y-0.5">
                                           <p className="text-[11px] font-bold text-emerald-300 uppercase">
-                                            Step 1: M-Pesa &rarr; Send Money (KSh{' '}
+                                            Step 1: Lipa na M-Pesa &rarr; Pochi la Biashara (KSh{' '}
                                             {WEEKLY_FEE_KES})
                                           </p>
                                           <p className="text-sm font-black font-mono text-white">
-                                            Phone: {merchantPhone} • Amount: KSh{' '}
+                                            Pochi Phone: {merchantPhone} • Amount: KSh{' '}
                                             {WEEKLY_FEE_KES}
                                           </p>
                                         </div>

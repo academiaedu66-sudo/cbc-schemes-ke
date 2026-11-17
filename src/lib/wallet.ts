@@ -49,6 +49,7 @@ export interface WalletOverview {
   liveB2cReady: boolean;
   hasPaystackKey: boolean;
   hasPayheroToken: boolean;
+  payheroAccountId: string;
   payheroChannelId: string;
   adNetworkConnected: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
@@ -206,7 +207,10 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     liveB2cReady,
     hasPaystackKey,
     hasPayheroToken,
-    payheroChannelId: payConfig.payheroChannelId || '',
+    payheroAccountId:
+      payConfig.payheroAccountId || process.env.PAYHERO_ACCOUNT_ID || '',
+    payheroChannelId:
+      payConfig.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '',
     adNetworkConnected,
     adNetworkProvider: monConfig.adNetworkProvider || 'monetag',
     adNetworkScriptUrl: monConfig.adNetworkScriptUrl || '',

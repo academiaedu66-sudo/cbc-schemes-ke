@@ -57,6 +57,7 @@ export async function resolveActiveGatewaySummary(): Promise<ResolvedGatewaySumm
 
   const payheroToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
   const payheroChannel = (stored.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim();
+  const payheroAccount = (stored.payheroAccountId || process.env.PAYHERO_ACCOUNT_ID || '').trim();
 
   const darajaShortcode = (stored.mpesaShortcode || process.env.MPESA_SHORTCODE || '174379').trim();
   const darajaKey = (stored.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY || '').trim();
@@ -69,12 +70,13 @@ export async function resolveActiveGatewaySummary(): Promise<ResolvedGatewaySumm
   const pref = stored.activeGateway || 'auto';
 
   if ((pref === 'payhero' || pref === 'auto') && payheroToken && payheroChannel) {
+    const acctNote = payheroAccount ? `Account #${payheroAccount}, ` : '';
     return {
       provider: 'payhero',
       settlesTo0728595160: true,
       recipientMpesa,
       recipientLocal,
-      description: `PayHero Live STK Push (Channel #${payheroChannel}) -> Instant ${recipientLocal} M-Pesa`,
+      description: `PayHero Live STK Push (${acctNote}Channel #${payheroChannel}) -> Instant ${recipientLocal} M-Pesa`,
     };
   }
 
