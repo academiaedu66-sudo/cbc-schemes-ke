@@ -45,28 +45,28 @@ function buildFallbackDetails(resource: {
   let strands: string[] = [];
 
   if (cat === 'CBC GRADE UP (50-Page Books)') {
-    description = `Official 50-Page "CBC GRADE UP" Exam & Topical Exercise Book for ${gradeLabel} ${resource.subject}, synthesized from KICD Approved Course Materials (${book.lbTitle} — ${book.publisher}). Covers 170 relevant questions sequentially from First Strand to Last Strand (Pages 2–35) with Complete Marking Schemes & Worked Solutions at the end of the book (Pages 36–50).`;
+    description = `Official "CBC GRADE UP" Complete Short Notes, Exam & Topical Exercise Book for ${gradeLabel} ${resource.subject}, synthesized from KICD Approved Course Materials (${book.lbTitle} — ${book.publisher}). Includes comprehensive Point-Form Short Notes (12+ points per Sub-strand, 30+ points per Strand across ALL Strands), 165 zero-repeat Strand & Sub-strand Exam Questions, and Complete Marking Schemes at the end of the book.`;
     strands = [
       `Official Approved Coursebook Alignment: ${book.lbTitle} (${book.publisher})`,
-      'Exact 50 Pages: Cover + 170 Strand/Sub-strand Questions (Pages 2–35)',
-      'Complete Marking Schemes & Worked Solutions at the End (Pages 36–50)',
-      'Dual Format Included: 50-Page Printable PDF + Editable Word (.DOCX)',
+      'Section A: Complete Point-Form Short Notes (12+ pts/Sub-strand, 30+ pts/Strand across ALL Strands)',
+      'Section B & C: 165 Zero-Repeat Questions + End-of-Book Marking Schemes & Worked Solutions',
+      'Dual Format Included: Printable PDF + Editable Word (.DOCX)',
     ];
   } else if (cat === 'SUPER-LIGHT CBC COMPILATION (50p)') {
-    description = `Official 50-Page "SUPER-LIGHT CBC COMPILATION" Revision Book for ${gradeLabel} ${resource.subject}, synthesized from KICD Approved Course Materials (${book.lbTitle} — ${book.publisher}). Features Short Point-Form Notes covering everything in each Strand & Sub-strand, followed immediately after every sub-topic by relevant questions + Answers (Pages 42–50).`;
+    description = `Official "SUPER-LIGHT CBC COMPILATION" Revision Book for ${gradeLabel} ${resource.subject}, synthesized from KICD Approved Course Materials (${book.lbTitle} — ${book.publisher}). Features In-Depth Short Point-Form Notes (12+ points per Sub-strand, 30+ points per Strand covering ALL Strands), followed immediately after every Sub-strand by relevant Topical Practice Questions + Complete Answers at the back.`;
     strands = [
       `Official Approved Coursebook Alignment: ${book.lbTitle} (${book.publisher})`,
-      'Exact 50 Pages: Concise Point-Form Notes Covering Every Strand & Sub-strand',
-      'Every Sub-topic Followed Immediately by Relevant Practice Questions + Answers',
-      'Dual Format Included: 50-Page Printable PDF + Editable Word (.DOCX)',
+      'Complete Point-Form Short Notes: 12+ Points per Sub-strand & 30+ Points per Strand (All Strands)',
+      'Every Sub-strand Followed Immediately by Relevant Topical Practice Questions + Answers',
+      'Dual Format Included: Printable PDF + Editable Word (.DOCX)',
     ];
   } else if (cat === 'SMART CBC ALL SUBJECTS (100p)') {
-    description = `Complete 100-Page "SMART CBC ALL SUBJECTS" Master Book for ${gradeLabel} ${resource.subject}, combining BOTH 50-Page Books ("SUPER-LIGHT CBC COMPILATION" Pages 1–50 + "CBC GRADE UP" Pages 51–100) with zero-repetition Point-Form Notes, Immediate Sub-topic Questions, 170 Exam Questions, and Complete Marking Schemes (${book.lbTitle} — ${book.publisher}).`;
+    description = `Complete "SMART CBC ALL SUBJECTS" Master Compilation for ${gradeLabel} ${resource.subject}, combining BOTH Books ("SUPER-LIGHT CBC COMPILATION" + "CBC GRADE UP") with complete zero-repetition Point-Form Short Notes (12+ points per Sub-strand & 30+ points per Strand in each part, covering ALL Strands), Immediate Sub-strand Questions, 165 Exam Questions, and Complete Marking Schemes (${book.lbTitle} — ${book.publisher}).`;
     strands = [
       `Official Approved Coursebook Alignment: ${book.lbTitle} (${book.publisher})`,
-      'Exact 100 Pages: SUPER-LIGHT CBC COMPILATION (50p) + CBC GRADE UP (50p)',
-      'Zero-Repeat Point-Form Notes + Topical Questions + End-of-Book Marking Schemes',
-      'Dual Format Included: 100-Page Printable PDF + Editable Word (.DOCX)',
+      'Master Compilation: SUPER-LIGHT CBC COMPILATION + CBC GRADE UP (Zero Overlap)',
+      'All Strands Covered: 12+ Short Note Points/Sub-strand (30+/Strand) + 315+ Questions + Marking Schemes',
+      'Dual Format Included: Printable PDF + Editable Word (.DOCX)',
     ];
   } else if (cat === 'Schemes of Work') {
     description = `KICD-rationalized ${resource.subject} Schemes of Work for ${gradeLabel} (${resource.level}), ${termText} — aligned to ${book.lbTitle} & ${book.tgTitle} (${book.publisher}). Structured with ${lessonsPerWeek} lessons/week (${minutesPerLesson} mins each, ${totalLessons} individual lessons across Weeks 1–${totalWeeks}) and delivered in BOTH Editable Word (.DOCX) and Print-Ready (.PDF) formats.`;
@@ -100,17 +100,17 @@ function buildFallbackDetails(resource: {
     strands =
       resource.term === 0
         ? [
-            `KICD Orange Book Coursebook: ${book.lbTitle} (${book.publisher})`,
-            `Official Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins, ${lessonsPerWeek * 36} annual lessons)`,
-            'Full-year Strand, Sub-strand & Textbook Page Matrix (Terms 1, 2 & 3)',
-            'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
-          ]
+          `KICD Orange Book Coursebook: ${book.lbTitle} (${book.publisher})`,
+          `Official Allocation: ${lessonsPerWeek} Lessons/Week (${minutesPerLesson} mins, ${lessonsPerWeek * 36} annual lessons)`,
+          'Full-year Strand, Sub-strand & Textbook Page Matrix (Terms 1, 2 & 3)',
+          'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
+        ]
         : [
-            `Synced with ${book.lbTitle} pages & ${termText} Teachers' Notes`,
-            `Covers all ${termText} sub-strands taught across ${lessonsPerWeek} lessons/week`,
-            'Includes parent/guardian sign-off & home practical CBC project',
-            'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
-          ];
+          `Synced with ${book.lbTitle} pages & ${termText} Teachers' Notes`,
+          `Covers all ${termText} sub-strands taught across ${lessonsPerWeek} lessons/week`,
+          'Includes parent/guardian sign-off & home practical CBC project',
+          'Dual Format Included: Editable Word (.DOCX) + Print-Ready (.PDF)',
+        ];
   } else if (cat === 'Revision Papers & Exams') {
     description = `Competency-Based ${gradeLabel} ${resource.subject} (${termText}) Assessment Paper & Official Marking Scheme aligned to ${book.lbTitle} (${book.publisher}) — includes BOTH Editable Word (.DOCX to customize your school header) and Print-Ready (.PDF).`;
     strands = [

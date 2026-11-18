@@ -41,21 +41,21 @@ export async function POST(req: Request) {
       itemTitle: cleanBookTitle
         ? cleanBookTitle
         : serviceType
-        ? String(serviceType)
-        : resourceId
-        ? `Resource #${resourceId}`
-        : 'Admin Live STK Test',
+          ? String(serviceType)
+          : resourceId
+            ? `Resource #${resourceId}`
+            : 'Admin Live STK Test',
       amountKes:
         serviceType === 'BOOK_GRADE_UP'
           ? 500
           : serviceType === 'BOOK_MADE_FAMILIAR'
-          ? 750
-          : serviceType === 'BOOK_COMPLETE_BUNDLE'
-          ? 1500
-          : Number(testAmount) || 0,
+            ? 750
+            : serviceType === 'BOOK_COMPLETE_BUNDLE'
+              ? 1500
+              : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
-    }).catch(() => {});
+    }).catch(() => { });
 
     if (!phoneNumber || (!resourceId && !testAmount && !serviceType)) {
       return NextResponse.json(
@@ -302,7 +302,7 @@ export async function POST(req: Request) {
               );
             }
           }
-        } catch {}
+        } catch { }
       }
 
       const checkoutRequestId = `PAYHERO_${trackingRef}`;

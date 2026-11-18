@@ -3462,7 +3462,14 @@ export function buildDomainLessonNotes({
     };
   }
 
-  if (s.includes('english')) {
+  if (
+    s.includes('english') ||
+    s.includes('language') ||
+    s.includes('literature') ||
+    s === 'french' ||
+    s === 'arabic' ||
+    s === 'german'
+  ) {
     return {
       summaryLine: `Model accurate pronunciation, language rules, and exemplar sentences on "${cleanAspect}" from ${lbCitation}.`,
       coreConceptNotes: [
@@ -3490,7 +3497,21 @@ export function buildDomainLessonNotes({
     };
   }
 
-  if (s.includes('pre-technical') || s.includes('computer') || s.includes('business')) {
+  if (
+    s.includes('pre-technical') ||
+    s.includes('computer') ||
+    s.includes('information communication') ||
+    s === 'ict' ||
+    s.includes('business') ||
+    s.includes('electricity') ||
+    s.includes('aviation') ||
+    s.includes('building') ||
+    s.includes('metal') ||
+    s.includes('power mechanics') ||
+    s.includes('woodwork') ||
+    s.includes('media technology') ||
+    s.includes('home science')
+  ) {
     return {
       summaryLine: `Illustrate technical/digital/commercial workflows on "${cleanAspect}" using ${resources.toLowerCase()} and ${lbCitation}.`,
       coreConceptNotes: [
@@ -3504,7 +3525,14 @@ export function buildDomainLessonNotes({
     };
   }
 
-  if (s.includes('creative')) {
+  if (
+    s.includes('creative') ||
+    s.includes('music') ||
+    s.includes('theatre') ||
+    s.includes('fine arts') ||
+    s.includes('sports') ||
+    s.includes('physical education')
+  ) {
     return {
       summaryLine: `Coach warm-up, artistic/musical/sporting technique, and safe execution of "${cleanAspect}" (${lbCitation}).`,
       coreConceptNotes: [
@@ -3689,7 +3717,14 @@ export function getCurriculumAllocation(grade, subject) {
   // Pre-Primary: PP1 & PP2 (30 minutes per lesson; 25 lessons/week rationalized ECDE)
   if (grade === 'PP1' || grade === 'PP2' || grade === -1 || grade === 0) {
     let lessonsPerWeek = 5;
-    if (s.includes('creative')) {
+    if (
+    s.includes('creative') ||
+    s.includes('music') ||
+    s.includes('theatre') ||
+    s.includes('fine arts') ||
+    s.includes('sports') ||
+    s.includes('physical education')
+  ) {
       lessonsPerWeek = 6;
     } else if (s.includes('religious') || s.includes('cre') || s.includes('ire')) {
       lessonsPerWeek = 3;

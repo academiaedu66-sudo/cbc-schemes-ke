@@ -45,9 +45,13 @@ interface BookPreviewData {
   officialPortalUrl?: string;
   totalStrands: number;
   totalSubTopics: number;
+  totalNotePoints?: number;
+  minPointsPerSubstrand?: number;
+  minPointsPerStrand?: number;
   strands: Array<{
     strand: string;
     subsCount: number;
+    totalPoints?: number;
     subsPreview: string[];
   }>;
   sampleSubTopic: {
@@ -180,70 +184,70 @@ const BOOK_BUTTONS_META: Array<{
   btnClass: string;
   badgeClass: string;
 }> = [
-  {
-    type: 'GRADE_UP',
-    buttonNum: 1,
-    serviceType: 'BOOK_GRADE_UP',
-    priceKes: 500,
-    pagesLabel: '50-Page Book Per Subject',
-    title: 'CBC GRADE UP',
-    subtitle:
-      'Relevant Exam & Exercise Questions Covering All Topics, Strands & Sub-strands + End-of-Book Marking Schemes',
-    bullets: [
-      'Exact 50 Pages per subject (PP1, PP2 & Grades 1–12)',
-      '170 relevant questions sequentially from First Strand to Last Strand',
-      'Complete Marking Schemes & Worked Solutions at the end (Pages 36–50)',
-      'Includes Printable PDF + Editable Word (.DOCX) copy',
-    ],
-    accentBg: 'from-emerald-900 via-emerald-800 to-teal-900',
-    accentBorder: 'border-emerald-400',
-    btnClass:
-      'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg shadow-amber-950/30',
-    badgeClass: 'bg-emerald-400/20 text-emerald-200 border-emerald-300/40',
-  },
-  {
-    type: 'MADE_FAMILIAR',
-    buttonNum: 2,
-    serviceType: 'BOOK_MADE_FAMILIAR',
-    priceKes: 750,
-    pagesLabel: '50-Page Notes + Q&A Compilation',
-    title: 'SUPER-LIGHT CBC COMPILATION',
-    subtitle:
-      'Short Point-Form Notes Covering Everything in Each Strand & Sub-strand + Immediate Topical Questions After Every Sub-topic',
-    bullets: [
-      'Exact 50 Pages per subject in clear, easy-to-revise Point Form',
-      'Covers every Strand & Sub-strand with key formulas, rules & examples',
-      'Every sub-topic is followed immediately by relevant practice questions',
-      'Includes Sub-topic Marking Guide at the back (Pages 42–50) + DOCX',
-    ],
-    accentBg: 'from-indigo-950 via-blue-900 to-indigo-900',
-    accentBorder: 'border-sky-400',
-    btnClass:
-      'bg-sky-400 hover:bg-sky-300 text-slate-950 shadow-lg shadow-sky-950/30',
-    badgeClass: 'bg-sky-400/20 text-sky-200 border-sky-300/40',
-  },
-  {
-    type: 'COMPLETE_BUNDLE',
-    buttonNum: 3,
-    serviceType: 'BOOK_COMPLETE_BUNDLE',
-    priceKes: 1500,
-    pagesLabel: '100-Page Master Book + All Subjects',
-    title: 'SMART CBC ALL SUBJECTS',
-    subtitle:
-      'Everything Compiled Together: SUPER-LIGHT CBC COMPILATION (50 Pages) + CBC GRADE UP (50 Pages) + All Subjects in Grade!',
-    bullets: [
-      'Compiles BOTH 50-Page Books into one 100-Page Zero-Repeat Master Book',
-      'Unlocks separate downloads for CBC GRADE UP (50p) & SUPER-LIGHT (50p)',
-      'Switch across ALL subjects in your selected Grade at zero extra cost!',
-      'Best Value Prompt Buy — Instant M-Pesa STK Auto-Download (.PDF + .DOCX)',
-    ],
-    accentBg: 'from-purple-950 via-fuchsia-950 to-amber-950',
-    accentBorder: 'border-amber-400',
-    btnClass:
-      'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 text-slate-950 shadow-lg shadow-amber-950/40',
-    badgeClass: 'bg-amber-400/20 text-amber-200 border-amber-300/50',
-  },
-];
+    {
+      type: 'GRADE_UP',
+      buttonNum: 1,
+      serviceType: 'BOOK_GRADE_UP',
+      priceKes: 500,
+      pagesLabel: '50+ Page Complete Subject Book',
+      title: 'CBC GRADE UP',
+      subtitle:
+        'Complete Short Point-Form Notes (12+ Points/Sub-strand, 30+ Points/Strand Across ALL Strands) + 165 Exam Questions + End-of-Book Marking Schemes',
+      bullets: [
+        'Every Sub-strand has 12+ Point-Form Short Notes (30+ Points per Strand)',
+        'Covers ALL Strands of the subject + 165 Zero-Repeat Questions',
+        'Complete Marking Schemes & Worked Solutions at the end of the book',
+        'Includes Printable PDF + Editable Word (.DOCX) copy',
+      ],
+      accentBg: 'from-emerald-900 via-emerald-800 to-teal-900',
+      accentBorder: 'border-emerald-400',
+      btnClass:
+        'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg shadow-amber-950/30',
+      badgeClass: 'bg-emerald-400/20 text-emerald-200 border-emerald-300/40',
+    },
+    {
+      type: 'MADE_FAMILIAR',
+      buttonNum: 2,
+      serviceType: 'BOOK_MADE_FAMILIAR',
+      priceKes: 750,
+      pagesLabel: '50+ Page Notes + Q&A Compilation',
+      title: 'SUPER-LIGHT CBC COMPILATION',
+      subtitle:
+        'In-Depth Point-Form Short Notes (12+ Points/Sub-strand, 30+ Points/Strand Across ALL Strands) + Immediate Topical Questions After Every Sub-strand',
+      bullets: [
+        'Every Sub-strand has 12+ Point-Form Notes & every Strand 30+ Points',
+        'Covers ALL Strands with key definitions, formulas, rules & worked examples',
+        'Every Sub-strand is followed immediately by relevant practice questions',
+        'Includes Complete Sub-strand Marking Guide at the back + Editable DOCX',
+      ],
+      accentBg: 'from-indigo-950 via-blue-900 to-indigo-900',
+      accentBorder: 'border-sky-400',
+      btnClass:
+        'bg-sky-400 hover:bg-sky-300 text-slate-950 shadow-lg shadow-sky-950/30',
+      badgeClass: 'bg-sky-400/20 text-sky-200 border-sky-300/40',
+    },
+    {
+      type: 'COMPLETE_BUNDLE',
+      buttonNum: 3,
+      serviceType: 'BOOK_COMPLETE_BUNDLE',
+      priceKes: 1500,
+      pagesLabel: '100+ Page Master Book + All Subjects',
+      title: 'SMART CBC ALL SUBJECTS',
+      subtitle:
+        'Everything Compiled Together: SUPER-LIGHT CBC COMPILATION + CBC GRADE UP (All Strands Short Notes, Zero-Repeat Qs & Marking Schemes) + All Subjects in Grade!',
+      bullets: [
+        'Compiles BOTH Books into one Master Book (24+ combined Notes/Sub-strand, 60+/Strand)',
+        'Unlocks separate downloads for CBC GRADE UP & SUPER-LIGHT CBC COMPILATION',
+        'Switch across ALL subjects in your selected Grade at zero extra cost!',
+        'Best Value Prompt Buy — Instant M-Pesa STK Auto-Download (.PDF + .DOCX)',
+      ],
+      accentBg: 'from-purple-950 via-fuchsia-950 to-amber-950',
+      accentBorder: 'border-amber-400',
+      btnClass:
+        'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 hover:from-amber-300 hover:to-emerald-300 text-slate-950 shadow-lg shadow-amber-950/40',
+      badgeClass: 'bg-amber-400/20 text-amber-200 border-amber-300/50',
+    },
+  ];
 
 export interface ExternalBookModalLaunch {
   bookType: BookButtonType;
@@ -294,7 +298,7 @@ export default function CbcBooksHub({
           setCatalog(data.grades);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -302,7 +306,7 @@ export default function CbcBooksHub({
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setUnlockedOrders(parsed);
       }
-    } catch {}
+    } catch { }
 
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -366,7 +370,7 @@ export default function CbcBooksHub({
           setPreview(data);
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         if (!cancelled) setIsLoadingPreview(false);
       });
@@ -449,7 +453,7 @@ export default function CbcBooksHub({
             const next = [newUnlocked, ...filtered].slice(0, 30);
             try {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-            } catch {}
+            } catch { }
             return next;
           });
 
@@ -497,7 +501,7 @@ export default function CbcBooksHub({
         amountKes: meta.priceKes,
         stage: 'OPENED_CHECKOUT',
       }),
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   const handleStkPromptBuy = async (e: React.FormEvent) => {
@@ -524,14 +528,14 @@ export default function CbcBooksHub({
         setPaymentStatus('FAILED');
         setStatusMessage(
           data?.error ||
-            'Could not send M-Pesa STK prompt. Check your Safaricom phone number or use Option 2 (Pochi la Biashara).'
+          'Could not send M-Pesa STK prompt. Check your Safaricom phone number or use Option 2 (Pochi la Biashara).'
         );
       } else {
         setCheckoutRequestId(data.checkoutRequestId);
         setPaymentStatus('PENDING');
         setStatusMessage(
           data.customerMessage ||
-            `M-Pesa STK Prompt for KSh ${currentMeta.priceKes} sent to ${phoneNumber}! Enter your M-Pesa PIN on your phone — your book will download automatically.`
+          `M-Pesa STK Prompt for KSh ${currentMeta.priceKes} sent to ${phoneNumber}! Enter your M-Pesa PIN on your phone — your book will download automatically.`
         );
       }
     } catch {
@@ -738,11 +742,10 @@ export default function CbcBooksHub({
                             setActiveBookType(b.type);
                             if (paymentStatus === 'FAILED') setPaymentStatus('IDLE');
                           }}
-                          className={`p-2.5 rounded-xl border-2 text-left transition cursor-pointer ${
-                            active
-                              ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-xs'
-                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                          }`}
+                          className={`p-2.5 rounded-xl border-2 text-left transition cursor-pointer ${active
+                            ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-xs'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                            }`}
                         >
                           <div className="text-[10px] font-black uppercase text-emerald-700">
                             Button {b.buttonNum} • KSh {b.priceKes}
@@ -751,8 +754,8 @@ export default function CbcBooksHub({
                             {b.type === 'GRADE_UP'
                               ? 'CBC GRADE UP (50p)'
                               : b.type === 'MADE_FAMILIAR'
-                              ? 'SUPER-LIGHT CBC COMPILATION'
-                              : 'SMART CBC ALL SUBJECTS'}
+                                ? 'SUPER-LIGHT CBC COMPILATION'
+                                : 'SMART CBC ALL SUBJECTS'}
                           </div>
                         </button>
                       );
@@ -848,7 +851,8 @@ export default function CbcBooksHub({
                         <div className="text-[11px] font-black uppercase text-slate-500 mb-1.5 flex items-center gap-1.5">
                           <Layers className="w-3.5 h-3.5 text-emerald-600" />
                           All {preview.totalStrands} Strands &amp; {preview.totalSubTopics}{' '}
-                          Sub-topics Covered (First to Last):
+                          Sub-strands Covered ({preview.totalNotePoints || '140+'}{' '}
+                          Short Note Points):
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {preview.strands.map((st, idx) => (
@@ -856,26 +860,32 @@ export default function CbcBooksHub({
                               key={idx}
                               className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-[11px] font-bold"
                             >
-                              {idx + 1}. {st.strand} ({st.subsCount})
+                              {idx + 1}. {st.strand} ({st.subsCount} subs •{' '}
+                              {st.totalPoints || 36} pts)
                             </span>
                           ))}
                         </div>
                       </div>
 
-                      {/* Point-Form Notes Preview (Shown for Button 2 & Button 3) */}
-                      {(activeBookType === 'MADE_FAMILIAR' ||
-                        activeBookType === 'COMPLETE_BUNDLE') && (
-                        <div className="rounded-xl bg-indigo-50/70 border border-indigo-200 p-3">
-                          <div className="text-[11px] font-black uppercase text-indigo-900 mb-1">
-                            Sample Point-Form Notes ({preview.sampleSubTopic.subtopicTitle}):
-                          </div>
-                          <ul className="space-y-1 text-xs text-slate-700">
-                            {preview.sampleSubTopic.pointNotes.slice(0, 3).map((pt, i) => (
-                              <li key={i}>{pt}</li>
-                            ))}
-                          </ul>
+                      {/* Point-Form Short Notes Preview (Shown Across ALL THREE BUTTONS!) */}
+                      <div className="rounded-xl bg-indigo-50/70 border border-indigo-200 p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                          <span className="text-[11px] font-black uppercase text-indigo-950">
+                            Sample Sub-strand Short Notes ({preview.sampleSubTopic.subtopicTitle}):
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-200/80 text-indigo-950 text-[10px] font-black">
+                            {preview.sampleSubTopic.pointNotes.length} Points/Sub-strand •{' '}
+                            {preview.minPointsPerStrand || 32}+ Points/Strand
+                          </span>
                         </div>
-                      )}
+                        <ul className="space-y-1 text-xs text-slate-700 max-h-48 overflow-y-auto pr-1">
+                          {preview.sampleSubTopic.pointNotes.map((pt, i) => (
+                            <li key={i} className="leading-snug">
+                              {pt}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
                       {/* Sample Questions + End-of-Book Marking Scheme Snippet */}
                       <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-3 space-y-2">
@@ -964,29 +974,29 @@ export default function CbcBooksHub({
                         {/* Extra separate 50-page book buttons when Complete Compilation (KSh 1,500) is unlocked */}
                         {(activeBookType === 'COMPLETE_BUNDLE' ||
                           (matchingUnlockedOrder?.amount || 0) >= 1500) && (
-                          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/15">
-                            <a
-                              href={buildBookDownloadUrl(
-                                activeVerifiedId,
-                                'GRADE_UP',
-                                'pdf'
-                              )}
-                              className="py-2 px-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] text-center transition"
-                            >
-                              ↓ CBC GRADE UP (50p PDF)
-                            </a>
-                            <a
-                              href={buildBookDownloadUrl(
-                                activeVerifiedId,
-                                'MADE_FAMILIAR',
-                                'pdf'
-                              )}
-                              className="py-2 px-2.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] text-center transition"
-                            >
-                              ↓ SUPER-LIGHT CBC (50p PDF)
-                            </a>
-                          </div>
-                        )}
+                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/15">
+                              <a
+                                href={buildBookDownloadUrl(
+                                  activeVerifiedId,
+                                  'GRADE_UP',
+                                  'pdf'
+                                )}
+                                className="py-2 px-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] text-center transition"
+                              >
+                                ↓ CBC GRADE UP (50p PDF)
+                              </a>
+                              <a
+                                href={buildBookDownloadUrl(
+                                  activeVerifiedId,
+                                  'MADE_FAMILIAR',
+                                  'pdf'
+                                )}
+                                className="py-2 px-2.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] text-center transition"
+                              >
+                                ↓ SUPER-LIGHT CBC (50p PDF)
+                              </a>
+                            </div>
+                          )}
                       </div>
                     </div>
                   ) : (
@@ -996,22 +1006,20 @@ export default function CbcBooksHub({
                         <button
                           type="button"
                           onClick={() => setPayTab('STK')}
-                          className={`py-2 px-3 rounded-lg text-xs font-black transition cursor-pointer ${
-                            payTab === 'STK'
-                              ? 'bg-emerald-700 text-white shadow-xs'
-                              : 'text-slate-600 hover:bg-slate-50'
-                          }`}
+                          className={`py-2 px-3 rounded-lg text-xs font-black transition cursor-pointer ${payTab === 'STK'
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-50'
+                            }`}
                         >
                           1. M-Pesa STK Prompt
                         </button>
                         <button
                           type="button"
                           onClick={() => setPayTab('DIRECT')}
-                          className={`py-2 px-3 rounded-lg text-xs font-black transition cursor-pointer ${
-                            payTab === 'DIRECT'
-                              ? 'bg-emerald-700 text-white shadow-xs'
-                              : 'text-slate-600 hover:bg-slate-50'
-                          }`}
+                          className={`py-2 px-3 rounded-lg text-xs font-black transition cursor-pointer ${payTab === 'DIRECT'
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-50'
+                            }`}
                         >
                           2. Pochi la Biashara
                         </button>
@@ -1119,11 +1127,10 @@ export default function CbcBooksHub({
 
                       {statusMessage && (
                         <div
-                          className={`rounded-xl p-3 text-xs font-semibold ${
-                            paymentStatus === 'FAILED'
-                              ? 'bg-red-50 text-red-800 border border-red-200'
-                              : 'bg-amber-50 text-amber-950 border border-amber-300'
-                          }`}
+                          className={`rounded-xl p-3 text-xs font-semibold ${paymentStatus === 'FAILED'
+                            ? 'bg-red-50 text-red-800 border border-red-200'
+                            : 'bg-amber-50 text-amber-950 border border-amber-300'
+                            }`}
                         >
                           {statusMessage}
                           {paymentStatus === 'PENDING' && (

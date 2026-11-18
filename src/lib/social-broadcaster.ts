@@ -531,7 +531,7 @@ export async function executeMultiPlatformBroadcast(params: {
         telegramServerOk = true;
         serverAutoPosted.push('Telegram Channel (HD Image + Link)');
       }
-    } catch {}
+    } catch { }
   }
 
   // 3. Fire Universal Multi-Social Automation Webhook (Make / Zapier / Buffer / n8n) if configured
@@ -557,7 +557,7 @@ export async function executeMultiPlatformBroadcast(params: {
       if (whRes.ok) {
         serverAutoPosted.push('Automation Webhook');
       }
-    } catch {}
+    } catch { }
   }
 
   // 4. Build Direct Launch Intents strictly for ON platforms
@@ -707,10 +707,9 @@ export async function executeMultiPlatformBroadcast(params: {
     message:
       activePlatforms.length === 0
         ? 'All platforms are currently switched OFF. Turn ON at least one platform to post!'
-        : `HD Poster Image + Clickable Link ready across ${activePlatforms.length} ON platform(s)${
-            serverAutoPosted.length > 0
-              ? ` (${serverAutoPosted.join(', ')} auto-posted!)`
-              : ''
-          }!`,
+        : `HD Poster Image + Clickable Link ready across ${activePlatforms.length} ON platform(s)${serverAutoPosted.length > 0
+          ? ` (${serverAutoPosted.join(', ')} auto-posted!)`
+          : ''
+        }!`,
   };
 }

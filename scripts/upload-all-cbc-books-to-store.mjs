@@ -123,7 +123,7 @@ async function main() {
       price: 500,
       filePrefix: 'BOOK1_CBC_GRADE_UP_50P',
       buildTitle: (gradeLabel, subject) =>
-        `${gradeLabel} ${subject} — CBC GRADE UP (50-Page Questions Book + Marking Schemes)`,
+        `${gradeLabel} ${subject} — CBC GRADE UP (Short Notes + Questions + Marking Schemes)`,
     },
     {
       bookType: 'MADE_FAMILIAR',

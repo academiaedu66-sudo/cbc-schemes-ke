@@ -244,8 +244,8 @@ async function buildPrintPdfFromDocx(
       color: isDivider
         ? rgb(0.75, 0.8, 0.85)
         : isHighlight
-        ? rgb(0.03, 0.36, 0.26)
-        : rgb(0.12, 0.16, 0.23),
+          ? rgb(0.03, 0.36, 0.26)
+          : rgb(0.12, 0.16, 0.23),
     });
     y -= isDivider ? 9.5 : 12.2;
   }
@@ -836,8 +836,8 @@ export async function GET(request: NextRequest) {
         normCat === 'SUPER-LIGHT CBC COMPILATION (50p)'
           ? 'MADE_FAMILIAR'
           : normCat === 'SMART CBC ALL SUBJECTS (100p)'
-          ? 'COMPLETE_BUNDLE'
-          : 'GRADE_UP';
+            ? 'COMPLETE_BUNDLE'
+            : 'GRADE_UP';
       const bookDocx = await generateCbcBookDocxBuffer({
         bookType,
         gradeKey: gKey,

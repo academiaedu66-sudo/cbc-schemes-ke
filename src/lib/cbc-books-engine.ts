@@ -59,6 +59,48 @@ export interface EnrichedSubTopic {
   resources: string;
 }
 
+export interface ApprovedBookRef {
+  series: string;
+  publisher: string;
+  authors: string;
+  note?: string;
+}
+
+export interface StructuredSubstrandNotes {
+  substrandIndex: number;
+  substrandCode: string;
+  substrandTitle: string;
+  term: number;
+  kiq: string;
+  resources: string;
+  points: string[];
+}
+
+export interface StructuredStrandNotes {
+  strandIndex: number;
+  strandTitle: string;
+  term: number;
+  kiq: string;
+  resources: string;
+  totalPoints: number;
+  substrands: StructuredSubstrandNotes[];
+}
+
+export interface StructuredSyllabusNotesResult {
+  gradeKey: string;
+  gradeLabel: string;
+  subject: string;
+  coursebookTitle: string;
+  approvedBooks: ApprovedBookRef[];
+  officialPortalUrl: string;
+  totalStrands: number;
+  totalSubstrands: number;
+  totalPoints: number;
+  minPointsPerSubstrand: number;
+  minPointsPerStrand: number;
+  strands: StructuredStrandNotes[];
+}
+
 function cleanScope(text: string): string {
   return String(text || '')
     .replace(/\s*\([^)]*Scope\)/gi, '')
@@ -85,6 +127,10 @@ function toPdfSafe(str: string): string {
     .replace(/λ/g, 'lambda')
     .replace(/ρ/g, 'rho')
     .replace(/°/g, ' deg')
+    .replace(/≥/g, '>=')
+    .replace(/≤/g, '<=')
+    .replace(/≠/g, '!=')
+    .replace(/±/g, '+/-')
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
     .replace(/—/g, ' - ')
@@ -94,7 +140,7 @@ function toPdfSafe(str: string): string {
     .replace(/[^\x20-\x7E\xA0-\xFF\n]/g, '');
 }
 
-function wrapPdfText(text: string, maxChars = 86): string[] {
+function wrapPdfText(text: string, maxChars = 88): string[] {
   const safe = toPdfSafe(text);
   const out: string[] = [];
   for (const rawLine of safe.split('\n')) {
@@ -127,9 +173,20 @@ function splitSubAspects(sub: string): string[] {
     prefix = cleaned.slice(0, colonIdx).trim();
     rest = cleaned.slice(colonIdx + 1).trim();
   }
-  const rawParts = rest
+  // Remove parenthetical lists temporarily before splitting top-level commas so we don't split inside parens
+  const parenTokens: string[] = [];
+  const masked = rest.replace(/\([^)]*\)/g, (m) => {
+    parenTokens.push(m);
+    return `__PAREN_${parenTokens.length - 1}__`;
+  });
+
+  const rawParts = masked
     .split(/[,;&]|\band\b|\bna\b/i)
-    .map((p) => p.trim())
+    .map((p) =>
+      p
+        .replace(/__PAREN_(\d+)__/g, (_all, idx) => parenTokens[Number(idx)] || '')
+        .trim()
+    )
     .filter((p) => p.length > 3);
 
   if (rawParts.length <= 1) return [cleaned];
@@ -138,6 +195,42 @@ function splitSubAspects(sub: string): string[] {
       ? `${prefix}: ${part}`
       : part
   );
+}
+
+/**
+ * Extracts fine-grained constituent concepts from a Sub-strand title (both top-level parts
+ * and parenthetical examples/parameters) so each sub-element receives explicit coverage in Short Notes.
+ */
+function extractSubstrandConcepts(substrandTitle: string): string[] {
+  const cleaned = cleanScope(substrandTitle);
+  const concepts: string[] = [];
+  const seen = new Set<string>();
+
+  const pushUnique = (raw: string) => {
+    const t = raw.replace(/^[:\-–—,\s]+|[:\-–—,\s]+$/g, '').trim();
+    if (t.length < 3) return;
+    const k = t.toLowerCase();
+    if (!seen.has(k)) {
+      seen.add(k);
+      concepts.push(t);
+    }
+  };
+
+  for (const topPart of splitSubAspects(cleaned)) {
+    const withoutParen = topPart.replace(/\([^)]*\)/g, '').trim();
+    pushUnique(withoutParen || topPart);
+  }
+
+  const parenMatches = cleaned.match(/\(([^)]+)\)/g) || [];
+  for (const pm of parenMatches) {
+    const inner = pm.slice(1, -1);
+    for (const item of inner.split(/[,/&;]|\bvs\b|\band\b|\bna\b/i)) {
+      pushUnique(item);
+    }
+  }
+
+  if (concepts.length === 0) pushUnique(cleaned);
+  return concepts;
 }
 
 export function formatBookGradeLabel(gradeKey: string): string {
@@ -212,18 +305,17 @@ function resolveDomainKey(subject: string): string {
   return 'social_history_geography';
 }
 
-export interface ApprovedBookRef {
-  series: string;
-  publisher: string;
-  authors: string;
-  note?: string;
-}
-
 export function collectOrderedSubTopics(
   gradeKey: string,
   subject: string
 ): {
-  strands: Array<{ strand: string; subs: string[]; kiq: string; resources: string }>;
+  strands: Array<{
+    strand: string;
+    subs: string[];
+    kiq: string;
+    resources: string;
+    term: number;
+  }>;
   subTopics: EnrichedSubTopic[];
   coursebookTitle: string;
   approvedBooks: ApprovedBookRef[];
@@ -245,6 +337,7 @@ export function collectOrderedSubTopics(
     subs: string[];
     kiq: string;
     resources: string;
+    term: number;
   }> = [];
   const subTopics: EnrichedSubTopic[] = [];
 
@@ -259,7 +352,8 @@ export function collectOrderedSubTopics(
           strand: strandName,
           subs: [],
           kiq: b.kiq || '',
-          resources: b.resources || '',
+          resources: b.resources || 'Approved Learner Book, charts & practical realia',
+          term,
         };
         strandsMap.push(grp);
       }
@@ -294,6 +388,474 @@ export function collectOrderedSubTopics(
     officialPortalUrl: KICD_OFFICIAL_APPROVED_PORTAL_URL,
   };
 }
+
+function normalizeNoteKey(text: string): string {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/^\d+\.\s*/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Converts an ExerciseItem into a purely declarative, textbook-style revision statement
+ * (using a separate seed space `>= 50000` so worked numerical examples never collide with Questions!).
+ */
+function formatDomainItemAsDeclarativeNote(
+  item: ExerciseItem,
+  substrandTitle: string,
+  isKiswahili: boolean,
+  isMathOrWorked: boolean
+): string {
+  const corr = String(item.options[item.ans] || '').trim();
+  const cleanExp = String(item.exp || '').replace(/\s+/g, ' ').trim();
+  const cleanStem = String(item.q || '')
+    .replace(/\?+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (isKiswahili) {
+    return `Mfano na Kanuni (${substrandTitle}): Katika uchambuzi wa "${cleanStem}", jibu na muundo sahihi ni "${corr}" — ${cleanExp}`;
+  }
+  if (isMathOrWorked) {
+    return `Worked Illustration (${substrandTitle}): Given "${cleanStem}", the verified result is ${corr} (${cleanExp})`;
+  }
+  return `Key Subject Fact & Rule: ${cleanExp} [Key Term / Verified Benchmark: ${corr}].`;
+}
+
+/**
+ * Builds the complete, authoritative Short Point-Form Notes Tree for ANY `(gradeKey, subject)`:
+ * - Covers 100% of ALL Strands (Term 1 -> Term 2 -> Term 3, First Strand to Last Strand)
+ * - Covers 100% of ALL Sub-strands in every Strand
+ * - STRICT GUARANTEE: Every Sub-strand has `> 10` points (`12` to `16` distinct numbered points!)
+ * - STRICT GUARANTEE: Every Strand has `>= 30` points (`32` to `132+` distinct points!)
+ * - Supports `variantOffset` (`0` for SUPER-LIGHT CBC COMPILATION, `1` for CBC GRADE UP inside Master Compilation)
+ *   so worked examples & supplementary points never duplicate!
+ */
+export function buildStructuredSyllabusNotesTree(
+  gradeKey: string,
+  subject: string,
+  variantOffset = 0
+): StructuredSyllabusNotesResult {
+  const gradeLabel = formatBookGradeLabel(gradeKey);
+  const sylSubject = resolveSyllabusSubject(subject, gradeKey);
+  const gradeArg = gradeKey.toUpperCase().startsWith('PP')
+    ? gradeKey.toUpperCase()
+    : Number(gradeKey) || 7;
+  const cb = getApprovedCoursebook(gradeArg, sylSubject);
+  const { strands, coursebookTitle, approvedBooks, officialPortalUrl } =
+    collectOrderedSubTopics(gradeKey, subject);
+
+  const domain = resolveDomainKey(subject);
+  const isKis = domain === 'kiswahili' || domain === 'fasihi_kiswahili';
+  const bank = DOMAIN_EXERCISE_BANKS[domain] || [];
+  const approvedCite =
+    approvedBooks.length > 0
+      ? approvedBooks
+          .slice(0, 2)
+          .map((b) => `${b.series} (${b.publisher})`)
+          .join('; ')
+      : coursebookTitle;
+
+  const usedNotesSet = new Set<string>();
+  const usedBankIndices = new Set<number>();
+
+  // If variantOffset > 0 (e.g. Part 2 inside SMART CBC ALL SUBJECTS), seed exclusions from variant 0
+  // so 0% of Short Note points ever repeat across Part 1 and Part 2!
+  if (variantOffset > 0) {
+    const prior = buildStructuredSyllabusNotesTree(gradeKey, subject, 0);
+    for (const pSt of prior.strands) {
+      for (const pSub of pSt.substrands) {
+        for (const pPt of pSub.points) {
+          usedNotesSet.add(normalizeNoteKey(pPt));
+        }
+      }
+    }
+  }
+
+  let globalSubCounter = 0;
+
+  const structuredStrands: StructuredStrandNotes[] = [];
+  let grandTotalPoints = 0;
+  let grandTotalSubstrands = 0;
+  let minPointsPerSubstrand = 999;
+  let minPointsPerStrand = 999;
+
+  for (let sIdx = 0; sIdx < strands.length; sIdx++) {
+    const st = strands[sIdx];
+    let effectiveSubs = [...st.subs];
+
+    // If a strand ever has only 1 sub-strand, expand its constituent sub-aspects so sub-strands >= 2
+    if (effectiveSubs.length < 2) {
+      const split = splitSubAspects(effectiveSubs[0] || st.strand);
+      if (split.length >= 2) {
+        effectiveSubs = split;
+      } else {
+        const base = effectiveSubs[0] || st.strand;
+        effectiveSubs = isKis
+          ? [
+              `${base}: Dhana na Kanuni za Msingi`,
+              `${base}: Matumizi na Uchambuzi wa Kiutendaji`,
+              `${base}: Mifano Halisi na Umilisi`,
+            ]
+          : [
+              `${base}: Core Definitions & Principles`,
+              `${base}: Practical Procedures & Methods`,
+              `${base}: Real-World Application & Mastery`,
+            ];
+      }
+    }
+
+    // Mathematical guarantee:
+    // - Every Sub-strand gets >= 12 points (strictly > 10!)
+    // - Every Strand gets >= 32 points (strictly >= 30! e.g. 2 subs -> 16 pts each = 32; 3 subs -> 12 pts each = 36)
+    const pointsTarget = Math.max(12, Math.ceil(32 / effectiveSubs.length));
+    const builtSubstrands: StructuredSubstrandNotes[] = [];
+    let strandPointsTotal = 0;
+
+    for (let subIdx = 0; subIdx < effectiveSubs.length; subIdx++) {
+      globalSubCounter++;
+      const subTitle = effectiveSubs[subIdx];
+      const subCode = `${sIdx + 1}.${subIdx + 1}`;
+      const concepts = extractSubstrandConcepts(subTitle);
+      const hay = `${st.strand} ${subTitle} ${concepts.join(' ')}`.toLowerCase();
+
+      const ctx: StrandContext = {
+        gradeKey,
+        gradeLabel,
+        subject,
+        strand: st.strand,
+        substrand: subTitle,
+      };
+
+      const domainLesson = buildDomainLessonNotes({
+        grade: gradeArg,
+        subject: sylSubject,
+        strand: st.strand,
+        baseSubstrand: subTitle,
+        aspect: concepts[0] || subTitle,
+        phaseTag: variantOffset === 0 ? 'Comprehensive Revision' : 'Exam & Mastery Synthesis',
+        kiq: st.kiq,
+        resources: st.resources,
+        lbCitation: cb.lbShort,
+        tgCitation: cb.tgShort,
+        isKiswahili: isKis,
+      });
+
+      const rawPoints: string[] = [];
+      const pushUniquePoint = (candidate: string): boolean => {
+        const cleaned = String(candidate || '')
+          .replace(/^\s*[-*•]\s*/, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!cleaned || cleaned.length < 18) return false;
+        const norm = normalizeNoteKey(cleaned);
+        if (usedNotesSet.has(norm)) return false;
+        usedNotesSet.add(norm);
+        rawPoints.push(cleaned);
+        return true;
+      };
+
+      // 1. Core Sub-strand Scope & Syllabus Alignment Point
+      if (isKis) {
+        pushUniquePoint(
+          variantOffset === 0
+            ? `Upeo na Maana ya Mada Ndogo (${subCode}): "${subTitle}" chini ya mada kuu "${st.strand}" inamjengea mwanafunzi wa ${gradeLabel} umilisi wa kudumu kulingana na vitabu teule (${approvedCite}).`
+            : `Muhtasari wa Umilisi (${subCode}): Katika mada ya "${st.strand}", kipengele cha "${subTitle}" kinahusu kanuni, ufasaha na matumizi sahihi katika tathmini za ${gradeLabel} (${approvedCite}).`
+        );
+      } else {
+        pushUniquePoint(
+          variantOffset === 0
+            ? `Core Scope & Definition (${subCode}): "${subTitle}" under Strand "${st.strand}" builds essential ${gradeLabel} ${subject} competencies synthesized from official approved coursebooks (${approvedCite}).`
+            : `Revision Focus & Mastery Scope (${subCode}): Within "${st.strand}", the sub-strand "${subTitle}" establishes key definitions, analytical methods, and assessment standards for ${gradeLabel} ${subject} (${approvedCite}).`
+        );
+      }
+
+      // 2. Domain Lesson Core Concept Bullets (3 discipline-tailored points)
+      for (const cNote of domainLesson.coreConceptNotes) {
+        pushUniquePoint(cNote);
+      }
+
+      // 3. Explicit Point-by-Point Breakdown of Every Constituent Concept in this Sub-strand
+      const conceptRolesEn = [
+        (c: string) =>
+          `Key Sub-Component — ${c}: Learners must define "${c}" accurately, identify its distinguishing features within "${subTitle}", and explain how it operates in ${subject}.`,
+        (c: string) =>
+          `Functional Mechanism of ${c}: Understand the step-by-step rule, structural role, or governing relationship linking "${c}" to the broader principles of "${st.strand}".`,
+        (c: string) =>
+          `Classification & Comparison in ${c}: Distinguish "${c}" from closely related concepts in "${subTitle}" using clear observable criteria and textbook examples.`,
+        (c: string) =>
+          `Applied Analysis of ${c}: Evaluate real-life situations and structured tasks involving "${c}" by applying verified ${gradeLabel} ${subject} principles.`,
+        (c: string) =>
+          `Operational Precision in ${c}: Record terminology, symbols, units, or structural conventions of "${c}" accurately during classwork and assessments.`,
+      ];
+      const conceptRolesKis = [
+        (c: string) =>
+          `Kipengele Mahsusi — ${c}: Mwanafunzi afafanue maana, sifa bainifu na muundo wa "${c}" kama unavyojitokeza katika mada ndogo ya "${subTitle}".`,
+        (c: string) =>
+          `Kanuni na Matumizi ya ${c}: Zingatia upatanisho wa kisarufi, mtiririko wa hoja na mifano sanifu unaposhughulikia "${c}" chini ya "${st.strand}".`,
+        (c: string) =>
+          `Ulinganuzi wa ${c}: Tofautisha "${c}" na vipengele vingine vinavyokaribiana katika "${subTitle}" kwa kutumia mifano halisi ya Kiswahili sanifu.`,
+        (c: string) =>
+          `Uchambuzi wa Kiutendaji wa ${c}: Tumia stadi za "${c}" kujibu maswali ya muktadha, kusoma na kuandika kwa ufasaha katika ${gradeLabel}.`,
+      ];
+
+      for (let cIdx = 0; cIdx < Math.min(concepts.length, 5); cIdx++) {
+        const cName = concepts[cIdx];
+        const roleIdx = (cIdx + variantOffset) % (isKis ? conceptRolesKis.length : conceptRolesEn.length);
+        const txt = isKis ? conceptRolesKis[roleIdx](cName) : conceptRolesEn[roleIdx](cName);
+        pushUniquePoint(txt);
+      }
+
+      // 4. Harvest Strand-Matched Domain Facts, Formulas & Worked Examples (4 to 7 points)
+      const seedBase = 50_000 + variantOffset * 25_000 + globalSubCounter * 313;
+      let domainFactsAdded = 0;
+      const desiredDomainFacts = Math.max(4, pointsTarget - 8);
+
+      if (domain === 'mathematics') {
+        for (let att = 0; att < 120 && domainFactsAdded < desiredDomainFacts; att++) {
+          const w = generateWorkedMathematicsExercise(ctx, seedBase + att * 29);
+          if (pushUniquePoint(formatDomainItemAsDeclarativeNote(w, subTitle, false, true))) {
+            domainFactsAdded++;
+          }
+        }
+      } else {
+        // 4a. Strand-keyword matched static domain bank facts (skipping any used indices)
+        for (let bIdx = 0; bIdx < bank.length && domainFactsAdded < 2; bIdx++) {
+          const probeIdx = (bIdx + variantOffset * 17 + globalSubCounter * 3) % bank.length;
+          if (usedBankIndices.has(probeIdx)) continue;
+          const item = bank[probeIdx];
+          if (item.tags.some((t) => hay.includes(t.toLowerCase()))) {
+            if (pushUniquePoint(formatDomainItemAsDeclarativeNote(item, subTitle, isKis, false))) {
+              usedBankIndices.add(probeIdx);
+              domainFactsAdded++;
+            }
+          }
+        }
+
+        // 4b. Quantitative / Parametric Worked Domain Illustrations
+        for (let att = 0; att < 80 && domainFactsAdded < desiredDomainFacts; att++) {
+          const w = generateWorkedDomainExercise(domain, ctx, seedBase + att * 19);
+          if (
+            w &&
+            pushUniquePoint(formatDomainItemAsDeclarativeNote(w, subTitle, isKis, true))
+          ) {
+            domainFactsAdded++;
+          }
+        }
+
+        // 4c. Extra Textbook & Deep Subject Knowledge Facts scoped to this Sub-strand
+        for (let att = 0; att < 90 && domainFactsAdded < desiredDomainFacts; att++) {
+          const ex = generateExtraTextbookExercise(domain, ctx, globalSubCounter * 7 + variantOffset * 31 + att);
+          if (
+            ex &&
+            pushUniquePoint(formatDomainItemAsDeclarativeNote(ex, subTitle, isKis, false))
+          ) {
+            domainFactsAdded++;
+          }
+        }
+        for (let att = 0; att < 90 && domainFactsAdded < desiredDomainFacts; att++) {
+          const dp = generateDeepSubjectExercise(domain, ctx, globalSubCounter * 11 + variantOffset * 37 + att);
+          if (
+            dp &&
+            pushUniquePoint(formatDomainItemAsDeclarativeNote(dp, subTitle, isKis, false))
+          ) {
+            domainFactsAdded++;
+          }
+        }
+      }
+
+      // 5. Practical Apparatus, Learning Aids & Step-by-Step Procedure Points
+      if (isKis) {
+        if (variantOffset === 0) {
+          pushUniquePoint(
+            `Nyenzo na Vifaa vya Kujifunzia (${subCode}): Katika "${subTitle}", tumia ${st.resources.toLowerCase()} kwa mpangilio ili kuonyesha mifano hai na kuimarisha kumbukumbu.`
+          );
+          pushUniquePoint(
+            `Hatua za Kazi Mradi na Mazoezi (${subCode}): ${domainLesson.workedIllustration}`
+          );
+          pushUniquePoint(
+            `Mbinu ya Ushirikiano na Mazoezi ya Mwanafunzi (${subCode}): ${domainLesson.learnerPracticeTask}`
+          );
+          pushUniquePoint(
+            `Matumizi Halisi na Jibu la Swali Dadisi (${subCode}): Kuhusu "${st.kiq || `umuhimu wa ${subTitle}`}", mada hii inakuza mawasiliano bora, maadili ya kijamii na utatuzi wa changamoto nchini Kenya.`
+          );
+          pushUniquePoint(
+            `Tahadhari za Kiutahini katika "${subTitle}": Epuka makosa ya hijai, uakifishaji usio sahihi na kuchanganya ngeli au istilahi unapojibu maswali ya ${gradeLabel}.`
+          );
+          pushUniquePoint(
+            `Kigezo cha Umilisi wa Juu (Exceeding Expectations 80-100%): Mwanafunzi aweze kufafanua kanuni za "${subTitle}", kutunga mifano sanifu na kuhakiki usahihi wa kazi yake.`
+          );
+        } else {
+          pushUniquePoint(
+            `Mkakati wa Marudio ya Mtihani (${subCode}): Unapojitayarisha kwa tathmini ya "${subTitle}", linganisha mifano ubaoni na mazoezi ya ${cb.lbShort} ukitumia ${st.resources.toLowerCase()}.`
+          );
+          pushUniquePoint(
+            `Uwasilishaji wa Majibu Yenye Alama Kamili (${subCode}): Jibu maswali ya "${subTitle}" kwa sentensi kamili zenye mtiririko wa mantiki, hijai sahihi na mifano mahsusi.`
+          );
+          pushUniquePoint(
+            `Uchambuzi wa Swali Dadisi (${subCode}): Fafanua kwa mifano miwili ya mazingira ya Kenya jinsi "${subTitle}" inavyojibu: "${st.kiq || `Namna ya kutumia ${subTitle} maishani`}".`
+          );
+          pushUniquePoint(
+            `Uhusiano wa Mada na Taaluma (${subCode}): Stadi zinazokuzwa katika "${subTitle}" zinajenga msingi wa uandishi, uhariri, ualimu, utangazaji na uongozi bora.`
+          );
+          pushUniquePoint(
+            `Ukaguzi wa Makosa ya Kawaida (${subCode}): Hakiki upatanisho wa kisarufi na maana ya msamiati katika "${subTitle}" kabla ya kukamilisha kazi.`
+          );
+          pushUniquePoint(
+            ` Tathmini Binafsi ya Mwanafunzi (${subCode}): ${domainLesson.checkQuestion}`
+          );
+        }
+      } else {
+        if (variantOffset === 0) {
+          pushUniquePoint(
+            `Learning Resources & Practical Setup (${subCode}): Effectively utilize ${st.resources.toLowerCase()} when investigating or demonstrating "${subTitle}" to connect theory to tangible evidence.`
+          );
+          pushUniquePoint(
+            `Step-by-Step Practical / Worked Procedure (${subCode}): ${domainLesson.workedIllustration}`
+          );
+          pushUniquePoint(
+            `Guided Skill Practice & Recording (${subCode}): ${domainLesson.learnerPracticeTask}`
+          );
+          pushUniquePoint(
+            `Safety, Hygiene & Accuracy Standard (${subCode}): Observe strict measurement accuracy, clean formatting, correct SI/domain conventions, and safe handling of ${st.resources.toLowerCase()} during "${subTitle}".`
+          );
+          pushUniquePoint(
+            `Real-Life Kenyan Application & Key Inquiry (${subCode}): Addressing "${st.kiq || `How is ${subTitle} applied in daily life?`}" — competencies in "${subTitle}" directly support household problem-solving, community welfare, and career readiness in Kenya.`
+          );
+          pushUniquePoint(
+            `Common Assessment Pitfalls & Exam Tip (${subCode}): Avoid incomplete definitions, missing working steps, or misinterpreting key terms in "${subTitle}"; always verify answers against the rubric criteria for "${st.strand}".`
+          );
+        } else {
+          pushUniquePoint(
+            `Exam-Focus Method & Structure (${subCode}): When answering structured questions on "${subTitle}", state the governing rule/definition first, show sequential working, and cite concrete examples.`
+          );
+          pushUniquePoint(
+            `Apparatus Interpretation & Diagram Precision (${subCode}): In practical or diagram-based tasks on "${subTitle}" involving ${st.resources.toLowerCase()}, label features clearly and record accurate observations.`
+          );
+          pushUniquePoint(
+            `Inquiry Synthesis & Problem-Solving (${subCode}): Apply "${subTitle}" to resolve real-world Kenyan scenarios linked to "${st.kiq || `practical mastery of ${subTitle}`}".`
+          );
+          pushUniquePoint(
+            `Career & Enterprise Pathway Link (${subCode}): Practical proficiency in "${subTitle}" (${subject}) prepares ${gradeLabel} learners for technical, scientific, creative, and entrepreneurial pathways.`
+          );
+          pushUniquePoint(
+            `Quality Assurance & Error Verification (${subCode}): Double-check units, terminology, spelling, and logical consistency across every step of "${subTitle}" before submitting work.`
+          );
+          pushUniquePoint(
+            `Formative Exit Check (${subCode}): ${domainLesson.checkQuestion}`
+          );
+        }
+      }
+
+      // 6. Ensure we strictly reach `pointsTarget` (>= 12, or >= 16 for 2-substrand strands) with 100% unique points!
+      const extraAnglesEn = [
+        `Cross-Substrand Synthesis (${subCode}): Mastery of "${subTitle}" reinforces foundational concepts across Strand "${st.strand}" and prepares ${gradeLabel} learners for progressive tasks in Term ${st.term}.`,
+        `Diagnostic Self-Check Rule (${subCode}): To confirm full command of "${subTitle}", state its core principle clearly, work through one concrete example independently, and verify all units or conventions.`,
+        `Local Improvisation & Sustainability (${subCode}): Where standard apparatus (${st.resources.toLowerCase()}) are unavailable, learners can safely improvise locally available, eco-friendly Kenyan materials to model "${subTitle}".`,
+        `Digital Literacy & Research Integration (${subCode}): Learners can responsibly use approved digital devices, simulations, or reference charts to observe, record, and present accurate findings on "${subTitle}".`,
+        `Values & Core Competencies Developed (${subCode}): Studying "${subTitle}" nurtures critical thinking, problem-solving, collaboration, integrity, and environmental responsibility in ${gradeLabel} ${subject}.`,
+        `Rubric Mastery Benchmark (${subCode}): Exceeding Expectations (80-100%) in "${subTitle}" requires accurate terminology, logical step-by-step working, and relevant real-world illustration.`,
+      ];
+      const extraAnglesKis = [
+        `Muunganiko wa Mada (${subCode}): Umilisi wa "${subTitle}" unaimarisha uelewa mpana wa mada kuu ya "${st.strand}" katika Muhula wa ${st.term} kwa wanafunzi wa ${gradeLabel}.`,
+        `Kipimo cha Kujitathmini (${subCode}): Ili kujihakikishia umilisi wa "${subTitle}", eleza kanuni kuu kwa maneno yako na utunge mifano miwili sahihi isiyo na makosa ya kisarufi.`,
+        `Ubunifu wa Nyenzo za Karibu (${subCode}): Wanafunzi wanaweza kubuni vifaa salama vinavyopatikana katika mazingira ya shule na nyumbani badala ya ${st.resources.toLowerCase()} kujifunzia "${subTitle}".`,
+        `Matumizi Salama ya Teknolojia ya Kidijitali (${subCode}): Tumia vifaa vya kidijitali kwa uwajibikaji kutafiti, kusikiliza na kuwasilisha kazi bora kuhusu "${subTitle}".`,
+        `Maadili na Umilisi wa Msingi (${subCode}): Mada ndogo ya "${subTitle}" inakuza mawasiliano, ushirikiano, uwajibikaji, heshima na uzalendo miongoni mwa wanafunzi.`,
+        `Kiwango cha Juu cha Utendaji (${subCode}): Kupata Kuzidi Matarajio (80-100%) katika "${subTitle}" kunahitaji ufasaha wa lugha, hoja zenye mantiki na mifano mwafaka.`,
+      ];
+
+      let extraCursor = 0;
+      while (rawPoints.length < pointsTarget && extraCursor < 30) {
+        if (domain === 'mathematics') {
+          const extraMath = generateWorkedMathematicsExercise(
+            ctx,
+            seedBase + 4000 + extraCursor * 43
+          );
+          pushUniquePoint(
+            formatDomainItemAsDeclarativeNote(extraMath, subTitle, false, true)
+          );
+        } else {
+          const extraWorked = generateWorkedDomainExercise(
+            domain,
+            ctx,
+            seedBase + 4000 + extraCursor * 47
+          );
+          if (extraWorked) {
+            pushUniquePoint(
+              formatDomainItemAsDeclarativeNote(extraWorked, subTitle, isKis, true)
+            );
+          }
+        }
+
+        if (rawPoints.length < pointsTarget) {
+          const pool = isKis ? extraAnglesKis : extraAnglesEn;
+          if (extraCursor < pool.length) {
+            pushUniquePoint(pool[(extraCursor + variantOffset) % pool.length]);
+          } else {
+            pushUniquePoint(
+              isKis
+                ? `Kidokezo cha Ziada cha Umilisi #${extraCursor + 1} (${subCode} - ${subTitle}): Hakikisha kila hoja inafafanuliwa kwa ufasaha na kuhusishwa moja kwa moja na muktadha wa "${st.strand}".`
+                : `Extended Mastery Point #${extraCursor + 1} (${subCode} - ${subTitle}): Link every definition, procedure, and worked step in "${subTitle}" directly to the assessment objectives of "${st.strand}".`
+            );
+          }
+        }
+        extraCursor++;
+      }
+
+      const numberedPoints = rawPoints
+        .slice(0, pointsTarget)
+        .map((pt, idx) => `${idx + 1}. ${pt}`);
+
+      strandPointsTotal += numberedPoints.length;
+      minPointsPerSubstrand = Math.min(minPointsPerSubstrand, numberedPoints.length);
+
+      builtSubstrands.push({
+        substrandIndex: subIdx + 1,
+        substrandCode: subCode,
+        substrandTitle: subTitle,
+        term: st.term,
+        kiq: st.kiq,
+        resources: st.resources,
+        points: numberedPoints,
+      });
+    }
+
+    minPointsPerStrand = Math.min(minPointsPerStrand, strandPointsTotal);
+    grandTotalPoints += strandPointsTotal;
+    grandTotalSubstrands += builtSubstrands.length;
+
+    structuredStrands.push({
+      strandIndex: sIdx + 1,
+      strandTitle: st.strand,
+      term: st.term,
+      kiq: st.kiq,
+      resources: st.resources,
+      totalPoints: strandPointsTotal,
+      substrands: builtSubstrands,
+    });
+  }
+
+  return {
+    gradeKey,
+    gradeLabel,
+    subject,
+    coursebookTitle,
+    approvedBooks,
+    officialPortalUrl,
+    totalStrands: structuredStrands.length,
+    totalSubstrands: grandTotalSubstrands,
+    totalPoints: grandTotalPoints,
+    minPointsPerSubstrand: minPointsPerSubstrand === 999 ? 0 : minPointsPerSubstrand,
+    minPointsPerStrand: minPointsPerStrand === 999 ? 0 : minPointsPerStrand,
+    strands: structuredStrands,
+  };
+}
+
+// ============================================================================
+// ZERO-DUPLICATE QUESTION ENGINE (EXPANDED STEMS FOR 400+ UNIQUE QS/SUBJECT)
+// ============================================================================
 
 export interface BookQuestionEntry {
   qNumber: number;
@@ -474,6 +1036,70 @@ const ENGLISH_STRUCTURED_STEMS: Array<{
       exp: `Include data accuracy, source verification, and online safety.`,
     }),
   },
+  {
+    marks: 4,
+    build: (t, gLbl) => ({
+      prompt: `Design a short peer-teaching plan showing how a ${gLbl} learner would explain "${t.subtopicTitle}" to a study partner in two clear stages.`,
+      ans: `Stage 1 concept introduction (2 mks) + Stage 2 worked demonstration/check on "${t.subtopicTitle}" (2 mks).`,
+      exp: `Peer explanation tests deep conceptual clarity and logical sequencing.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `List three essential records or observations a learner should write down in a notebook during an investigation on "${t.subtopicTitle}".`,
+      ans: `Three valid observation/recording items specific to "${t.subtopicTitle}" (3 marks).`,
+      exp: `Systematic documentation ensures reproducible and verifiable conclusions.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Explain two ways in which environmental conservation or resource efficiency is practiced during activities on "${t.subtopicTitle}".`,
+      ans: `Two concrete conservation/waste-reduction practices during "${t.subtopicTitle}" (2 x 2 = 4 marks).`,
+      exp: `Sustainable stewardship of materials and surroundings is an integral competency.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `State three criteria an examiner uses to award full marks on a structured question covering "${t.subtopicTitle}".`,
+      ans: `Accurate terminology (1 mk), complete logical working/explanation (1 mk), and contextual relevance/units (1 mk).`,
+      exp: `Understanding rubric criteria sharpens exam precision under "${t.strand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Describe two challenges learners in rural or urban Kenyan schools might face when practising "${t.subtopicTitle}" and suggest a practical remedy for each.`,
+      ans: `Two realistic implementation challenges (2 mks) + two practical remedies (2 mks) = 4 marks.`,
+      exp: `Adaptive problem-solving ensures learning continuity across diverse environments.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Identify three core competencies (such as critical thinking, communication, or collaboration) developed when working in groups on "${t.subtopicTitle}" and state how each is demonstrated.`,
+      ans: `Three competencies named and linked to concrete group actions on "${t.subtopicTitle}" (3 marks).`,
+      exp: `Award 1 mark for each well-linked competency demonstration.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Explain cause and effect in two key relationships studied within "${t.subtopicTitle}".`,
+      ans: `Two accurate cause-and-effect relationships explained under "${t.subtopicTitle}" (2 x 2 = 4 marks).`,
+      exp: `Analytical reasoning requires linking underlying causes to observable outcomes.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Suppose you are preparing a school exhibition poster on "${t.subtopicTitle}". State two key headings and summarize the main fact under each heading.`,
+      ans: `Two clear headings + accurate summary fact under each for "${t.subtopicTitle}" (4 marks).`,
+      exp: `Structured visual communication reinforces conceptual synthesis.`,
+    }),
+  },
 ];
 
 const KISWAHILI_STRUCTURED_STEMS: Array<{
@@ -573,7 +1199,87 @@ const KISWAHILI_STRUCTURED_STEMS: Array<{
     build: (t) => ({
       prompt: `Fafanua maana ya istilahi au maneno matatu muhimu yanayopatikana katika "${t.subtopicTitle}".`,
       ans: `Maana sahihi za maneno/istilahi 3 zinazohusiana na "${t.subtopicTitle}" (Alama 3).`,
-      exp: `ufafanuzi uzingatie muktadha wa "${t.substrand}".`,
+      exp: `Ufafanuzi uzingatie muktadha wa "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Onyesha jinsi teknolojia ya kidijitali inavyoweza kutumiwa kwa usalama kutafiti na kuimarisha umilisi wa "${t.subtopicTitle}".`,
+      ans: `Njia 2 salama za kutumia vifaa vya kidijitali katika kujifunza "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Zingatia uadilifu mtandaoni na uhakiki wa vyanzo vya habari.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Eleza uhusiano uliopo kati ya "${t.subtopicTitle}" na mada ndogo nyingine ndani ya "${t.strand}".`,
+      ans: `Maelezo sahihi yanayoonyesha mtiririko na ujenzi wa umilisi ndani ya "${t.strand}" (Alama 4).`,
+      exp: `Msingi imara wa "${t.subtopicTitle}" hurahisisha uelewa wa vipengele vinavyofuata.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Taja vigezo vitatu vinavyoonyesha kuwa mwanafunzi amemudu kikamilifu kazi ya "${t.subtopicTitle}".`,
+      ans: `Vigezo 3 vya ufasaha, usahihi wa kanuni na mpangilio bora katika "${t.subtopicTitle}" (Alama 3).`,
+      exp: `Tuzo ya alama 1 kwa kila kigezo kilichoelezwa vizuri.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Pendekeza taaluma au kazi mbili nchini Kenya zinazotegemea moja kwa moja umilisi wa "${t.subtopicTitle}" na ueleze jinsi stadi hiyo inavyotumika.`,
+      ans: `Taaluma 2 mwafaka (alama 2) + maelezo sahihi ya matumizi ya "${t.subtopicTitle}" (alama 2) = Alama 4.`,
+      exp: `Husisha ujuzi wa darasani na ulimwengu wa ajira na ujasiriamali.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Buni kifungu kifupi cha maneno yasiyozidi arobaini kinachojumuisha mifano miwili ya "${t.subtopicTitle}".`,
+      ans: `Aya fupi yenye mtiririko mzuri na mifano 2 sahihi ya "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Hakiki hijai, muwala na matumizi sahihi ya alama za uakifishaji.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Eleza namna mwanafunzi anavyoweza kutumia mazingira ya nyumbani kuendeleza mazoezi ya "${t.subtopicTitle}".`,
+      ans: `Njia 3 za vitendo za kufanya mazoezi ya "${t.subtopicTitle}" nyumbani kwa kushirikiana na familia (Alama 3).`,
+      exp: `Ujifunzaji endelevu nje ya darasa huimarisha umilisi.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Linganisha mbinu za kijadi na za kisasa katika kushughulikia masuala yanayohusiana na "${t.subtopicTitle}".`,
+      ans: `Hoja 2 za ulinganisho kati ya mbinu za kijadi na za kisasa kuhusu "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Onyesha pande zote mbili kwa kutumia viunganishi mwafaka.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Taja maswali matatu ya uchunguzi ambayo mwanafunzi makini anapaswa kujiuliza anaposoma "${t.subtopicTitle}".`,
+      ans: `Maswali 3 dadisi yanayochunguza maana, kanuni na matumizi ya "${t.subtopicTitle}" (Alama 3).`,
+      exp: `Udadisi hukuza fikra tunduizi katika somo la Kiswahili.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Eleza changamoto mbili wanazokumbana nazo wanafunzi wanapojifunza "${t.subtopicTitle}" na upendekeze suluhisho kwa kila moja.`,
+      ans: `Changamoto 2 halisi (alama 2) + suluhisho 2 za vitendo (alama 2) = Alama 4.`,
+      exp: `Suluhisho lilenge mazoezi, usomaji mpana na matumizi ya nyenzo sahihi.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Chambua umuhimu wa kuzingatia adabu za lugha na muktadha unapowasilisha hoja kuhusu "${t.subtopicTitle}".`,
+      ans: `Hoja 2 zinazofafanua jinsi sajili, muktadha na staha zinavyoongoza "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Matumizi ya lugha hutegemea hadhira, mahali na lengo la mawasiliano.`,
     }),
   },
 ];
@@ -586,11 +1292,10 @@ function normalizePromptKey(prompt: string): string {
 }
 
 /**
- * Generates a deterministic, STRICTLY ZERO-DUPLICATE pool of exam & sub-topic questions
+ * Generates a deterministic, STRICTLY ZERO-DUPLICATE pool of exam & sub-strand questions
  * systematically spanning EVERY Strand and Sub-strand in sequential order!
- * Supports `startOffset` so Book 1 (CBC GRADE UP: offset 120, count 170) and
- * Book 2 (MADE FAMILIAR: offset 0, count 120) have 0% overlap — making all 290 questions
- * in the 100-Page COMPLETE COMPILATION 100% unique!
+ * Supports `startOffset` so Book 1 (CBC GRADE UP) and Book 2 (SUPER-LIGHT CBC COMPILATION)
+ * have 0% overlap — making all ~340 questions in SMART CBC ALL SUBJECTS 100% unique!
  */
 export function buildFullBookQuestionPool(
   gradeKey: string,
@@ -694,7 +1399,7 @@ export function buildFullBookQuestionPool(
       masterOut.push({
         qNumber: i + 1,
         strand: topic.strand,
-        substrand: topic.subtopicTitle,
+        substrand: topic.substrand,
         prompt: pickedEx.q,
         options: pickedEx.options,
         marks: 2,
@@ -723,7 +1428,7 @@ export function buildFullBookQuestionPool(
           masterOut.push({
             qNumber: i + 1,
             strand: topic.strand,
-            substrand: topic.subtopicTitle,
+            substrand: topic.substrand,
             prompt: candPrompt,
             marks: 3,
             answerText: `${cand.options[cand.ans]}`,
@@ -752,7 +1457,7 @@ export function buildFullBookQuestionPool(
         masterOut.push({
           qNumber: i + 1,
           strand: tCand.strand,
-          substrand: tCand.subtopicTitle,
+          substrand: tCand.substrand,
           prompt: built.prompt,
           marks: mks,
           answerText: built.ans,
@@ -764,7 +1469,6 @@ export function buildFullBookQuestionPool(
     }
 
     if (!placedStructured) {
-      // Ultimate guaranteed-unique fallback scoped to exact strand + sub-topic + scenario index
       const uniquePrompt = isKis
         ? `Kwa kurejelea mada ya "${topic.strand}" (${topic.subtopicTitle}), jadili hoja tatu tofauti zinazoonyesha umilisi wa kipengele cha ${i + 1} katika muktadha wa shule na jamii.`
         : `With direct reference to "${topic.strand}" (${topic.subtopicTitle}), explain three distinct points demonstrating practical mastery in Case Scenario #${i + 1}.`;
@@ -772,7 +1476,7 @@ export function buildFullBookQuestionPool(
       masterOut.push({
         qNumber: i + 1,
         strand: topic.strand,
-        substrand: topic.subtopicTitle,
+        substrand: topic.substrand,
         prompt: uniquePrompt,
         marks: 3,
         answerText: isKis
@@ -792,7 +1496,7 @@ export function buildFullBookQuestionPool(
 }
 
 // ============================================================================
-// PDF DRAWING HELPERS (GUARANTEES EXACT 50-PAGE LAYOUTS)
+// FLOWING MULTI-PAGE PDF WRITER (ZERO CLIPPING, EXACT PAGE X OF N HEADERS)
 // ============================================================================
 
 function drawPageFrame(params: {
@@ -818,7 +1522,6 @@ function drawPageFrame(params: {
   const { width, height } = page.getSize();
   const [r, g, b] = accentRgb;
 
-  // Outer clean border
   page.drawRectangle({
     x: 28,
     y: 28,
@@ -828,7 +1531,6 @@ function drawPageFrame(params: {
     borderWidth: 1.2,
   });
 
-  // Top running header bar
   page.drawRectangle({
     x: 28,
     y: height - 54,
@@ -837,10 +1539,10 @@ function drawPageFrame(params: {
     color: rgb(r, g, b),
   });
 
-  page.drawText(toPdfSafe(`${bookTitle}  |  ${gradeSubjectLabel}`), {
+  page.drawText(toPdfSafe(`${bookTitle}  |  ${gradeSubjectLabel}`).slice(0, 74), {
     x: 38,
     y: height - 45,
-    size: 9.2,
+    size: 9.0,
     font: boldFont,
     color: rgb(1, 1, 1),
   });
@@ -854,7 +1556,6 @@ function drawPageFrame(params: {
     color: rgb(1, 0.94, 0.65),
   });
 
-  // Footer
   page.drawLine({
     start: { x: 36, y: 46 },
     end: { x: width - 36, y: 46 },
@@ -863,7 +1564,7 @@ function drawPageFrame(params: {
   });
   page.drawText(
     toPdfSafe(
-      `www.cbcmaterials.shop  *  Official 2026 ${bookTitle} Series  *  WhatsApp: 0705 759 072`
+      `www.cbcmaterials.shop  *  Official 2026 ${bookTitle}  *  WhatsApp: 0705 759 072`
     ),
     {
       x: 38,
@@ -875,53 +1576,302 @@ function drawPageFrame(params: {
   );
 }
 
-/**
- * BOOK 1: "CBC GRADE UP" — EXACT 50 PAGES PER SUBJECT (KSh 500)
- * - Page 1: Cover Page + Complete Strand/Sub-strand Table of Contents
- * - Pages 2..35 (34 Pages): 170 Relevant Questions (5 per page) covering ALL Strands & Sub-strands
- * - Pages 36..50 (15 Pages): Complete Marking Schemes & Worked Solutions at the end of the book
- */
+interface FlowPageRecord {
+  page: PDFPage;
+  sectionLabel: string;
+  accentRgb: [number, number, number];
+}
+
+class PdfFlowBookWriter {
+  public pdfDoc: PDFDocument;
+  public boldFont: PDFFont;
+  public regFont: PDFFont;
+  public bookTitle: string;
+  public gradeSubject: string;
+  public defaultAccent: [number, number, number];
+  public pages: FlowPageRecord[] = [];
+  public currentPage!: PDFPage;
+  public y = 768;
+  private activeSectionLabel = '';
+  private activeAccent: [number, number, number];
+
+  constructor(params: {
+    pdfDoc: PDFDocument;
+    boldFont: PDFFont;
+    regFont: PDFFont;
+    bookTitle: string;
+    gradeSubject: string;
+    defaultAccent: [number, number, number];
+  }) {
+    this.pdfDoc = params.pdfDoc;
+    this.boldFont = params.boldFont;
+    this.regFont = params.regFont;
+    this.bookTitle = params.bookTitle;
+    this.gradeSubject = params.gradeSubject;
+    this.defaultAccent = params.defaultAccent;
+    this.activeAccent = params.defaultAccent;
+  }
+
+  public addPage(sectionLabel: string, accentOverride?: [number, number, number]): PDFPage {
+    const page = this.pdfDoc.addPage([595.28, 841.89]);
+    this.activeSectionLabel = sectionLabel;
+    this.activeAccent = accentOverride || this.defaultAccent;
+    this.pages.push({
+      page,
+      sectionLabel: this.activeSectionLabel,
+      accentRgb: this.activeAccent,
+    });
+    this.currentPage = page;
+    this.y = 768;
+    return page;
+  }
+
+  public ensureSpace(neededPt: number): void {
+    if (!this.currentPage || this.y - neededPt < 58) {
+      this.addPage(this.activeSectionLabel, this.activeAccent);
+    }
+  }
+
+  public drawSectionBanner(
+    title: string,
+    subtitle: string,
+    fillRgb: [number, number, number],
+    borderRgb: [number, number, number],
+    textRgb: [number, number, number]
+  ): void {
+    this.ensureSpace(44);
+    this.currentPage.drawRectangle({
+      x: 42,
+      y: this.y - 34,
+      width: 511,
+      height: 36,
+      color: rgb(fillRgb[0], fillRgb[1], fillRgb[2]),
+      borderColor: rgb(borderRgb[0], borderRgb[1], borderRgb[2]),
+      borderWidth: 0.9,
+    });
+    this.currentPage.drawText(toPdfSafe(title).slice(0, 86), {
+      x: 50,
+      y: this.y - 13,
+      size: 9.3,
+      font: this.boldFont,
+      color: rgb(textRgb[0], textRgb[1], textRgb[2]),
+    });
+    this.currentPage.drawText(toPdfSafe(subtitle).slice(0, 94), {
+      x: 50,
+      y: this.y - 27,
+      size: 8.1,
+      font: this.regFont,
+      color: rgb(0.2, 0.25, 0.34),
+    });
+    this.y -= 44;
+  }
+
+  public drawSubstrandHeader(subCode: string, subTitle: string, pointCount: number): void {
+    this.ensureSpace(38);
+    this.currentPage.drawRectangle({
+      x: 42,
+      y: this.y - 20,
+      width: 511,
+      height: 22,
+      color: rgb(0.94, 0.97, 0.99),
+      borderColor: rgb(0.68, 0.78, 0.9),
+      borderWidth: 0.7,
+    });
+    this.currentPage.drawText(
+      toPdfSafe(
+        `SUB-STRAND ${subCode}: ${subTitle}  (${pointCount} Essential Revision Points)`
+      ).slice(0, 90),
+      {
+        x: 49,
+        y: this.y - 13,
+        size: 8.8,
+        font: this.boldFont,
+        color: rgb(0.06, 0.2, 0.44),
+      }
+    );
+    this.y -= 28;
+  }
+
+  public drawNotePoint(pointText: string): void {
+    const lines = wrapPdfText(pointText, 84);
+    const needed = lines.length * 12.0 + 5.5;
+    this.ensureSpace(needed);
+    for (let i = 0; i < lines.length; i++) {
+      this.currentPage.drawText(lines[i], {
+        x: i === 0 ? 46 : 58,
+        y: this.y,
+        size: 9.0,
+        font: this.regFont,
+        color: rgb(0.12, 0.16, 0.22),
+      });
+      this.y -= 11.8;
+    }
+    this.y -= 4.8;
+  }
+
+  public drawQuestionBlock(q: BookQuestionEntry, compactLines = false): void {
+    const qLines = wrapPdfText(`Q${q.qNumber}. ${q.prompt} (${q.marks} Marks)`, 82);
+    const ruleLines = compactLines ? 3 : 4;
+    const optionsHeight = q.options ? 4 * 12.0 + 10 : ruleLines * 12.5 + 12;
+    const totalNeeded = 16 + qLines.length * 12.2 + optionsHeight;
+    this.ensureSpace(totalNeeded);
+
+    this.currentPage.drawText(
+      toPdfSafe(`[Sub-strand: ${q.substrand}]`).slice(0, 90),
+      {
+        x: 44,
+        y: this.y,
+        size: 8.3,
+        font: this.boldFont,
+        color: rgb(0.18, 0.36, 0.62),
+      }
+    );
+    this.y -= 12.5;
+
+    for (const ln of qLines) {
+      this.currentPage.drawText(ln, {
+        x: 44,
+        y: this.y,
+        size: 9.3,
+        font: this.boldFont,
+        color: rgb(0.08, 0.11, 0.16),
+      });
+      this.y -= 12.0;
+    }
+
+    if (q.options) {
+      const letters = ['A', 'B', 'C', 'D'];
+      for (let oi = 0; oi < 4; oi++) {
+        const optLine = toPdfSafe(`   ${letters[oi]}. ${q.options[oi]}`).slice(0, 86);
+        this.currentPage.drawText(optLine, {
+          x: 50,
+          y: this.y,
+          size: 8.8,
+          font: this.regFont,
+          color: rgb(0.18, 0.22, 0.28),
+        });
+        this.y -= 11.6;
+      }
+      this.y -= 8;
+    } else {
+      for (let lnIdx = 0; lnIdx < ruleLines; lnIdx++) {
+        this.y -= 12.0;
+        this.currentPage.drawLine({
+          start: { x: 52, y: this.y },
+          end: { x: 545, y: this.y },
+          thickness: 0.45,
+          color: rgb(0.76, 0.8, 0.85),
+        });
+      }
+      this.y -= 11;
+    }
+  }
+
+  public drawMarkingEntry(q: BookQuestionEntry): void {
+    const ansLines = wrapPdfText(
+      `Q${q.qNumber} (${q.marks} mks) - Answer: ${q.answerText}`,
+      86
+    );
+    const expLines = wrapPdfText(`   Explanation: ${q.explanation}`, 88);
+    const needed = ansLines.length * 11.4 + expLines.length * 10.8 + 7;
+    this.ensureSpace(needed);
+
+    for (const aln of ansLines) {
+      this.currentPage.drawText(aln, {
+        x: 44,
+        y: this.y,
+        size: 8.8,
+        font: this.boldFont,
+        color: rgb(0.04, 0.34, 0.22),
+      });
+      this.y -= 11.2;
+    }
+    for (const eln of expLines) {
+      this.currentPage.drawText(eln, {
+        x: 48,
+        y: this.y,
+        size: 8.3,
+        font: this.regFont,
+        color: rgb(0.22, 0.26, 0.33),
+      });
+      this.y -= 10.6;
+    }
+    this.y -= 5.5;
+  }
+
+  public stampAllPageFrames(pageOffset = 0, grandTotalOverride?: number): void {
+    const total = grandTotalOverride ?? this.pages.length + pageOffset;
+    for (let i = 0; i < this.pages.length; i++) {
+      const rec = this.pages[i];
+      drawPageFrame({
+        page: rec.page,
+        boldFont: this.boldFont,
+        regFont: this.regFont,
+        bookTitle: this.bookTitle,
+        gradeSubjectLabel: rec.sectionLabel
+          ? `${this.gradeSubject} (${rec.sectionLabel})`
+          : this.gradeSubject,
+        pageNumber: i + 1 + pageOffset,
+        totalPages: total,
+        accentRgb: rec.accentRgb,
+      });
+    }
+  }
+}
+
+// ============================================================================
+// BUTTON 1: "CBC GRADE UP" — COMPLETE SHORT NOTES (12+ PTS/SUB, 30+ PTS/STRAND)
+// + COMPREHENSIVE STRAND QUESTIONS + END-OF-BOOK MARKING SCHEMES (KSh 500)
+// ============================================================================
+
 export async function generateCbcGradeUpPdfBuffer(params: {
   gradeKey: string;
   subject: string;
-  pageOffset?: number;
-  grandTotalPages?: number;
+  variantOffset?: number;
 }): Promise<Uint8Array> {
-  const { gradeKey, subject, pageOffset = 0, grandTotalPages = 50 } = params;
+  const { gradeKey, subject, variantOffset = 0 } = params;
   const gradeLabel = formatBookGradeLabel(gradeKey);
   const gradeSubject = `${gradeLabel} ${subject}`;
-  const { strands, coursebookTitle, approvedBooks } = collectOrderedSubTopics(
-    gradeKey,
-    subject
-  );
+
+  const notesTree = buildStructuredSyllabusNotesTree(gradeKey, subject, variantOffset);
   const approvedSeriesLine =
-    approvedBooks.length > 0
-      ? approvedBooks
+    notesTree.approvedBooks.length > 0
+      ? notesTree.approvedBooks
           .slice(0, 4)
           .map((b) => `${b.series} (${b.publisher})`)
           .join('; ')
-      : coursebookTitle;
-  // Offset 120 ensures CBC GRADE UP (170 Qs) has ZERO overlap with MADE FAMILIAR (first 120 Qs)!
-  const questions = buildFullBookQuestionPool(gradeKey, subject, 170, 120); // 34 pages * 5 Qs/page = 170 Qs
+      : notesTree.coursebookTitle;
+
+  // Calculate Book 2 question count so Book 1 starts strictly after Book 2's pool (0% overlap!)
+  const book2QPerSub = Math.max(
+    9,
+    Math.ceil(205 / Math.max(1, notesTree.totalSubstrands))
+  );
+  const book2QuestionCount = notesTree.totalSubstrands * book2QPerSub;
+  const book1QuestionCount = Math.max(180, 200 - notesTree.totalSubstrands);
+  const questions = buildFullBookQuestionPool(
+    gradeKey,
+    subject,
+    book1QuestionCount,
+    book2QuestionCount
+  );
 
   const pdfDoc = await PDFDocument.create();
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const regFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const accent: [number, number, number] = [0.03, 0.36, 0.27]; // Deep Emerald
 
-  // ---------------- PAGE 1: COVER PAGE & TABLE OF STRANDS ----------------
-  const cover = pdfDoc.addPage([595.28, 841.89]);
-  drawPageFrame({
-    page: cover,
+  const flow = new PdfFlowBookWriter({
+    pdfDoc,
     boldFont,
     regFont,
     bookTitle: 'CBC GRADE UP',
-    gradeSubjectLabel: gradeSubject,
-    pageNumber: 1 + pageOffset,
-    totalPages: grandTotalPages,
-    accentRgb: accent,
+    gradeSubject,
+    defaultAccent: accent,
   });
 
+  // ---------------- PAGE 1: COVER PAGE & SYLLABUS ROADMAP ----------------
+  const cover = flow.addPage('Cover & Syllabus Roadmap', accent);
   cover.drawRectangle({
     x: 44,
     y: 635,
@@ -929,75 +1879,83 @@ export async function generateCbcGradeUpPdfBuffer(params: {
     height: 132,
     color: rgb(0.03, 0.36, 0.27),
   });
-  cover.drawText('OFFICIAL 2026 EDITION  *  50-PAGE EXAM & REVISION BOOK', {
-    x: 62,
+  cover.drawText('OFFICIAL 2026 EDITION  *  COMPLETE SHORT NOTES, QUESTIONS & MARKING SCHEMES', {
+    x: 58,
     y: 742,
-    size: 10.5,
+    size: 9.6,
     font: boldFont,
     color: rgb(0.98, 0.82, 0.25),
   });
   cover.drawText('CBC GRADE UP', {
-    x: 62,
+    x: 58,
     y: 700,
-    size: 34,
+    size: 33,
     font: boldFont,
     color: rgb(1, 1, 1),
   });
   cover.drawText(toPdfSafe(`${gradeLabel.toUpperCase()} - ${subject.toUpperCase()}`), {
-    x: 62,
+    x: 58,
     y: 670,
-    size: 16,
+    size: 15,
     font: boldFont,
     color: rgb(0.75, 0.97, 0.86),
   });
   cover.drawText(
-    'Complete Strand & Sub-Strand Questions (Pages 2-35) + Marking Schemes (Pages 36-50)',
+    toPdfSafe(
+      `All ${notesTree.totalStrands} Strands * ${notesTree.totalSubstrands} Sub-strands (${notesTree.totalPoints} Short Note Points) + ${questions.length} Questions + Marking Schemes`
+    ).slice(0, 96),
     {
-      x: 62,
+      x: 58,
       y: 648,
-      size: 9.8,
+      size: 8.9,
       font: regFont,
       color: rgb(0.92, 0.96, 0.99),
     }
   );
 
-  let cy = 610;
-  cover.drawText('BOOK STRUCTURE & SYLLABUS STRANDS COVERED (FIRST TO LAST STRAND):', {
-    x: 46,
-    y: cy,
-    size: 10.5,
-    font: boldFont,
-    color: rgb(0.06, 0.12, 0.22),
-  });
-  cy -= 18;
-
-  for (let sIdx = 0; sIdx < strands.length && cy > 185; sIdx++) {
-    const st = strands[sIdx];
-    cover.drawText(toPdfSafe(`${sIdx + 1}. ${st.strand}`), {
-      x: 50,
+  let cy = 612;
+  cover.drawText(
+    'COMPLETE SYLLABUS STRANDS & SUB-STRANDS COVERED (30+ POINTS PER STRAND):',
+    {
+      x: 46,
       y: cy,
-      size: 9.5,
+      size: 10,
       font: boldFont,
-      color: rgb(0.03, 0.36, 0.27),
-    });
-    cy -= 13;
-    const subPreview = st.subs.join('  |  ');
-    const wrappedSubs = wrapPdfText(subPreview, 86).slice(0, 3);
-    for (const ln of wrappedSubs) {
-      if (cy < 180) break;
+      color: rgb(0.06, 0.12, 0.22),
+    }
+  );
+  cy -= 17;
+
+  for (let sIdx = 0; sIdx < notesTree.strands.length && cy > 180; sIdx++) {
+    const st = notesTree.strands[sIdx];
+    cover.drawText(
+      toPdfSafe(
+        `${st.strandIndex}. ${st.strandTitle}  [${st.substrands.length} Sub-strands | ${st.totalPoints} Note Points]`
+      ).slice(0, 88),
+      {
+        x: 50,
+        y: cy,
+        size: 9.1,
+        font: boldFont,
+        color: rgb(0.03, 0.36, 0.27),
+      }
+    );
+    cy -= 12.5;
+    const subPreview = st.substrands.map((s) => s.substrandTitle).join('  |  ');
+    for (const ln of wrapPdfText(subPreview, 86).slice(0, 2)) {
+      if (cy < 176) break;
       cover.drawText(`   - ${ln}`, {
         x: 54,
         y: cy,
-        size: 8.4,
+        size: 8.2,
         font: regFont,
         color: rgb(0.22, 0.28, 0.36),
       });
-      cy -= 11.5;
+      cy -= 11;
     }
-    cy -= 5;
+    cy -= 4;
   }
 
-  // Bottom Cover Box
   cover.drawRectangle({
     x: 44,
     y: 64,
@@ -1007,267 +1965,136 @@ export async function generateCbcGradeUpPdfBuffer(params: {
     borderColor: rgb(0.03, 0.36, 0.27),
     borderWidth: 1,
   });
-  cover.drawText('HOW TO USE THIS 50-PAGE "CBC GRADE UP" BOOK:', {
+  cover.drawText('INSIDE THIS "CBC GRADE UP" SUBJECT BOOK:', {
     x: 58,
     y: 144,
-    size: 9.8,
+    size: 9.6,
     font: boldFont,
     color: rgb(0.03, 0.36, 0.27),
   });
   cover.drawText(
-    toPdfSafe(`1. Approved Coursebooks Covered: ${approvedSeriesLine}`).slice(0, 92),
-    { x: 58, y: 128, size: 8.4, font: regFont, color: rgb(0.15, 0.2, 0.28) }
+    toPdfSafe(`1. Approved Coursebooks Synthesized: ${approvedSeriesLine}`).slice(0, 92),
+    { x: 58, y: 128, size: 8.3, font: regFont, color: rgb(0.15, 0.2, 0.28) }
   );
   cover.drawText(
-    '2. Attempt all 170 Strand & Sub-strand questions in Section A (Pages 2 to 35) independently.',
-    { x: 58, y: 114, size: 8.6, font: regFont, color: rgb(0.15, 0.2, 0.28) }
+    `2. Section A: Short Point-Form Notes (${notesTree.minPointsPerSubstrand}+ pts/Sub-strand, ${notesTree.minPointsPerStrand}+ pts/Strand across ALL Strands).`,
+    { x: 58, y: 114, size: 8.4, font: regFont, color: rgb(0.15, 0.2, 0.28) }
   );
   cover.drawText(
-    '3. Check your work using the Complete Marking Schemes at the end of this book (Pages 36 to 50).',
-    { x: 58, y: 100, size: 8.6, font: regFont, color: rgb(0.15, 0.2, 0.28) }
+    `3. Section B: ${questions.length} Zero-Repeat Strand & Sub-strand Exam Questions covering every topic.`,
+    { x: 58, y: 100, size: 8.4, font: regFont, color: rgb(0.15, 0.2, 0.28) }
   );
   cover.drawText(
-    '4. Grading Rubric: Exceeding (80-100%) | Meeting (50-79%) | Approaching (30-49%) | Below (0-29%).',
-    { x: 58, y: 86, size: 8.6, font: boldFont, color: rgb(0.1, 0.24, 0.4) }
+    '4. Section C (End of Book): Complete Official Marking Schemes & Step-by-Step Worked Solutions.',
+    { x: 58, y: 86, size: 8.4, font: boldFont, color: rgb(0.1, 0.24, 0.4) }
   );
 
-  // ---------------- PAGES 2..35 (34 PAGES): QUESTIONS ----------------
-  const QUESTION_PAGES = 34; // Pages 2..35 inclusive
-  const PER_Q_PAGE = 5; // 34 * 5 = 170 questions
-
-  for (let pIdx = 0; pIdx < QUESTION_PAGES; pIdx++) {
-    const pageNum = 2 + pIdx;
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    drawPageFrame({
-      page,
-      boldFont,
-      regFont,
-      bookTitle: 'CBC GRADE UP',
-      gradeSubjectLabel: `${gradeSubject} (Section A: Questions)`,
-      pageNumber: pageNum + pageOffset,
-      totalPages: grandTotalPages,
-      accentRgb: accent,
-    });
-
-    const slice = questions.slice(pIdx * PER_Q_PAGE, (pIdx + 1) * PER_Q_PAGE);
-    const firstQ = slice[0];
-
-    // Strand banner on top of question page
-    page.drawRectangle({
-      x: 42,
-      y: 748,
-      width: 511,
-      height: 28,
-      color: rgb(0.93, 0.97, 0.95),
-      borderColor: rgb(0.65, 0.85, 0.76),
-      borderWidth: 0.8,
-    });
-    page.drawText(
-      toPdfSafe(`ACTIVE STRAND FOCUS: ${firstQ.strand}`).slice(0, 82),
-      {
-        x: 50,
-        y: 758,
-        size: 9.2,
-        font: boldFont,
-        color: rgb(0.03, 0.36, 0.27),
-      }
+  // ---------------- SECTION A: COMPLETE SHORT NOTES (ALL STRANDS & SUB-STRANDS) ----------------
+  flow.addPage('Section A: Short Notes', accent);
+  for (const st of notesTree.strands) {
+    flow.drawSectionBanner(
+      `STRAND ${st.strandIndex}: ${st.strandTitle}`,
+      `Term ${st.term}  *  ${st.substrands.length} Sub-strands  *  ${st.totalPoints} Essential Point-Form Short Notes`,
+      [0.92, 0.98, 0.95],
+      [0.03, 0.36, 0.27],
+      [0.03, 0.36, 0.27]
     );
 
-    let y = 730;
-    for (const q of slice) {
-      if (y < 95) break;
+    for (const sub of st.substrands) {
+      flow.drawSubstrandHeader(sub.substrandCode, sub.substrandTitle, sub.points.length);
+      for (const pt of sub.points) {
+        flow.drawNotePoint(pt);
+      }
+      flow.y -= 5;
+    }
+  }
 
-      // Sub-strand tag
-      page.drawText(
-        toPdfSafe(`[Topic: ${q.substrand}] (${q.marks} Marks)`).slice(0, 92),
-        {
-          x: 44,
-          y,
-          size: 8.3,
-          font: boldFont,
-          color: rgb(0.2, 0.35, 0.62),
-        }
+  // ---------------- SECTION B: TOPICAL & END-OF-STRAND EXAM QUESTIONS ----------------
+  flow.addPage('Section B: Exam Questions', accent);
+  let activeQuestionStrand = '';
+  for (const q of questions) {
+    if (q.strand !== activeQuestionStrand) {
+      activeQuestionStrand = q.strand;
+      flow.drawSectionBanner(
+        `EXAM & TOPICAL QUESTIONS — ${activeQuestionStrand}`,
+        'Answer all questions clearly in the spaces provided before checking Section C Marking Schemes.',
+        [0.93, 0.97, 0.95],
+        [0.55, 0.78, 0.68],
+        [0.03, 0.36, 0.27]
       );
-      y -= 13;
-
-      const qLines = wrapPdfText(`Q${q.qNumber}. ${q.prompt}`, 85).slice(0, 4);
-      for (const ln of qLines) {
-        page.drawText(ln, {
-          x: 44,
-          y,
-          size: 9.4,
-          font: boldFont,
-          color: rgb(0.08, 0.11, 0.16),
-        });
-        y -= 12.2;
-      }
-
-      if (q.options) {
-        const letters = ['A', 'B', 'C', 'D'];
-        for (let oi = 0; oi < 4; oi++) {
-          const optLine = toPdfSafe(`   ${letters[oi]}. ${q.options[oi]}`).slice(0, 88);
-          page.drawText(optLine, {
-            x: 50,
-            y,
-            size: 8.8,
-            font: regFont,
-            color: rgb(0.18, 0.22, 0.28),
-          });
-          y -= 11.2;
-        }
-        y -= 8;
-      } else {
-        // Ruled working / answer lines for structured questions
-        for (let lnIdx = 0; lnIdx < 3; lnIdx++) {
-          y -= 11;
-          page.drawLine({
-            start: { x: 52, y },
-            end: { x: 545, y },
-            thickness: 0.45,
-            color: rgb(0.76, 0.8, 0.85),
-          });
-        }
-        y -= 14;
-      }
     }
+    flow.drawQuestionBlock(q, false);
   }
 
-  // ---------------- PAGES 36..50 (15 PAGES): MARKING SCHEMES ----------------
-  const MARKING_PAGES = 15; // Pages 36..50 -> 1 + 34 + 15 = EXACT 50 PAGES!
-  for (let mIdx = 0; mIdx < MARKING_PAGES; mIdx++) {
-    const pageNum = 36 + mIdx;
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    drawPageFrame({
-      page,
-      boldFont,
-      regFont,
-      bookTitle: 'CBC GRADE UP',
-      gradeSubjectLabel: `${gradeSubject} (Section B: Marking Scheme)`,
-      pageNumber: pageNum + pageOffset,
-      totalPages: grandTotalPages,
-      accentRgb: [0.09, 0.22, 0.48],
-    });
-
-    const startIdx = Math.floor((mIdx * questions.length) / MARKING_PAGES);
-    const endIdx = Math.floor(((mIdx + 1) * questions.length) / MARKING_PAGES);
-    const mSlice = questions.slice(startIdx, endIdx);
-
-    page.drawRectangle({
-      x: 42,
-      y: 748,
-      width: 511,
-      height: 28,
-      color: rgb(0.93, 0.95, 0.99),
-      borderColor: rgb(0.65, 0.74, 0.92),
-      borderWidth: 0.8,
-    });
-    page.drawText(
-      `OFFICIAL MARKING SCHEME & WORKED SOLUTIONS (QUESTIONS ${
-        (mSlice[0]?.qNumber ?? 1)
-      } - ${mSlice[mSlice.length - 1]?.qNumber ?? questions.length})`,
-      {
-        x: 50,
-        y: 758,
-        size: 9.2,
-        font: boldFont,
-        color: rgb(0.09, 0.22, 0.48),
-      }
-    );
-
-    let y = 732;
-    for (const q of mSlice) {
-      if (y < 64) break;
-      const ansHeader = toPdfSafe(
-        `Q${q.qNumber} (${q.marks} mks) - Answer: ${q.answerText}`
-      ).slice(0, 92);
-      page.drawText(ansHeader, {
-        x: 44,
-        y,
-        size: 8.8,
-        font: boldFont,
-        color: rgb(0.04, 0.34, 0.22),
-      });
-      y -= 11.2;
-
-      const expLines = wrapPdfText(`   Guide: ${q.explanation}`, 90).slice(0, 2);
-      for (const eln of expLines) {
-        if (y < 56) break;
-        page.drawText(eln, {
-          x: 48,
-          y,
-          size: 8.1,
-          font: regFont,
-          color: rgb(0.22, 0.26, 0.33),
-        });
-        y -= 10.2;
-      }
-      y -= 6;
-    }
+  // ---------------- SECTION C (END OF BOOK): COMPLETE MARKING SCHEMES ----------------
+  flow.addPage('Section C: Marking Scheme', [0.09, 0.22, 0.48]);
+  flow.drawSectionBanner(
+    `SECTION C: COMPLETE OFFICIAL MARKING SCHEMES (Q1 - Q${questions.length})`,
+    'Verified Answers, Method Marks & Worked Explanations for Every Question in Section B',
+    [0.93, 0.95, 0.99],
+    [0.55, 0.66, 0.88],
+    [0.09, 0.22, 0.48]
+  );
+  for (const q of questions) {
+    flow.drawMarkingEntry(q);
   }
 
+  flow.stampAllPageFrames(0);
   return pdfDoc.save();
 }
 
-/**
- * BOOK 2: "COMPETENCY BASED MADE FAMILIAR" — EXACT 50 PAGES PER SUBJECT (KSh 750)
- * - Page 1: Official Cover & Strand/Sub-strand Study Roadmap
- * - Pages 2..41 (40 Pages): Point-Form Short Notes covering EVERY Strand & Sub-strand,
- *   followed IMMEDIATELY after every sub-topic by relevant practice questions!
- * - Pages 42..50 (9 Pages): Answers & Marking Guide to all Sub-topic Practice Questions!
- */
+// ============================================================================
+// BUTTON 2: "SUPER-LIGHT CBC COMPILATION" — ALL STRANDS & SUB-STRANDS SHORT NOTES
+// (12+ PTS/SUB, 30+ PTS/STRAND) + IMMEDIATE QUESTIONS AFTER EVERY SUB-STRAND (KSh 750)
+// ============================================================================
+
 export async function generateMadeFamiliarPdfBuffer(params: {
   gradeKey: string;
   subject: string;
-  pageOffset?: number;
-  grandTotalPages?: number;
   headerOverrideTitle?: string;
 }): Promise<Uint8Array> {
-  const {
-    gradeKey,
-    subject,
-    pageOffset = 0,
-    grandTotalPages = 50,
-    headerOverrideTitle,
-  } = params;
+  const { gradeKey, subject, headerOverrideTitle } = params;
   const runningBookTitle = headerOverrideTitle || 'SUPER-LIGHT CBC COMPILATION';
   const gradeLabel = formatBookGradeLabel(gradeKey);
   const gradeSubject = `${gradeLabel} ${subject}`;
-  const sylSubject = resolveSyllabusSubject(subject, gradeKey);
-  const gradeArg = gradeKey.toUpperCase().startsWith('PP')
-    ? gradeKey.toUpperCase()
-    : Number(gradeKey) || 7;
-  const cb = getApprovedCoursebook(gradeArg, sylSubject);
-  const { strands, subTopics, approvedBooks } = collectOrderedSubTopics(
-    gradeKey,
-    subject
-  );
+
+  const notesTree = buildStructuredSyllabusNotesTree(gradeKey, subject, 0);
   const approvedSummary =
-    approvedBooks.length > 0
-      ? approvedBooks
+    notesTree.approvedBooks.length > 0
+      ? notesTree.approvedBooks
           .slice(0, 4)
           .map((b) => `${b.series} (${b.publisher})`)
           .join('; ')
-      : cb.lbTitle;
-  const questionPool = buildFullBookQuestionPool(gradeKey, subject, 120); // 40 note pages * 3 Qs = 120 Qs
+      : notesTree.coursebookTitle;
+
+  const questionsPerSubstrand = Math.max(
+    9,
+    Math.ceil(205 / Math.max(1, notesTree.totalSubstrands))
+  );
+  const totalQuestionsNeeded = notesTree.totalSubstrands * questionsPerSubstrand;
+  const questionPool = buildFullBookQuestionPool(
+    gradeKey,
+    subject,
+    totalQuestionsNeeded,
+    0
+  );
 
   const pdfDoc = await PDFDocument.create();
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const regFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const accent: [number, number, number] = [0.1, 0.24, 0.54]; // Royal Indigo/Blue
 
-  // ---------------- PAGE 1: COVER PAGE ----------------
-  const cover = pdfDoc.addPage([595.28, 841.89]);
-  drawPageFrame({
-    page: cover,
+  const flow = new PdfFlowBookWriter({
+    pdfDoc,
     boldFont,
     regFont,
     bookTitle: runningBookTitle,
-    gradeSubjectLabel: gradeSubject,
-    pageNumber: 1 + pageOffset,
-    totalPages: grandTotalPages,
-    accentRgb: accent,
+    gradeSubject,
+    defaultAccent: accent,
   });
 
+  // ---------------- PAGE 1: COVER PAGE ----------------
+  const cover = flow.addPage('Cover & Study Roadmap', accent);
   cover.drawRectangle({
     x: 44,
     y: 635,
@@ -1275,10 +2102,10 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     height: 132,
     color: rgb(0.1, 0.24, 0.54),
   });
-  cover.drawText('OFFICIAL 2026 EDITION  *  50-PAGE POINT-FORM NOTES & TOPICAL Q&A', {
+  cover.drawText('OFFICIAL 2026 EDITION  *  IN-DEPTH POINT-FORM NOTES & IMMEDIATE Q&A', {
     x: 58,
     y: 742,
-    size: 10,
+    size: 9.8,
     font: boldFont,
     color: rgb(0.98, 0.82, 0.25),
   });
@@ -1292,26 +2119,26 @@ export async function generateMadeFamiliarPdfBuffer(params: {
   cover.drawText(headerOverrideTitle ? 'MASTER COMPILATION (PART 1)' : 'COMPILATION', {
     x: 58,
     y: 680,
-    size: 25,
+    size: 24,
     font: boldFont,
     color: rgb(0.65, 0.95, 0.82),
   });
   cover.drawText(
     toPdfSafe(
-      `${gradeLabel.toUpperCase()} ${subject.toUpperCase()}  *  Point-Form Notes + Topical Questions`
-    ),
+      `${gradeLabel.toUpperCase()} ${subject.toUpperCase()}  *  ${notesTree.totalPoints} Short Note Points + ${questionPool.length} Topical Qs`
+    ).slice(0, 94),
     {
       x: 58,
       y: 650,
-      size: 10.5,
+      size: 9.8,
       font: boldFont,
       color: rgb(0.93, 0.96, 1),
     }
   );
 
-  let cy = 610;
+  let cy = 612;
   cover.drawText(
-    'STRANDS & SUB-STRANDS COVERED IN POINT FORM (WITH TOPICAL QUESTIONS):',
+    'ALL SYLLABUS STRANDS & SUB-STRANDS COVERED (30+ POINTS PER STRAND):',
     {
       x: 46,
       y: cy,
@@ -1320,352 +2147,155 @@ export async function generateMadeFamiliarPdfBuffer(params: {
       color: rgb(0.08, 0.14, 0.26),
     }
   );
-  cy -= 18;
+  cy -= 17;
 
-  for (let sIdx = 0; sIdx < strands.length && cy > 180; sIdx++) {
-    const st = strands[sIdx];
-    cover.drawText(toPdfSafe(`${sIdx + 1}. ${st.strand}`), {
-      x: 50,
-      y: cy,
-      size: 9.5,
-      font: boldFont,
-      color: rgb(0.1, 0.24, 0.54),
-    });
-    cy -= 13;
-    for (const ln of wrapPdfText(st.subs.join('  |  '), 86).slice(0, 3)) {
+  for (let sIdx = 0; sIdx < notesTree.strands.length && cy > 180; sIdx++) {
+    const st = notesTree.strands[sIdx];
+    cover.drawText(
+      toPdfSafe(
+        `${st.strandIndex}. ${st.strandTitle}  [${st.substrands.length} Sub-strands | ${st.totalPoints} Note Points]`
+      ).slice(0, 88),
+      {
+        x: 50,
+        y: cy,
+        size: 9.1,
+        font: boldFont,
+        color: rgb(0.1, 0.24, 0.54),
+      }
+    );
+    cy -= 12.5;
+    for (const ln of wrapPdfText(
+      st.substrands.map((s) => s.substrandTitle).join('  |  '),
+      86
+    ).slice(0, 2)) {
       if (cy < 175) break;
       cover.drawText(`   * ${ln}`, {
         x: 54,
         y: cy,
-        size: 8.4,
+        size: 8.2,
         font: regFont,
         color: rgb(0.22, 0.28, 0.36),
       });
-      cy -= 11.5;
+      cy -= 11;
     }
-    cy -= 5;
+    cy -= 4;
   }
 
   cover.drawRectangle({
     x: 44,
     y: 64,
     width: 507,
-    height: 94,
+    height: 96,
     color: rgb(0.95, 0.97, 1),
     borderColor: rgb(0.1, 0.24, 0.54),
     borderWidth: 1,
   });
-  cover.drawText('INSIDE THIS 50-PAGE "SUPER-LIGHT CBC COMPILATION" BOOK:', {
+  cover.drawText('INSIDE THIS "SUPER-LIGHT CBC COMPILATION" BOOK:', {
     x: 58,
-    y: 140,
+    y: 142,
     size: 9.6,
     font: boldFont,
     color: rgb(0.1, 0.24, 0.54),
   });
   cover.drawText(
-    '  * Pages 2 - 41: Concise Point-Form Revision Notes on EVERY Strand & Sub-topic,',
-    { x: 58, y: 123, size: 8.6, font: regFont, color: rgb(0.15, 0.2, 0.28) }
+    `  * Complete Short Point-Form Notes: ${notesTree.minPointsPerSubstrand}+ points per Sub-strand & ${notesTree.minPointsPerStrand}+ points per Strand!`,
+    { x: 58, y: 126, size: 8.4, font: regFont, color: rgb(0.15, 0.2, 0.28) }
   );
   cover.drawText(
-    '    followed immediately after every sub-topic by relevant Topical Practice Questions.',
-    { x: 58, y: 110, size: 8.6, font: regFont, color: rgb(0.15, 0.2, 0.28) }
+    `  * Immediate Topical Practice: Every Sub-strand's notes are followed immediately by ${questionsPerSubstrand} relevant questions.`,
+    { x: 58, y: 112, size: 8.4, font: regFont, color: rgb(0.15, 0.2, 0.28) }
   );
   cover.drawText(
-    '  * Pages 42 - 50: Complete Answers & Marking Guide to all Sub-Topic Practice Questions.',
-    { x: 58, y: 95, size: 8.6, font: boldFont, color: rgb(0.04, 0.35, 0.25) }
+    `  * End-of-Book Answers & Marking Guide: Step-by-step solutions to all ${questionPool.length} Sub-strand Questions.`,
+    { x: 58, y: 98, size: 8.4, font: boldFont, color: rgb(0.04, 0.35, 0.25) }
   );
   cover.drawText(
     toPdfSafe(`  * Approved Coursebooks Synthesized: ${approvedSummary}`).slice(0, 92),
-    {
-      x: 58,
-      y: 80,
-      size: 8.2,
-      font: regFont,
-      color: rgb(0.3, 0.35, 0.44),
-    }
+    { x: 58, y: 82, size: 8.1, font: regFont, color: rgb(0.3, 0.35, 0.44) }
   );
 
-  // ---------------- PAGES 2..41 (40 PAGES): POINT-FORM NOTES + SUB-TOPIC QUESTIONS ----------------
-  const NOTE_PAGES = 40;
-  for (let nIdx = 0; nIdx < NOTE_PAGES; nIdx++) {
-    const pageNum = 2 + nIdx;
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    drawPageFrame({
-      page,
-      boldFont,
-      regFont,
-      bookTitle: runningBookTitle,
-      gradeSubjectLabel: `${gradeSubject} (Notes & Sub-Topic Qs)`,
-      pageNumber: pageNum + pageOffset,
-      totalPages: grandTotalPages,
-      accentRgb: accent,
-    });
+  // ---------------- SECTION A: NOTES + IMMEDIATE TOPICAL QUESTIONS PER SUB-STRAND ----------------
+  flow.addPage('Short Notes & Sub-strand Qs', accent);
+  let qCursor = 0;
 
-    const unit = subTopics[nIdx % Math.max(1, subTopics.length)];
-    const passIdx = Math.floor(nIdx / Math.max(1, subTopics.length));
-    const passLensLabels = [
-      'Core Concepts, Definitions & Rules',
-      'Practical Investigation, Apparatus & Procedure',
-      'Worked Illustrations & Real-Life Application',
-      'Case Synthesis & Common Assessment Watchpoints',
-    ];
-    const passTag = passLensLabels[passIdx % passLensLabels.length];
-    const subHeaderTitle =
-      passIdx === 0
-        ? unit.subtopicTitle
-        : `${unit.subtopicTitle} — ${passTag}`;
-    const domainNotes = buildDomainLessonNotes({
-      grade: gradeArg,
-      subject: sylSubject,
-      strand: unit.strand,
-      baseSubstrand: unit.substrand,
-      aspect: unit.subtopicTitle,
-      phaseTag: passTag,
-      kiq: unit.kiq,
-      resources: unit.resources,
-      lbCitation: cb.lbShort,
-      tgCitation: cb.tgShort,
-      isKiswahili: cb.isKiswahili,
-    });
-
-    const q1 = questionPool[nIdx * 3];
-    const q2 = questionPool[nIdx * 3 + 1];
-    const q3 = questionPool[nIdx * 3 + 2];
-
-    // Sub-topic header box
-    page.drawRectangle({
-      x: 42,
-      y: 736,
-      width: 511,
-      height: 40,
-      color: rgb(0.93, 0.96, 1),
-      borderColor: rgb(0.6, 0.72, 0.92),
-      borderWidth: 0.9,
-    });
-    page.drawText(
-      toPdfSafe(`STRAND: ${unit.strand}  (Term ${unit.term} * ${passTag})`).slice(0, 84),
-      {
-        x: 50,
-        y: 762,
-        size: 8.6,
-        font: boldFont,
-        color: rgb(0.1, 0.24, 0.54),
-      }
-    );
-    page.drawText(
-      toPdfSafe(`SUB-TOPIC ${nIdx + 1}: ${subHeaderTitle}`).slice(0, 84),
-      {
-        x: 50,
-        y: 746,
-        size: 9.4,
-        font: boldFont,
-        color: rgb(0.05, 0.1, 0.2),
-      }
+  for (const st of notesTree.strands) {
+    flow.drawSectionBanner(
+      `STRAND ${st.strandIndex}: ${st.strandTitle}`,
+      `Term ${st.term}  *  ${st.substrands.length} Sub-strands  *  ${st.totalPoints} Point-Form Notes + Immediate Sub-strand Questions`,
+      [0.93, 0.96, 1],
+      [0.58, 0.7, 0.92],
+      [0.1, 0.24, 0.54]
     );
 
-    let y = 718;
-    page.drawText('PART A: SHORT REVISION NOTES (IN POINT FORM)', {
-      x: 44,
-      y,
-      size: 9.5,
-      font: boldFont,
-      color: rgb(0.03, 0.38, 0.26),
-    });
-    y -= 14;
-
-    // Distinct point-form bullets per progressive pass so notes never repeat across pages!
-    const bulletPoints =
-      passIdx === 0
-        ? [
-            ...domainNotes.coreConceptNotes.map((b) => b.replace(/^\s*-\s*/, '')),
-            `Key Inquiry Focus: ${
-              unit.kiq || `Mastering "${unit.subtopicTitle}" in real-world problem solving.`
-            }`,
-            `Key Fact 1: ${q1.explanation}`,
-            `Key Fact 2: ${q2.explanation}`,
-          ]
-        : passIdx === 1
-        ? [
-            `Practical Setup & Learning Aids: ${unit.resources}.`,
-            domainNotes.workedIllustration,
-            domainNotes.learnerPracticeTask,
-            `Practical Takeaway 1: ${q1.explanation}`,
-            `Practical Takeaway 2: ${q3.explanation}`,
-          ]
-        : [
-            `Applied Summary: ${domainNotes.summaryLine}`,
-            `Self-Check Criterion: ${domainNotes.checkQuestion}`,
-            `Worked Application Insight: ${q1.explanation}`,
-            `Accuracy & Marking Tip: ${q2.explanation}`,
-            `Extended Mastery Note: ${q3.explanation}`,
-          ];
-
-    for (const bp of bulletPoints) {
-      if (y < 385) break;
-      const lines = wrapPdfText(`* ${bp}`, 86).slice(0, 3);
-      for (const ln of lines) {
-        page.drawText(ln, {
-          x: 48,
-          y,
-          size: 8.7,
-          font: regFont,
-          color: rgb(0.14, 0.18, 0.24),
-        });
-        y -= 11.4;
-      }
-      y -= 4;
-    }
-
-    // Divider before Topical Questions immediately following this Sub-topic!
-    y -= 4;
-    page.drawRectangle({
-      x: 42,
-      y: y - 16,
-      width: 511,
-      height: 22,
-      color: rgb(0.98, 0.95, 0.86),
-      borderColor: rgb(0.92, 0.78, 0.38),
-      borderWidth: 0.8,
-    });
-    page.drawText(
-      toPdfSafe(
-        `PART B: TOPICAL PRACTICE QUESTIONS ON "${unit.subtopicTitle.toUpperCase()}"`
-      ).slice(0, 80),
-      {
-        x: 50,
-        y: y - 9,
-        size: 8.8,
-        font: boldFont,
-        color: rgb(0.48, 0.28, 0.02),
-      }
-    );
-    y -= 30;
-
-    for (const tq of [q1, q2, q3]) {
-      if (!tq || y < 74) break;
-      const qLines = wrapPdfText(
-        `Q${tq.qNumber}. ${tq.prompt} (${tq.marks} mks)`,
-        85
-      ).slice(0, 3);
-      for (const ln of qLines) {
-        page.drawText(ln, {
-          x: 46,
-          y,
-          size: 8.9,
-          font: boldFont,
-          color: rgb(0.08, 0.11, 0.16),
-        });
-        y -= 11.2;
+    for (const sub of st.substrands) {
+      flow.drawSubstrandHeader(sub.substrandCode, sub.substrandTitle, sub.points.length);
+      for (const pt of sub.points) {
+        flow.drawNotePoint(pt);
       }
 
-      if (tq.options) {
-        const optStr = toPdfSafe(
-          `   A) ${tq.options[0]}    B) ${tq.options[1]}    C) ${tq.options[2]}    D) ${tq.options[3]}`
-        );
-        for (const oln of wrapPdfText(optStr, 88).slice(0, 2)) {
-          page.drawText(oln, {
-            x: 50,
-            y,
-            size: 8.3,
-            font: regFont,
-            color: rgb(0.2, 0.25, 0.32),
-          });
-          y -= 10.5;
-        }
-        y -= 5;
-      } else {
-        y -= 10;
-        page.drawLine({
-          start: { x: 52, y },
-          end: { x: 545, y },
-          thickness: 0.45,
-          color: rgb(0.76, 0.8, 0.85),
-        });
-        y -= 12;
-      }
-    }
-  }
-
-  // ---------------- PAGES 42..50 (9 PAGES): ANSWERS TO SUB-TOPIC QUESTIONS ----------------
-  const ANS_PAGES = 9; // 1 + 40 + 9 = EXACT 50 PAGES!
-  for (let aIdx = 0; aIdx < ANS_PAGES; aIdx++) {
-    const pageNum = 42 + aIdx;
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    drawPageFrame({
-      page,
-      boldFont,
-      regFont,
-      bookTitle: runningBookTitle,
-      gradeSubjectLabel: `${gradeSubject} (Sub-Topic Answers)`,
-      pageNumber: pageNum + pageOffset,
-      totalPages: grandTotalPages,
-      accentRgb: [0.03, 0.36, 0.27],
-    });
-
-    const startIdx = Math.floor((aIdx * questionPool.length) / ANS_PAGES);
-    const endIdx = Math.floor(((aIdx + 1) * questionPool.length) / ANS_PAGES);
-    const aSlice = questionPool.slice(startIdx, endIdx);
-
-    page.drawRectangle({
-      x: 42,
-      y: 748,
-      width: 511,
-      height: 28,
-      color: rgb(0.93, 0.97, 0.95),
-      borderColor: rgb(0.65, 0.85, 0.76),
-      borderWidth: 0.8,
-    });
-    page.drawText(
-      `ANSWERS TO SUB-TOPIC PRACTICE QUESTIONS (Q${
-        aSlice[0]?.qNumber ?? 1
-      } - Q${aSlice[aSlice.length - 1]?.qNumber ?? questionPool.length})`,
-      {
-        x: 50,
-        y: 758,
-        size: 9.2,
-        font: boldFont,
-        color: rgb(0.03, 0.36, 0.27),
-      }
-    );
-
-    let y = 730;
-    for (const q of aSlice) {
-      if (y < 62) break;
-      page.drawText(
-        toPdfSafe(`Q${q.qNumber}: ${q.answerText}`).slice(0, 92),
+      // Immediately after this Sub-strand's Short Notes, render its Topical Practice Questions!
+      flow.ensureSpace(58);
+      flow.currentPage.drawRectangle({
+        x: 42,
+        y: flow.y - 19,
+        width: 511,
+        height: 21,
+        color: rgb(0.99, 0.96, 0.87),
+        borderColor: rgb(0.9, 0.76, 0.35),
+        borderWidth: 0.8,
+      });
+      flow.currentPage.drawText(
+        toPdfSafe(
+          `IMMEDIATE TOPICAL QUESTIONS ON SUB-STRAND ${sub.substrandCode}: "${sub.substrandTitle}"`
+        ).slice(0, 88),
         {
-          x: 44,
-          y,
-          size: 8.7,
+          x: 49,
+          y: flow.y - 12,
+          size: 8.5,
           font: boldFont,
-          color: rgb(0.05, 0.28, 0.45),
+          color: rgb(0.48, 0.28, 0.02),
         }
       );
-      y -= 11;
-      for (const eln of wrapPdfText(`   Explanation: ${q.explanation}`, 90).slice(
-        0,
-        2
-      )) {
-        if (y < 54) break;
-        page.drawText(eln, {
-          x: 48,
-          y,
-          size: 8,
-          font: regFont,
-          color: rgb(0.24, 0.28, 0.35),
-        });
-        y -= 10;
+      flow.y -= 28;
+
+      const subQs = questionPool.slice(qCursor, qCursor + questionsPerSubstrand);
+      qCursor += questionsPerSubstrand;
+      for (const tq of subQs) {
+        flow.drawQuestionBlock(
+          {
+            ...tq,
+            strand: st.strandTitle,
+            substrand: sub.substrandTitle,
+          },
+          true
+        );
       }
-      y -= 5;
+      flow.y -= 6;
     }
   }
 
+  // ---------------- SECTION B (END OF BOOK): COMPLETE SUB-STRAND ANSWERS ----------------
+  flow.addPage('Sub-strand Answers & Guide', [0.03, 0.36, 0.27]);
+  flow.drawSectionBanner(
+    `COMPLETE ANSWERS & MARKING GUIDE TO SUB-STRAND QUESTIONS (Q1 - Q${questionPool.length})`,
+    'Verified Solutions & Step-by-Step Explanations for Every Sub-strand Practice Question',
+    [0.92, 0.98, 0.95],
+    [0.58, 0.82, 0.72],
+    [0.03, 0.36, 0.27]
+  );
+  for (const q of questionPool) {
+    flow.drawMarkingEntry(q);
+  }
+
+  flow.stampAllPageFrames(0);
   return pdfDoc.save();
 }
 
-/**
- * BUTTON 3: MASTER COMPILATION (100 PAGES TOTAL = MADE FAMILIAR 50 PAGES + CBC GRADE UP 50 PAGES)
- */
+// ============================================================================
+// BUTTON 3: "SMART CBC ALL SUBJECTS" — MASTER COMPILATION COMBINING EVERYTHING
+// (PART 1: SUPER-LIGHT CBC COMPILATION + PART 2: CBC GRADE UP WITH 0% OVERLAP!)
+// ============================================================================
+
 export async function generateCompleteCompilationPdfBuffer(params: {
   gradeKey: string;
   subject: string;
@@ -1675,15 +2305,12 @@ export async function generateCompleteCompilationPdfBuffer(params: {
     generateMadeFamiliarPdfBuffer({
       gradeKey,
       subject,
-      pageOffset: 0,
-      grandTotalPages: 100,
       headerOverrideTitle: 'SMART CBC ALL SUBJECTS',
     }),
     generateCbcGradeUpPdfBuffer({
       gradeKey,
       subject,
-      pageOffset: 50,
-      grandTotalPages: 100,
+      variantOffset: 1, // Distinct worked examples & extended mastery notes so 0% repetition across Part 1 & Part 2!
     }),
   ]);
 
@@ -1697,12 +2324,46 @@ export async function generateCompleteCompilationPdfBuffer(params: {
   const pages2 = await mergedPdf.copyPages(doc2, doc2.getPageIndices());
   for (const p of pages2) mergedPdf.addPage(p);
 
+  // Stamp unified continuous `Page X of GrandTotal` badge over the top-right header pill of every page!
+  const boldFont = await mergedPdf.embedFont(StandardFonts.HelveticaBold);
+  const allPages = mergedPdf.getPages();
+  const grandTotal = allPages.length;
+  for (let i = 0; i < grandTotal; i++) {
+    const pg = allPages[i];
+    const { width, height } = pg.getSize();
+    const isPart1 = i < doc1.getPageCount();
+    const barColor: [number, number, number] = isPart1
+      ? i >= doc1.getPageCount() - 9
+        ? [0.03, 0.36, 0.27]
+        : [0.1, 0.24, 0.54]
+      : i >= grandTotal - 10
+      ? [0.09, 0.22, 0.48]
+      : [0.03, 0.36, 0.27];
+
+    pg.drawRectangle({
+      x: width - 155,
+      y: height - 53,
+      width: 124,
+      height: 24,
+      color: rgb(barColor[0], barColor[1], barColor[2]),
+    });
+    const pgTag = `Page ${i + 1} of ${grandTotal}`;
+    pg.drawText(pgTag, {
+      x: width - 38 - boldFont.widthOfTextAtSize(pgTag, 9),
+      y: height - 45,
+      size: 9,
+      font: boldFont,
+      color: rgb(1, 0.94, 0.65),
+    });
+  }
+
   return mergedPdf.save();
 }
 
-/**
- * Generates Editable Microsoft Word (.DOCX) Edition of CBC GRADE UP, MADE FAMILIAR, or COMPLETE COMPILATION
- */
+// ============================================================================
+// EDITABLE MICROSOFT WORD (.DOCX) EDITION FOR ALL THREE BUTTONS
+// ============================================================================
+
 export async function generateCbcBookDocxBuffer(params: {
   bookType: CbcBookType;
   gradeKey: string;
@@ -1711,19 +2372,27 @@ export async function generateCbcBookDocxBuffer(params: {
   const { bookType, gradeKey, subject } = params;
   const gradeLabel = formatBookGradeLabel(gradeKey);
   const titleName = BOOK_SERIES_TITLES[bookType];
-  const { strands, subTopics, coursebookTitle, approvedBooks } = collectOrderedSubTopics(
-    gradeKey,
-    subject
-  );
+
+  const primaryNotesTree = buildStructuredSyllabusNotesTree(gradeKey, subject, 0);
+  const secondaryNotesTree =
+    bookType === 'COMPLETE_BUNDLE'
+      ? buildStructuredSyllabusNotesTree(gradeKey, subject, 1)
+      : null;
+
+  const qPerSub = Math.max(9, Math.ceil(205 / Math.max(1, primaryNotesTree.totalSubstrands)));
+  const mfTotalQs = primaryNotesTree.totalSubstrands * qPerSub;
+  const guTotalQs = Math.max(180, 200 - primaryNotesTree.totalSubstrands);
+
   const madeFamiliarQuestions =
     bookType === 'MADE_FAMILIAR' || bookType === 'COMPLETE_BUNDLE'
-      ? buildFullBookQuestionPool(gradeKey, subject, 120, 0)
+      ? buildFullBookQuestionPool(gradeKey, subject, mfTotalQs, 0)
       : [];
   const gradeUpQuestions =
     bookType === 'GRADE_UP' || bookType === 'COMPLETE_BUNDLE'
-      ? buildFullBookQuestionPool(gradeKey, subject, 170, 120)
+      ? buildFullBookQuestionPool(gradeKey, subject, guTotalQs, mfTotalQs)
       : [];
-  const questions =
+
+  const allQuestionsForMarking =
     bookType === 'MADE_FAMILIAR'
       ? madeFamiliarQuestions
       : bookType === 'GRADE_UP'
@@ -1732,7 +2401,7 @@ export async function generateCbcBookDocxBuffer(params: {
           ...madeFamiliarQuestions,
           ...gradeUpQuestions.map((q, idx) => ({
             ...q,
-            qNumber: 121 + idx,
+            qNumber: mfTotalQs + 1 + idx,
           })),
         ];
 
@@ -1762,8 +2431,8 @@ export async function generateCbcBookDocxBuffer(params: {
         }),
       ],
     }),
-    ...(approvedBooks.length > 0
-      ? approvedBooks.map(
+    ...(primaryNotesTree.approvedBooks.length > 0
+      ? primaryNotesTree.approvedBooks.map(
           (ab, idx) =>
             new Paragraph({
               spacing: { before: 40, after: 40 },
@@ -1780,29 +2449,38 @@ export async function generateCbcBookDocxBuffer(params: {
         )
       : [
           new Paragraph({
-            children: [new TextRun({ text: coursebookTitle, bold: true })],
+            children: [new TextRun({ text: primaryNotesTree.coursebookTitle, bold: true })],
           }),
         ]),
-  ];
-
-  children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      children: [new TextRun({ text: 'STRANDS & SUB-STRANDS COVERED', bold: true })],
-    })
-  );
-  for (const st of strands) {
+      children: [
+        new TextRun({
+          text: `COMPLETE SYLLABUS STRANDS & SUB-STRANDS COVERED (${primaryNotesTree.totalStrands} STRANDS • ${primaryNotesTree.totalSubstrands} SUB-STRANDS • ${primaryNotesTree.totalPoints}+ SHORT NOTE POINTS)`,
+          bold: true,
+        }),
+      ],
+    }),
+  ];
+
+  for (const st of primaryNotesTree.strands) {
     children.push(
       new Paragraph({
         spacing: { before: 80, after: 40 },
         children: [
-          new TextRun({ text: `${st.strand}: `, bold: true }),
-          new TextRun({ text: st.subs.join('; ') }),
+          new TextRun({
+            text: `Strand ${st.strandIndex}: ${st.strandTitle} (${st.totalPoints} Points): `,
+            bold: true,
+          }),
+          new TextRun({
+            text: st.substrands.map((s) => s.substrandTitle).join('; '),
+          }),
         ],
       })
     );
   }
 
+  // Render SUPER-LIGHT CBC COMPILATION section (All Strands & Sub-strands 12+ Point Notes + Immediate Questions)
   if (bookType === 'MADE_FAMILIAR' || bookType === 'COMPLETE_BUNDLE') {
     children.push(
       new Paragraph({ children: [new PageBreak()] }),
@@ -1810,83 +2488,153 @@ export async function generateCbcBookDocxBuffer(params: {
         heading: HeadingLevel.HEADING_1,
         children: [
           new TextRun({
-            text: 'SUPER-LIGHT CBC COMPILATION — POINT-FORM NOTES & SUB-TOPIC QUESTIONS',
+            text: 'SUPER-LIGHT CBC COMPILATION — IN-DEPTH POINT-FORM SHORT NOTES & IMMEDIATE SUB-STRAND QUESTIONS',
             bold: true,
           }),
         ],
       })
     );
 
-    for (let i = 0; i < 40; i++) {
-      const u = subTopics[i % Math.max(1, subTopics.length)];
-      const qA = madeFamiliarQuestions[i * 3];
-      const qB = madeFamiliarQuestions[i * 3 + 1];
-      const qC = madeFamiliarQuestions[i * 3 + 2];
+    let qIdx = 0;
+    for (const st of primaryNotesTree.strands) {
       children.push(
         new Paragraph({
-          spacing: { before: 180, after: 60 },
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 80 },
           children: [
             new TextRun({
-              text: `${u.strand} — Sub-topic ${i + 1}: ${u.subtopicTitle}`,
-              bold: true,
-              size: 22,
-            }),
-          ],
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `• Core Focus: Mastery of "${u.subtopicTitle}" under ${u.substrand}.`,
-            }),
-          ],
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `• Practical Resources & Tools: ${u.resources}.`,
-            }),
-          ],
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `• Key Takeaway: ${qA.explanation}` })],
-        }),
-        new Paragraph({
-          spacing: { before: 80 },
-          children: [
-            new TextRun({
-              text: `Q${qA.qNumber}. ${qA.prompt}`,
-              bold: true,
-            }),
-          ],
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `Q${qB.qNumber}. ${qB.prompt}`,
-              bold: true,
-            }),
-          ],
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `Q${qC.qNumber}. ${qC.prompt}`,
+              text: `STRAND ${st.strandIndex}: ${st.strandTitle} (${st.totalPoints} Essential Revision Points)`,
               bold: true,
             }),
           ],
         })
       );
+
+      for (const sub of st.substrands) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 140, after: 60 },
+            children: [
+              new TextRun({
+                text: `Sub-strand ${sub.substrandCode}: ${sub.substrandTitle} (${sub.points.length} Points)`,
+                bold: true,
+                size: 23,
+              }),
+            ],
+          })
+        );
+
+        for (const pt of sub.points) {
+          children.push(
+            new Paragraph({
+              spacing: { before: 30, after: 30 },
+              children: [new TextRun({ text: pt })],
+            })
+          );
+        }
+
+        children.push(
+          new Paragraph({
+            spacing: { before: 100, after: 40 },
+            children: [
+              new TextRun({
+                text: `Topical Practice Questions on Sub-strand ${sub.substrandCode} (${sub.substrandTitle}):`,
+                bold: true,
+              }),
+            ],
+          })
+        );
+
+        const subQs = madeFamiliarQuestions.slice(qIdx, qIdx + qPerSub);
+        qIdx += qPerSub;
+        for (const q of subQs) {
+          children.push(
+            new Paragraph({
+              spacing: { before: 60 },
+              children: [
+                new TextRun({
+                  text: `Q${q.qNumber}. ${q.prompt} (${q.marks} Marks)`,
+                  bold: true,
+                }),
+              ],
+            })
+          );
+          if (q.options) {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `   A) ${q.options[0]}   B) ${q.options[1]}   C) ${q.options[2]}   D) ${q.options[3]}`,
+                  }),
+                ],
+              })
+            );
+          }
+        }
+      }
     }
   }
 
+  // Render CBC GRADE UP section (Full 12+ pts/Sub-strand & 30+ pts/Strand Short Notes + 165 Exam Questions)
   if (bookType === 'GRADE_UP' || bookType === 'COMPLETE_BUNDLE') {
+    const activeGradeUpNotes = secondaryNotesTree || primaryNotesTree;
     children.push(
       new Paragraph({ children: [new PageBreak()] }),
       new Paragraph({
         heading: HeadingLevel.HEADING_1,
         children: [
           new TextRun({
-            text: 'CBC GRADE UP — TOPICAL & END-OF-STRAND QUESTIONS',
+            text: 'CBC GRADE UP — COMPLETE STRAND & SUB-STRAND SHORT NOTES (12+ POINTS PER SUB-STRAND, 30+ PER STRAND)',
+            bold: true,
+          }),
+        ],
+      })
+    );
+
+    for (const st of activeGradeUpNotes.strands) {
+      children.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 180, after: 70 },
+          children: [
+            new TextRun({
+              text: `STRAND ${st.strandIndex}: ${st.strandTitle} (${st.totalPoints} Points)`,
+              bold: true,
+            }),
+          ],
+        })
+      );
+      for (const sub of st.substrands) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 120, after: 50 },
+            children: [
+              new TextRun({
+                text: `Sub-strand ${sub.substrandCode}: ${sub.substrandTitle} (${sub.points.length} Points)`,
+                bold: true,
+                size: 22,
+              }),
+            ],
+          })
+        );
+        for (const pt of sub.points) {
+          children.push(
+            new Paragraph({
+              spacing: { before: 28, after: 28 },
+              children: [new TextRun({ text: pt })],
+            })
+          );
+        }
+      }
+    }
+
+    children.push(
+      new Paragraph({ children: [new PageBreak()] }),
+      new Paragraph({
+        heading: HeadingLevel.HEADING_1,
+        children: [
+          new TextRun({
+            text: 'CBC GRADE UP — TOPICAL & END-OF-STRAND EXAM QUESTIONS',
             bold: true,
           }),
         ],
@@ -1895,16 +2643,16 @@ export async function generateCbcBookDocxBuffer(params: {
 
     const gUpToRender =
       bookType === 'COMPLETE_BUNDLE'
-        ? gradeUpQuestions.map((q, idx) => ({ ...q, qNumber: 121 + idx }))
+        ? gradeUpQuestions.map((q, idx) => ({ ...q, qNumber: mfTotalQs + 1 + idx }))
         : gradeUpQuestions;
 
     for (const q of gUpToRender) {
       children.push(
         new Paragraph({
-          spacing: { before: 100 },
+          spacing: { before: 90 },
           children: [
             new TextRun({
-              text: `Q${q.qNumber}. [${q.substrand}] ${q.prompt} (${q.marks} mks)`,
+              text: `Q${q.qNumber}. [${q.substrand}] ${q.prompt} (${q.marks} Marks)`,
               bold: true,
             }),
           ],
@@ -1924,7 +2672,7 @@ export async function generateCbcBookDocxBuffer(params: {
     }
   }
 
-  // Marking Schemes at the end of every book!
+  // Complete Marking Schemes at the end of EVERY book!
   children.push(
     new Paragraph({ children: [new PageBreak()] }),
     new Paragraph({
@@ -1938,7 +2686,7 @@ export async function generateCbcBookDocxBuffer(params: {
     })
   );
 
-  for (const q of questions) {
+  for (const q of allQuestionsForMarking) {
     children.push(
       new Paragraph({
         spacing: { before: 60 },
