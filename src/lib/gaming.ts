@@ -31,26 +31,52 @@ export const REDEEM_KES_VALUE = 5; // KSh 5 ("5 bob") per 1,000 points
 
 export const ALL_GAMING_SUBJECTS = [
   'Mathematics',
+  'Core Mathematics',
+  'Essential Mathematics',
   'English',
+  'Literature in English',
   'Kiswahili',
+  'Fasihi ya Kiswahili',
   'Integrated Science',
   'Science & Technology',
+  'General Science',
   'Biology',
   'Chemistry',
   'Physics',
   'Pre-Technical Studies',
   'Computer Studies',
+  'Information Communication Technology (ICT)',
   'Agriculture & Nutrition',
+  'Home Science',
   'Social Studies',
   'History & Citizenship',
   'Geography',
+  'Community Service Learning (CSL)',
   'Business Studies',
+  'Life Skills',
   'Creative Arts & Sports',
+  'Music and Dance',
+  'Theatre and Film',
+  'Fine Arts',
+  'Sports and Recreation',
+  'Physical Education',
   'Christian Religious Education (CRE)',
   'Islamic Religious Education (IRE)',
+  'French',
+  'Arabic',
+  'German',
+  'Aviation',
+  'Building Construction',
+  'Electricity',
+  'Metal Work',
+  'Power Mechanics',
+  'Woodwork',
+  'Media Technology',
+  'Marine and Fisheries Technology',
   'Language Activities',
   'Mathematical Activities',
   'Environmental Activities',
+  'Indigenous Language Activities',
 ] as const;
 
 export interface PublicGameQuestion {
@@ -273,12 +299,20 @@ export function resolveSyllabusSubject(subject: string, gradeKey: string): strin
   const isPP = upperGrade === 'PP1' || upperGrade === 'PP2';
   const gNum = isPP ? 0 : Number(upperGrade) || 7;
 
+  if (s === 'essential mathematics') return 'Essential Mathematics';
+  if (s === 'core mathematics') return 'Core Mathematics';
   if (s === 'mathematical activities') return 'Mathematical Activities';
   if (s.includes('math')) {
     if (isPP || gNum <= 3) return 'Mathematical Activities';
     if (gNum >= 10) return 'Core Mathematics';
     return 'Mathematics';
   }
+  if (s.includes('literature in english')) return 'Literature in English';
+  if (s.includes('fasihi')) return 'Fasihi ya Kiswahili';
+  if (s.includes('indigenous')) return 'Indigenous Language Activities';
+  if (s === 'french') return 'French';
+  if (s === 'arabic') return 'Arabic';
+  if (s === 'german') return 'German';
   if (s === 'language activities') return 'Language Activities';
   if (s.includes('english')) {
     if (isPP) return 'Language Activities';
@@ -290,6 +324,7 @@ export function resolveSyllabusSubject(subject: string, gradeKey: string): strin
     return 'Kiswahili';
   }
   if (s.includes('environmental')) return 'Environmental Activities';
+  if (s.includes('general science')) return 'General Science';
   if (s.includes('science & technology') || s.includes('science and technology')) {
     return 'Science and Technology';
   }
@@ -297,14 +332,43 @@ export function resolveSyllabusSubject(subject: string, gradeKey: string): strin
   if (s.includes('biology')) return 'Biology';
   if (s.includes('chemistry')) return 'Chemistry';
   if (s.includes('physics')) return 'Physics';
-  if (s.includes('agriculture')) return 'Agriculture and Nutrition';
+  if (s.includes('home science') || s.includes('homescience')) return 'Home Science';
+  if (s.includes('marine') || s.includes('fisheries')) {
+    return 'Marine and Fisheries Technology';
+  }
+  if (s.includes('agriculture')) {
+    if (gNum >= 10) return 'Agriculture';
+    return 'Agriculture and Nutrition';
+  }
+  if (s.includes('information communication') || s === 'ict') {
+    return 'Information Communication Technology (ICT)';
+  }
   if (s.includes('pre-technical')) return 'Pre-Technical Studies';
-  if (s.includes('computer')) return 'Computer Science';
+  if (s.includes('computer')) {
+    if (gNum >= 10 && s.includes('studies')) return 'Computer Studies';
+    return 'Computer Science';
+  }
+  if (s.includes('aviation')) return 'Aviation';
+  if (s.includes('building')) return 'Building Construction';
+  if (s.includes('electricity')) return 'Electricity';
+  if (s.includes('metal')) return 'Metal Work';
+  if (s.includes('power mechanics')) return 'Power Mechanics';
+  if (s.includes('woodwork')) return 'Woodwork';
+  if (s.includes('media technology')) return 'Media Technology';
+  if (s.includes('community service') || s.includes('(csl)')) {
+    return 'Community Service Learning (CSL)';
+  }
+  if (s.includes('life skills')) return 'Life Skills';
   if (s.includes('history')) return 'History and Citizenship';
   if (s.includes('geography')) return 'Geography';
   if (s.includes('business')) return 'Business Studies';
   if (s.includes('social studies')) return 'Social Studies';
-  if (s.includes('creative')) {
+  if (s.includes('music and dance')) return 'Music and Dance';
+  if (s.includes('theatre and film')) return 'Theatre and Film';
+  if (s.includes('fine arts')) return 'Fine Arts';
+  if (s.includes('sports and recreation')) return 'Sports and Recreation';
+  if (s.includes('physical education')) return 'Physical Education';
+  if (s.includes('creative') || s.includes('psychomotor')) {
     if (isPP || gNum <= 3) return 'Creative Activities';
     if (gNum <= 6) return 'Creative Arts';
     return 'Creative Arts and Sports';
@@ -321,17 +385,42 @@ export function resolveSyllabusSubject(subject: string, gradeKey: string): strin
 function resolveExerciseDomain(subject: string): string {
   const s = subject.toLowerCase();
   if (s.includes('math')) return 'mathematics';
+  if (s.includes('fasihi')) return 'fasihi_kiswahili';
   if (s.includes('kiswahili')) return 'kiswahili';
-  if (s.includes('english') || s.includes('language activities')) return 'english';
+  if (s.includes('literature in english')) return 'literature_english';
+  if (s === 'french') return 'french';
+  if (s === 'arabic') return 'arabic';
+  if (s === 'german') return 'german';
+  if (s.includes('english') || s.includes('language')) return 'english';
   if (s.includes('biology')) return 'biology';
   if (s.includes('chemistry')) return 'chemistry';
-  if (s.includes('physics')) return 'physics';
+  if (s.includes('physics') || s.includes('electricity') || s.includes('aviation') || s.includes('power mechanics')) {
+    return s.includes('electricity') || s.includes('aviation') || s.includes('power mechanics')
+      ? 'technical_engineering'
+      : 'physics';
+  }
+  if (s.includes('building') || s.includes('metal') || s.includes('woodwork') || s.includes('media technology')) {
+    return 'technical_engineering';
+  }
+  if (s.includes('home science') || s.includes('homescience')) return 'homescience';
+  if (s.includes('marine') || s.includes('fisheries')) return 'agriculture';
   if (s.includes('science')) return 'science';
   if (s.includes('environmental')) return 'environmental';
   if (s.includes('agriculture')) return 'agriculture';
   if (s.includes('business')) return 'business';
-  if (s.includes('pre-technical') || s.includes('computer')) return 'pretech_computer';
-  if (s.includes('creative')) return 'creative_sports';
+  if (s.includes('pre-technical') || s.includes('computer') || s.includes('information communication') || s === 'ict') {
+    return 'pretech_computer';
+  }
+  if (
+    s.includes('creative') ||
+    s.includes('music') ||
+    s.includes('theatre') ||
+    s.includes('fine arts') ||
+    s.includes('sports') ||
+    s.includes('physical education')
+  ) {
+    return 'creative_sports';
+  }
   if (s.includes('christian') || s.includes('cre')) return 'cre';
   if (s.includes('islamic') || s.includes('ire')) return 'ire';
   return 'social_history_geography';

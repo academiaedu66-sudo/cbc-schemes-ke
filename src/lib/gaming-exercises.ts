@@ -1257,6 +1257,19 @@ export const DOMAIN_EXERCISE_BANKS: Record<string, ExerciseItem[]> = {
   creative_sports: buildCreativeSportsExercises(),
   cre: buildCreExercises(),
   ire: buildIreExercises(),
+  literature_english: buildEnglishExercises(),
+  fasihi_kiswahili: buildKiswahiliExercises(),
+  technical_engineering: [
+    ...buildPhysicsExercises(),
+    ...buildPreTechComputerExercises(),
+  ],
+  homescience: [
+    ...buildAgricultureExercises(),
+    ...buildEnvironmentalExercises(),
+  ],
+  french: buildEnglishExercises(),
+  arabic: buildIreExercises(),
+  german: buildEnglishExercises(),
 };
 
 // ============================================================================
@@ -1444,6 +1457,58 @@ const EXTRA_GENERAL_EXERCISES: Record<string, Array<[string, string, [string, st
     ['In Association Football (Soccer), which player is the ONLY member permitted to handle the ball with hands—and strictly inside their own penalty area?', 'The Goalkeeper', ['The Centre Forward', 'The Corner-Kick Taker', 'The Team Captain anywhere on the pitch'], 'Handling the ball deliberately by an outfield player results in a direct free kick or penalty kick.'],
     ['When singing the Kenya National Anthem at a school assembly or national event, how must citizens conduct themselves?', 'Stand upright at attention facing the flag, remove hats, and sing respectfully without walking around', ['Sit down and chat with friends', 'Run across the parade ground', 'Clap after every word'], 'Standing at attention honours Kenya’s sovereignty, unity, and national values.'],
     ['Which traditional Mijikenda percussion instrument is a flat rectangular reed raft filled with dry seeds and shaken rhythmically?', 'Kayamba', ['Chivoti', 'Abu', 'Orutu'], 'The Kayamba is shaken with both hands to accompany coastal folk songs and dances such as Sengenya.'],
+  ],
+  literature_english: [
+    ['In oral literature, a traditional narrative in which a small clever animal (such as Hare or Tortoise) outwits a much larger, stronger animal is classified as a:', 'Trickster narrative', ['Dilemma narrative', 'Etiological (explanatory) myth', 'Elegy'], 'Trickster tales celebrate wit and intelligence over brute force while warning against gullibility and greed.'],
+    ['Which literary device occurs when the audience in a play knows a crucial truth that the character speaking on stage does NOT yet know?', 'Dramatic irony', ['Onomatopoeia', 'Alliteration', 'Oxymoron'], 'Dramatic irony builds tension and engagement as the audience anticipates the character’s discovery of the truth.'],
+    ['In poetry analysis, who is the "persona" of a poem?', 'The voice or speaker created by the poet to narrate or express feelings in the poem', ['Always the publisher of the anthology', 'The stage lighting technician', 'The bookbinder'], 'The persona is the speaking voice inside the poem, distinct from the biographical poet.'],
+    ['In Henrik Ibsen’s play "The Master Builder", what profession does the protagonist Halvard Solness practise?', 'Master architect / builder', ['Ship captain', ' Silversmith', 'Magistrate'], 'Halvard Solness is an ambitious aging architect haunted by fear of being overtaken by the younger generation.'],
+    ['In Binwell Sinyangwe’s novel "A Cowrie of Hope", what precious crop does the widow Nasula travel to Lusaka to sell so she can pay her daughter Sula’s secondary school fees?', 'A bag of Mbala beans', ['Bales of cotton', 'Sacks of coffee', 'Crates of tea'], 'Nasula’s determined struggle after her bag of beans is stolen highlights resilience, maternal sacrifice, and justice.'],
+    ['In Austin Bukenya’s African play "The Bride", which central social conflict drives Namvua and Lekindo’s struggle?', 'Youthful love, human dignity, and progressive unity clashing with rigid generational prejudice and tradition', ['A dispute over railway construction', 'Deep-sea fishing rights', 'Gold mining taxes'], '"The Bride" examines rite-of-passage traditions, inclusivity, and moral courage among youth.'],
+    ['What do we call an oral narrative that ends with an open moral question forcing listeners to debate two equally difficult choices?', 'Dilemma narrative', ['Lullaby', 'Panegyric praise poem', 'Tongue twister'], 'Dilemma stories sharpen critical thinking, debate, and ethical judgement in listeners.'],
+    ['A figure of speech that gives human actions, feelings, or speech to non-human objects or nature (e.g., "The angry wind whispered through the trees") is:', 'Personification', ['Simile', 'Litotes', 'Euphemism'], 'Personification attributes human qualities to inanimate things or abstract ideas to create vivid imagery.'],
+  ],
+  fasihi_kiswahili: [
+    ['Katika fasihi simulizi, hadithi zinazoeleza chanzo cha maumbile au matukio ya kiasili (k.m. kwa nini kinyonga hutembea polepole) huitwaje?', 'Visasili (au ngano za usuli)', ['Hurafa', 'Mighani / Visakale', ' Vitendawili'], 'Visasili na ngano za usuli hufafanua imani ya jamii kuhusu asili ya ulimwengu na tabia za viumbe.'],
+    ['Shairi la Kiswahili lenye mishororo MINNE (4) katika kila ubeti hujulikana kwa bahari gani?', 'Tarbia', ['Tathlitha (mishororo 3)', 'Takhmisa (mishororo 5)', 'Tathnia (mishororo 2)'], 'Tathnia = 2, Tathlitha = 3, Tarbia = 4, na Takhmisa = 5 katika kila ubeti.'],
+    ['Mshororo wa mwisho unaorudiwarudiwa neno kwa neno katika kila ubeti wa shairi huitwaje?', 'Kibwagizo (mkarara)', ['Kituo kimalizio', 'Ukwapi', 'Utao'], 'Mshororo wa mwisho ukibadilika ubeti hadi ubeti huitwa kimalizio; ukirudiwa sawa kabisa huitwa kibwagizo.'],
+    ['Katika ushairi wa arudhi, idadi ya silabi zinazopimwa katika kila mshororo au kipande cha mshororo huitwaje?', 'Mizani', ['Vina', 'Dhamira', 'Muwala'], 'Mizani ni kipimo cha idadi ya silabi katika mshororo, ilhali vina ni silabi zenye mlio sawa katikati na mwishoni.'],
+    ['Mbinu ya lugha ambapo mwandishi hutumia maneno ya upole na staha kuficha ukali au aibu (k.m. "ameaga dunia" badala ya "amekufa") huitwaje?', 'Tafsida (tasfida)', ['Chuku', 'Kejeli', 'Tanakali za sauti'], 'Tafsida hulinda adabu na heshima katika mawasiliano ya Kiswahili.'],
+    ['Kazi ya fasihi andishi ambayo mwandishi anasimulia kisa cha maisha yake MWENYEWE tangu utotoni (kama "Mlemavu? Sio Mimi") huitwaje?', 'Tawasifu', ['Wasifu', 'Tamthilia', 'Novela'], 'Tawasifu huandikwa na mhusika mwenyewe (nafsi ya kwanza), ilhali wasifu (k.m. Wasifu wa Mekatilili wa Menza) huandikwa na mtu mwingine kumhusu.'],
+    ['Hadithi za fasihi simulizi zinazosimulia matendo ya kishujaa ya majagina wa jamii (kama Fumo Liyongo au Luanda Magere) huitwaje?', 'Mighani (visakale)', ['Ngano za mtanziko', 'Soga', 'Mawaidha'], 'Mighani huwasawiri mashujaa wenye nguvu za ajabu wanaopigania jamii zao.'],
+    ['Katika uchambuzi wa tamthilia (kama "Narudi Nyumbani", "Kasri la Faraja" au "Sauti ya Kimya"), maelezo yaliyo katika mabano yanayoonyesha vitendo au hisia za mhusika jukwaani huitwaje?', 'Maelekezo ya jukwaani', ['Dibaji', 'Hotuba ndefu', 'Taharuki'], 'Maelekezo ya jukwaani humwongoza mwigizaji na msomaji kuona miondoko, mavazi na mandhari ya tukio.'],
+  ],
+  technical_engineering: [
+    ['By Ohm’s Law, calculate the current flowing through a 12 Ohm heating resistor connected across a 240 V mains supply:', '20 A (since I = V / R = 240 / 12)', ['2,880 A', '0.05 A', '228 A'], 'Current I = Voltage (V) / Resistance (R) = 240 V / 12 Ohm = 20 Amperes.'],
+    ['In a Kenyan three-pin domestic electrical plug, which colour insulation identifies the EARTH wire?', 'Green and Yellow striped (connected to the top longest earth pin)', ['Brown (Live)', 'Blue (Neutral)', 'Solid Red'], 'Modern IEE colour code: Brown = Live, Blue = Neutral, Green/Yellow = Earth.'],
+    ['In aircraft aerodynamics, what are the FOUR primary forces acting on an aeroplane in flight?', 'Lift, Weight (Gravity), Thrust, and Drag', ['Torque, Friction, Magnetism, and Pressure', 'Pitch, Roll, Yaw, and Stall', 'Altitude, Heading, Speed, and Climb'], 'In steady, level, unaccelerated flight, Lift equals Weight and Thrust equals Drag.'],
+    ['Which control surfaces hinged on the trailing outer edges of an aircraft’s wings control ROLL about the longitudinal axis?', 'Ailerons (Elevator controls pitch; Rudder controls yaw)', ['Rudder', 'Flaps only', 'Landing gear'], 'Moving ailerons differentially rolls the aircraft left or right; the elevator pitches nose up/down; the rudder yaws left/right.'],
+    ['In building construction, builders measure sides of 3 m, 4 m, and 5 m when setting out foundation corners to guarantee an exact angle of:', '90 degrees (right-angled corner by Pythagoras: 3^2 + 4^2 = 5^2)', ['45 degrees', '60 degrees', '120 degrees'], 'Because 9 + 16 = 25, a 3-4-5 triangle ensures perfectly square building corners on site.'],
+    ['Why must freshly poured concrete slabs and columns be kept damp (CURED) for at least 7 to 28 days?', 'To allow cement hydration reactions to continue so concrete gains maximum strength without shrinkage cracks', ['To wash out all cement paste', 'To make the steel rust quickly', 'To dry the sand instantly'], 'Rapid drying halts hydration prematurely, causing weak, dusty, cracked concrete.'],
+    ['In woodwork joinery, which strong interlocking joint is traditionally used to join table rails into table legs?', 'Mortise and tenon joint', ['Simple butt joint', 'Edge-to-edge rub joint', 'Mitre joint'], 'A mortise cut into the leg receives a matching tenon on the rail, resisting racking and twisting forces.'],
+    ['In a four-stroke internal combustion engine, state the correct sequence of the four piston strokes:', 'Intake (Induction) -> Compression -> Power (Combustion) -> Exhaust', ['Power -> Exhaust -> Compression -> Intake', 'Compression -> Intake -> Exhaust -> Power', 'Intake -> Exhaust -> Compression -> Power'], 'The piston draws air/fuel on Intake, compresses it, fires on Power, and expels burnt gases on Exhaust.'],
+  ],
+  homescience: [
+    ['Deficiency of Vitamin C (ascorbic acid) in the diet causes bleeding spongy gums and slow wound healing known as:', 'Scurvy', ['Rickets (Vitamin D / Calcium)', 'Night blindness (Vitamin A)', 'Pellagra (Niacin)'], 'Fresh citrus fruits (oranges, lemons), guavas, tomatoes, and green leafy vegetables supply Vitamin C.'],
+    ['Why should green leafy vegetables be washed BEFORE cutting and cooked quickly in minimal water with a lid on?', 'To prevent water-soluble vitamins (Vitamin C and B-complex) from leaching out or being destroyed by prolonged heat', ['To make them tough and bitter', 'To remove dietary fibre', 'To increase cooking fuel consumption'], 'Cutting before washing or over-boiling leaches water-soluble vitamins into discarded water.'],
+    ['Which natural plant textile fibre comes from the cotton boll, absorbs moisture well, is strong when wet, and is cool to wear in warm climates?', 'Cotton', ['Nylon (synthetic polyamide)', 'Polyester', 'Acrylic'], 'Cotton is a cellulosic plant fibre ideal for tropical clothing, bedsheets, and towels.'],
+    ['On a commercial garment care label, what does a triangle symbol crossed out with an "X" instruct you NOT to do?', 'Do NOT bleach the garment', ['Do NOT fold', 'Do NOT wear outdoors', 'Do NOT sew buttons'], 'Care symbols: tub = washing, triangle = bleaching, square = drying, iron = ironing, circle = dry-cleaning.'],
+  ],
+  french: [
+    ['Choose the correct French greeting used politely in the morning ("Good morning"):', 'Bonjour', ['Bonsoir', 'Bonne nuit', 'Au revoir'], '"Bonjour" means Good morning / Good day; "Bonsoir" is Good evening; "Au revoir" is Goodbye.'],
+    ['Complete with the correct present-tense form of the verb "être" (to be): "Nous ________ élèves au Kenya."', 'sommes (Nous sommes)', ['suis', 'est', 'sont'], 'Conjugation of être: je suis, tu es, il/elle est, nous sommes, vous êtes, ils/elles sont.'],
+    ['Complete with the correct form of "avoir" (to have): "J’________ quinze ans."', 'ai (J’ai quinze ans)', ['as', 'a', 'avons'], 'In French, age is expressed using the verb avoir: "J’ai quinze ans" (I am fifteen years old).'],
+    ['Which definite article agrees correctly with the feminine singular noun "école" starting with a vowel?', 'l’ (l’école)', ['le', 'la', 'les'], 'Before a singular noun starting with a vowel or mute h, le and la contract to l’ (l’école, l’ami).'],
+  ],
+  arabic: [
+    ['What is the standard polite Islamic and Arabic greeting meaning "Peace be upon you"?', 'As-salamu alaykum (answered with Wa alaykumu s-salam)', ['Sabah al-khayr only at midnight', 'Ma’a as-salamah when arriving', 'Shukran'], '"As-salamu alaykum" means Peace be upon you, and the reply is "Wa alaykumu s-salam".'],
+    ['In Arabic grammar, which demonstrative pronoun ("This") is used for a MASCULINE singular noun such as "kitabun" (a book)?', 'Hadha (Hadha kitabun)', ['Hadhihi (feminine singular)', 'Ha’ula’i (plural)', 'Tilka'], '"Hadha" is masculine singular ("Hadha kitabun" = This is a book), while "Hadhihi" is feminine singular ("Hadhihi madrasatun").'],
+    ['How many nouns does the Arabic DUAL form (Al-Muthanna) refer to?', 'Exactly TWO (2) persons or items', ['One item only', 'Three or more items', 'Zero items'], 'Arabic distinguishes Singular (Mufrad = 1), Dual (Muthanna = 2), and Plural (Jam’u = 3 or more).'],
+  ],
+  german: [
+    ['Complete the German self-introduction sentence with the correct form of "heißen": "Guten Tag! Ich ________ Amina."', 'heiße (Ich heiße Amina)', ['heißt', 'heißen', 'bin heißen'], 'Present tense of heißen: ich heiße, du heißt, er/sie heißt, wir heißen.'],
+    ['Choose the correct present-tense form of "sein" (to be): "Wir ________ Schüler in Nairobi."', 'sind (Wir sind)', ['bin', 'bist', 'ist'], 'Conjugation of sein: ich bin, du bist, er/sie/es ist, wir sind, ihr seid, sie/Sie sind.'],
+    ['In a standard German main clause (Hauptsatz), in which position must the conjugated verb stand?', 'Position 2 (second grammatical element)', ['Always at the very end', 'Position 5', 'Before every noun'], 'German main clauses follow the V2 (verb-second) rule, e.g., "Heute gehe ich in die Schule."'],
   ],
 };
 

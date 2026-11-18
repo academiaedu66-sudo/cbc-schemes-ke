@@ -354,6 +354,62 @@ export async function executeMultiPlatformBroadcast(params: {
         `💬 WhatsApp Support: https://wa.me/254705759072 \n` +
         `#CBCKenya #HomeworkHelpKenya #KPSEA #KJSEA #CBCMaterials`;
     }
+  } else if (selKey === 'SERVICE_BOOK_1') {
+    targetTitle = 'CBC GRADE UP — 50-Page Book Per Subject + Marking Schemes (KSh 500)';
+    targetUrl = 'https://www.cbcmaterials.shop/?book=1';
+    posterQuery = 'service=BOOK_1';
+    reelComment =
+      `📘 GET "CBC GRADE UP" (50-Page Book + Marking Schemes — KSh 500):\n` +
+      `https://www.cbcmaterials.shop/?book=1 \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `📘 NEW 50-PAGE BOOK PER SUBJECT: "CBC GRADE UP" (PP1 – GRADE 12)!\n` +
+        `✅ Relevant questions covering ALL Strands & Sub-strands sequentially!\n` +
+        `✅ Complete Marking Schemes & Worked Solutions at the end of every book!\n` +
+        `✅ Only KSh 500 via Instant M-Pesa STK Prompt (PDF + Editable DOCX)!\n\n` +
+        `👉 Click Here to Download Immediately:\nhttps://www.cbcmaterials.shop/?book=1 \n\n` +
+        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `#CBCGradeUp #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
+    }
+  } else if (selKey === 'SERVICE_BOOK_2') {
+    targetTitle =
+      'COMPETENCY BASED MADE FAMILIAR — 50-Page Point-Form Notes + Q&A (KSh 750)';
+    targetUrl = 'https://www.cbcmaterials.shop/?book=2';
+    posterQuery = 'service=BOOK_2';
+    reelComment =
+      `📗 GET "COMPETENCY BASED MADE FAMILIAR" (50-Page Notes + Q&A — KSh 750):\n` +
+      `https://www.cbcmaterials.shop/?book=2 \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `📗 NEW 50-PAGE REVISION BOOK: "COMPETENCY BASED MADE FAMILIAR" (PP1 – GRADE 12)!\n` +
+        `✅ Short Point-Form Notes covering EVERYTHING in each Strand & Sub-strand!\n` +
+        `✅ Every sub-topic followed immediately by relevant practice questions + Answers!\n` +
+        `✅ Only KSh 750 via Instant M-Pesa STK Prompt (PDF + Editable DOCX)!\n\n` +
+        `👉 Click Here to Download Immediately:\nhttps://www.cbcmaterials.shop/?book=2 \n\n` +
+        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `#MadeFamiliar #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
+    }
+  } else if (selKey === 'SERVICE_BOOK_3') {
+    targetTitle =
+      'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (KSh 1,500)';
+    targetUrl = 'https://www.cbcmaterials.shop/?book=3';
+    posterQuery = 'service=BOOK_3';
+    reelComment =
+      `📚 GET COMPLETE 100-PAGE BOOKS COMPILATION (KSh 1,500):\n` +
+      `https://www.cbcmaterials.shop/?book=3 \n` +
+      `💬 WhatsApp: https://wa.me/254705759072`;
+    if (!feedCaption) {
+      feedCaption =
+        `🏆 COMPLETE ALL-IN-ONE COMPILATION (100 PAGES + FULL GRADE PACK — KSh 1,500)!\n` +
+        `✅ Combines BOTH 50-Page Books: "COMPETENCY BASED MADE FAMILIAR" + "CBC GRADE UP"!\n` +
+        `✅ Point-Form Notes + Sub-topic Questions + 170 Exam Questions + Full Marking Schemes!\n` +
+        `✅ Instant M-Pesa STK Prompt Auto-Download on WWW.CBCMATERIALS.SHOP!\n\n` +
+        `👉 Click Here to Get Everything Compiled:\nhttps://www.cbcmaterials.shop/?book=3 \n\n` +
+        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `#CBCKenya #CBCGradeUp #MadeFamiliar #KPSEA2026 #KJSEA2026`;
+    }
   } else if (selKey === 'SERVICE_PORTAL') {
     targetTitle = '3,400+ 2026 CBC Schemes, Notes, Lesson Plans & KPSEA/KJSEA Exams';
     targetUrl = 'https://www.cbcmaterials.shop';

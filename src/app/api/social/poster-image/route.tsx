@@ -48,6 +48,26 @@ export async function GET(req: NextRequest) {
     subheadline =
       'Instant worked solutions for Mathematics, Sciences, English, Kiswahili & Humanities!';
     priceTag = 'KSH 20 WEEKLY PASS';
+  } else if (service === 'BOOK_1') {
+    badgeTop = 'BUTTON 1 • 50-PAGE BOOK PER SUBJECT';
+    headline = 'CBC GRADE UP — All Strands & Sub-strands Questions + Marking Schemes!';
+    subheadline =
+      '50-Page Exam & Topical Revision Book for Every Subject (PP1 – Grade 12) • PDF + DOCX!';
+    priceTag = 'KSH 500 • PROMPT BUY';
+  } else if (service === 'BOOK_2') {
+    badgeTop = 'BUTTON 2 • 50-PAGE NOTES + Q&A BOOK';
+    headline =
+      'COMPETENCY BASED MADE FAMILIAR — Point-Form Notes + Topical Questions!';
+    subheadline =
+      'Short Point-Form Notes Covering Every Strand & Sub-strand + Immediate Practice Questions!';
+    priceTag = 'KSH 750 • PROMPT BUY';
+  } else if (service === 'BOOK_3') {
+    badgeTop = 'BUTTON 3 • 100-PAGE COMPLETE COMPILATION';
+    headline =
+      'CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (All-in-One Master Pack)!';
+    subheadline =
+      '100-Page Compiled Book + Full Grade Subject Access + Complete Marking Schemes!';
+    priceTag = 'KSH 1,500 • COMPLETE PACK';
   } else if (materialId && materialId !== 'AUTO' && materialId !== 'PORTAL') {
     const uuidMatch = materialId.match(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i

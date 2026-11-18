@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 import { resolveGeminiApiKey } from '@/lib/counselling';
+import { getApprovedCoursebook } from '../../scripts/cbc-syllabus-data.mjs';
+import { resolveSyllabusSubject } from '@/lib/gaming';
 
 const BUCKET_NAME = 'cbc-materials';
 const HOMEWORK_LEDGER_PATH = '_system/homework-qa-ledger.json';
@@ -235,9 +237,21 @@ async function callGeminiHomeworkModel(params: {
   question: string;
 }): Promise<string | null> {
   const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  const rawG = params.gradeLabel.toUpperCase();
+  const gKey = rawG.includes('PP1')
+    ? 'PP1'
+    : rawG.includes('PP2')
+    ? 'PP2'
+    : (rawG.match(/\d+/)?.[0] || '7');
+  const sylSubj = resolveSyllabusSubject(params.subject || 'Mathematics', gKey);
+  const approvedCb = getApprovedCoursebook(
+    gKey.startsWith('PP') ? gKey : Number(gKey) || 7,
+    sylSubj
+  );
   const systemPrompt = [
-    `You are Gemini, an expert Kenyan Competency-Based Curriculum (CBC / KICD / KNEC) Master Teacher tutoring a student named "${params.fullName}" who is in "${params.gradeLabel}".`,
+    `You are Gemini, an expert Kenyan Competency-Based Curriculum (CBC) Master Teacher tutoring a student named "${params.fullName}" who is in "${params.gradeLabel}".`,
     `Subject focus: ${params.subject || 'General CBC Studies'}.`,
+    `Align concepts, terminology, and worked steps with the official KICD Approved CBC Course Materials (e.g. ${approvedCb.lbTitle} by ${approvedCb.authors}, ${approvedCb.publisher}${approvedCb.alternates?.length ? `; and ${approvedCb.alternates.join(', ')}` : ''}).`,
     'Write a detailed, crystal-clear, warm, and academically rigorous answer structured into 5 distinct sections separated by blank lines:',
     `1. Warm personal greeting to ${params.fullName} (${params.gradeLabel}) + Key Concept Definition.`,
     '2. Core Principle / Formula / Background Explanation.',

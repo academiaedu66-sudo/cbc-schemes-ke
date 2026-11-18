@@ -33,16 +33,26 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, resourceId, testAmount, serviceType } = await req.json();
+    const { phoneNumber, resourceId, testAmount, serviceType, bookTitle } = await req.json();
+    const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
 
     await recordPurchaseAttempt({
       channel: 'M-Pesa STK Push',
-      itemTitle: serviceType
+      itemTitle: cleanBookTitle
+        ? cleanBookTitle
+        : serviceType
         ? String(serviceType)
         : resourceId
         ? `Resource #${resourceId}`
         : 'Admin Live STK Test',
-      amountKes: Number(testAmount) || 0,
+      amountKes:
+        serviceType === 'BOOK_GRADE_UP'
+          ? 500
+          : serviceType === 'BOOK_MADE_FAMILIAR'
+          ? 750
+          : serviceType === 'BOOK_COMPLETE_BUNDLE'
+          ? 1500
+          : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
     }).catch(() => {});
@@ -91,6 +101,28 @@ export async function POST(req: Request) {
         id: null,
         price: 20,
         title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
+      };
+    } else if (serviceType === 'BOOK_GRADE_UP') {
+      resource = {
+        id: null,
+        price: 500,
+        title: cleanBookTitle || 'CBC GRADE UP — 50-Page Book + Marking Schemes (KSh 500)',
+      };
+    } else if (serviceType === 'BOOK_MADE_FAMILIAR') {
+      resource = {
+        id: null,
+        price: 750,
+        title:
+          cleanBookTitle ||
+          'COMPETENCY BASED MADE FAMILIAR — 50-Page Point-Form Notes + Q&A (KSh 750)',
+      };
+    } else if (serviceType === 'BOOK_COMPLETE_BUNDLE') {
+      resource = {
+        id: null,
+        price: 1500,
+        title:
+          cleanBookTitle ||
+          'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (KSh 1,500)',
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

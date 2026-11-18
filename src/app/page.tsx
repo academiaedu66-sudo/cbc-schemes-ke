@@ -37,6 +37,9 @@ import SubjectGamingHub, {
 import TscServicesHub from '@/components/TscServicesHub';
 import HolidaySideHustlesHub from '@/components/HolidaySideHustlesHub';
 import GeminiHomeworkHub from '@/components/GeminiHomeworkHub';
+import CbcBooksHub, {
+  type ExternalBookModalLaunch,
+} from '@/components/CbcBooksHub';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
 import {
@@ -105,6 +108,7 @@ export default function HomePage() {
   const [sideHustlesOpenTick, setSideHustlesOpenTick] = useState(0);
   const [geminiOpenTick, setGeminiOpenTick] = useState(0);
   const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
+  const [bookLaunch, setBookLaunch] = useState<ExternalBookModalLaunch | null>(null);
 
   // Payment & WhatsApp Configuration
   const [merchantPhone, setMerchantPhone] = useState(DEFAULT_MERCHANT_INTL);
@@ -569,6 +573,51 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() =>
+                setBookLaunch({
+                  bookType: 'GRADE_UP',
+                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                  tick: Date.now(),
+                })
+              }
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-white/70 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 text-emerald-900" />
+              <span>1. CBC GRADE UP (KSh 500)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setBookLaunch({
+                  bookType: 'MADE_FAMILIAR',
+                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                  tick: Date.now(),
+                })
+              }
+              className="bg-sky-400 hover:bg-sky-300 text-slate-950 border-2 border-white/70 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-950" />
+              <span>2. MADE FAMILIAR (KSh 750)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setBookLaunch({
+                  bookType: 'COMPLETE_BUNDLE',
+                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                  tick: Date.now(),
+                })
+              }
+              className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border-2 border-amber-500 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 text-purple-900" />
+              <span>3. COMPILE ALL BOOKS (KSh 1,500)</span>
+            </button>
+            <button
+              type="button"
               onClick={() => jumpToCurriculumMaterials('All')}
               className="bg-white hover:bg-amber-50 text-emerald-950 border-2 border-amber-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
@@ -708,6 +757,13 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        {/* OFFICIAL 3-BUTTON 50-PAGE & 100-PAGE CBC BOOKS SERIES (KSh 500 | KSh 750 | KSh 1,500 PROMPT BUY) */}
+        <CbcBooksHub
+          externalLaunch={bookLaunch}
+          merchantLocalPhone={merchantLocalPhone}
+          whatsappPhone={whatsappPhone}
+        />
 
         {/* TOP FEATURE 1: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
         <HolidayTuitionCenter />

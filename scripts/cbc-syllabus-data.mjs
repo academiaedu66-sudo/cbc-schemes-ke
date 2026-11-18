@@ -28,108 +28,188 @@ export const JSS_SENIOR_PUBLISHERS = [
  * Titles, publishers, and authors match KICD's official approved lists verbatim.
  */
 export const KICD_APPROVED_COURSEBOOKS = {
-  // ================= PRE-PRIMARY (PP1 & PP2) =================
+  // ================= PRE-PRIMARY (PP1 & PP2 — KICD ORANGE BOOK ADDENDUM) =================
   preprimary: {
     'Language Activities': [
       {
+        series: 'Mentor Language Activities',
+        publisher: 'Mentor Publishing',
+        authors: "F. Namu, M. Githendu, V. Ochieng' & Justine Sandra Ochieng'",
+      },
+      {
+        series: 'StoryMoja Smart Beginners Language Activities',
+        publisher: 'StoryMoja Publishers',
+        authors: 'Winnie Biwott, Elizabeth Githirwa, Vane Onduko & Joyce Kalipso',
+      },
+      {
+        series: 'First Steps Language Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi',
+      },
+      {
+        series: 'Spotlight Language Activities',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Violet Onzere, Bennadatte Makatiani & Hamida Ahmed Mohamed',
+      },
+      {
         series: 'KLB Skillgrow Language Activities',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood Curriculum Panel',
+        authors: 'Gladwell Wambiri, Mercy Akinyi, Osore Shughuli & Alice Kairichi',
+      },
+      {
+        series: 'Made Familiar Language Activities',
+        publisher: 'Starshine Student Centre',
+        authors: 'M. Cheruiyot & Starshine Student Centre',
+      },
+      {
+        series: 'Distinction Language Activities',
+        publisher: 'Distinction Educational Publishers',
+        authors: "Catherine Wambui, Michael Otundo & Otundo Morang'a",
       },
       {
         series: 'Longhorn Language Activities',
         publisher: 'Longhorn Publishers',
-        authors: 'Longhorn ECDE Language Panel',
-      },
-      {
-        series: 'Oxford Little Explorers Language Activities',
-        publisher: 'Oxford University Press (EA)',
-        authors: 'Oxford Early Years Literacy Panel',
-      },
-      {
-        series: 'Queenex Language Activities',
-        publisher: 'Queenex Publishers',
-        authors: 'Queenex Pre-Primary Authors',
+        authors: 'Alice Salama Kairichi, Jane Wayumba & Juliana Awuor Olango',
       },
     ],
     'Mathematical Activities': [
       {
         series: 'KLB Skillgrow Mathematical Activities',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood Numeracy Panel',
+        authors: 'Jane Mbugua, Pamela Chepkosgei, Margaret Odawo & Daniel Rop',
       },
       {
-        series: 'Oxford Little Explorers Mathematical Activities',
-        publisher: 'Oxford University Press (EA)',
-        authors: 'Oxford Early Years Numeracy Panel',
+        series: 'Mentor Mathematical Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'E. Nderitu, R. Akoo & N. Gathogo',
+      },
+      {
+        series: 'First Steps Mathematical Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Pritchard Moth & Victor Ezra',
+      },
+      {
+        series: 'Made Familiar Mathematical Activities',
+        publisher: 'Starshine Student Centre',
+        authors: 'Starshine Student Centre Publishers',
       },
       {
         series: 'Longhorn Mathematical Activities',
         publisher: 'Longhorn Publishers',
-        authors: 'Longhorn ECDE Mathematics Panel',
+        authors: 'Domnick Ochieng & Philip Opiyo Omanyo',
       },
       {
-        series: 'Moran Mathematical Activities',
-        publisher: 'Moran (EA) Publishers',
-        authors: 'Moran Pre-Primary Panel',
+        series: 'Distinction Mathematical Activities',
+        publisher: 'Distinction Educational Publishers',
+        authors: 'Michael Otundo & Catherine Wambui',
+      },
+      {
+        series: 'Queenex Early Learners Mathematical Activities',
+        publisher: 'Queenex Publishers',
+        authors: 'Nancy Chege & James Njuguna',
       },
     ],
     'Environmental Activities': [
       {
         series: 'KLB Skillgrow Environmental Activities',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood Environmental Panel',
+        authors: 'Maurice Saka, Dorcas Mwangi, Musungu Mugoba & Charles Mwaniki',
+      },
+      {
+        series: 'Mentor Environmental Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'J. N. Gathogo',
+      },
+      {
+        series: 'First Steps Environmental Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Diane Omondi',
+      },
+      {
+        series: 'Distinction Environmental Activities',
+        publisher: 'Distinction Educational Publishers',
+        authors: 'Michael Otundo & Wambui Gichini',
+      },
+      {
+        series: 'Made Familiar Environmental Activities',
+        publisher: 'Starshine Student Centre',
+        authors: 'Naburi Bennadatte, Mirriam Omollo & Patricia Chemos',
       },
       {
         series: 'Longhorn Environmental Activities',
         publisher: 'Longhorn Publishers',
-        authors: 'Longhorn ECDE Environmental Panel',
-      },
-      {
-        series: 'Oxford Little Explorers Environmental Activities',
-        publisher: 'Oxford University Press (EA)',
-        authors: 'Oxford Early Years Panel',
+        authors: 'Longhorn Pre-Primary Panel',
       },
     ],
     'Creative Activities': [
       {
-        series: 'KLB Skillgrow Creative & Psychomotor Activities',
-        publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood Creative Panel',
+        series: 'Know More Creative Activities',
+        publisher: 'StoryMoja Publishers',
+        authors: 'Mildred Ashikholwa & Wanjiku J. Kiritu',
       },
       {
-        series: 'Hummingbird Creative Activities',
-        publisher: 'Hummingbird Publishers',
-        authors: 'Catherine Simiyu & Naftali Korir',
+        series: 'Mentor Creative Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'Justine S. Ochieng & Effie Akinyi',
       },
       {
-        series: 'Moran Creative Activities',
+        series: 'First Steps Creative Activities',
         publisher: 'Moran (EA) Publishers',
-        authors: 'Moran ECDE Creative Panel',
+        authors: 'Delphine Amimo & Catherine Machuma',
+      },
+      {
+        series: 'Made Familiar Creative Activities',
+        publisher: 'Starshine Student Centre',
+        authors: 'Starshine Student Centre',
+      },
+      {
+        series: 'Queenex Early Learners Creative Activities',
+        publisher: 'Queenex Publishers',
+        authors: 'Hamida Mohammed & Phineas Mutuma',
+      },
+      {
+        series: 'Distinction Creative Activities',
+        publisher: 'Distinction Educational Publishers',
+        authors: 'Pauline Salvatore & Dinah Alukwe',
       },
     ],
     'Christian Religious Education (CRE)': [
       {
-        series: 'KLB Skillgrow CRE Activities',
+        series: 'KLB Skillgrow Christian Religious Education Activities',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood CRE Panel',
+        authors: 'Duke Ondieki, Joyce Obara, Ashford Mwongela & Abijah Nyaga',
       },
       {
-        series: 'Oxford Growing in Christ CRE Activities',
-        publisher: 'Oxford University Press (EA)',
-        authors: 'Oxford ECDE CRE Panel',
+        series: 'Mentor Christian Religious Education Activities',
+        publisher: 'Mentor Publishing',
+        authors: 'J. N. Gathogo',
+      },
+      {
+        series: 'Longhorn CRE Activities',
+        publisher: 'Longhorn Publishers',
+        authors: 'Mary Mwaniki, Agnes Ndungu & Winfred Wanja',
+      },
+      {
+        series: 'First Steps Christian Religious Education Activities',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Clementine Muoti',
+      },
+      {
+        series: 'StoryMoja Smart Beginners CRE Activities',
+        publisher: 'StoryMoja Publishers',
+        authors: 'Chrismas Moi & Vivian Adori',
       },
     ],
     'Islamic Religious Education (IRE)': [
       {
-        series: 'KLB Skillgrow IRE Activities',
-        publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'KLB Early Childhood IRE Panel',
+        series: 'Atfaal IRE',
+        publisher: 'Atfaal Publishers',
+        authors: 'F. Shariff',
       },
       {
-        series: 'Atfaal IRE Activities',
-        publisher: 'Atfaal Publishers',
-        authors: 'Atfaal ECDE IRE Panel',
+        series: 'Spotlight Islamic Religious Education Activities',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Salim Ali Mohamed, Ahmed Ibrahim, Bilqiss Ali & Said Omar Hinga',
       },
     ],
   },
@@ -810,7 +890,7 @@ export const KICD_APPROVED_COURSEBOOKS = {
       {
         series: 'KLB Top Scholar IRE',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Idris Matsukhu Makokha, Mwanaidi Lyani Omar & Fatuma Mwatamu',
+        authors: 'Idris Matsukhu Makokha, Mwanakombo Mlingo, Mohamud Muhumed & Fatuma Mwatuma',
       },
       {
         series: 'Atfaal IRE',
@@ -818,173 +898,428 @@ export const KICD_APPROVED_COURSEBOOKS = {
         authors: 'F. Shariff & Ramadhan Lihanda',
       },
     ],
+    French: [
+      {
+        series: 'Longhorn Francais Premier Cycle Du Secondaire',
+        publisher: 'Longhorn Publishers',
+        authors: 'Mboni E. Aura, Maloba E. Nalala & Mainga P. Mayabi',
+      },
+      {
+        series: "Triomphe Livre de l'eleve",
+        publisher: 'Astute Investment Co. Ltd',
+        authors: "Henrietta Ikambili, Okeno Tom Inyundo, Achieng' Amolo & Otieno Ochieng'",
+      },
+    ],
+    Arabic: [
+      {
+        series: 'Atfaal Arabic',
+        publisher: 'Atfaal Publishers',
+        authors: 'Harun Abubakar & Ramadhan Lihanda',
+      },
+      {
+        series: 'KLB Top Scholar Arabic',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Ahmed A. Ahmed, Abdullahi A. Mohamed & Mohamed A. Mohamed',
+      },
+    ],
   },
 
-  // ================= SENIOR SCHOOL (GRADES 10 - 12) =================
+  // ================= SENIOR SCHOOL (GRADES 10 - 12 — KICD MARCH & OCTOBER 2026 APPROVED LISTS) =================
   senior: {
     'Core Mathematics': [
       {
         series: 'KLB Excelling Core Mathematics',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Vincent Odhiambo, Winfred Mutuku, Moses Maswai & Wicklif Ogembo',
+        authors: 'Vincent Odhiambo, Winfred Mutuku, Moses Maswai, James Omoke, Wicklif Ogembo & Ann Opiyo',
       },
       {
         series: 'Oxford Mathematics Today',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Alexander Kioko, Joy Mutonyi Butali & Raphael Otieno',
-      },
-      {
-        series: 'Longhorn Advancing in Core Mathematics',
-        publisher: 'Longhorn Publishers',
-        authors: 'Milkah Manyala, Philip Obwage & Kefa Masita',
+        authors: 'Alexander Kioko, Joy Mutonyi Butali, Raphael Otieno, Cyrus Mutua Wambua & Grace Gakii Mwenda',
       },
       {
         series: 'Mentor Core Mathematics',
         publisher: 'Mentor Publishing',
-        authors: "Alex Odhong', Dr. Donata Odago & Ezekiel Thugu",
+        authors: "Alex Odhong', Dr. Donata Odago, Dr. James Kioko, Ezekiel Thugu & Zachary Njoroge",
+      },
+      {
+        series: 'Moran Core Mathematics',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Nickson Oshome, Maina Kiragu, Winnie Wanyingi, Mercy Ndirangu & Winnie Mutuku',
+      },
+      {
+        series: 'Longhorn Advancing in Core Mathematics',
+        publisher: 'Longhorn Publishers',
+        authors: 'Milkah Manyala, Philip Obwage, Kefa Masita & Cornelius Machuki',
+      },
+      {
+        series: 'Master Core Mathematics',
+        publisher: 'Booklyst Publishers',
+        authors: 'Kenneth Ongore & Jepkorir Scolar',
+      },
+      {
+        series: 'Spotlight Core Mathematics',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Beverline Inonda & Beverlyne Makario',
+      },
+    ],
+    'Essential Mathematics': [
+      {
+        series: 'Mentor Essential Mathematics',
+        publisher: 'Mentor Publishing',
+        authors: "Alex Odhong', Dr. Donata Odago, Ezekiel Thugu, Zachary Njoroge, Paul Abuga & Peter Chege",
+      },
+      {
+        series: 'Oxford Essential Mathematics Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Alexander Kioko, Joy Mutonyi Butali, Raphael Otieno, Cyrus Mutua Wambua & Grace Gakii Mwenda',
+      },
+      {
+        series: 'KLB Excelling Essential Mathematics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Prof. Winfred Mutuku, Vincent Odhiambo, Jane Mbugua, Moses Maswai & W. Magak',
+      },
+      {
+        series: 'Moran Essential Mathematics',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Nickson Oshome, Maina Kiragu, Winnie Wanyingi, Mercy Ndirangu & Winnie Mutuku',
+      },
+      {
+        series: 'Longhorn Advancing in Essential Mathematics',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn Senior School Mathematics Panel',
+      },
+      {
+        series: 'Master Essential Mathematics',
+        publisher: 'Booklyst Publishers',
+        authors: 'Kenneth Ongore & Jepkorir Scolar',
+      },
+      {
+        series: 'Smart Minds Essential Mathematics',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: "Anthony Ochieng', Francis Njuguna, Cyrus O. Miyaba & Beryl Akinyi",
       },
     ],
     English: [
       {
         series: 'KLB Excelling in English',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Phyllis Mwangi, Gatitu Kiguru & Charles Maina Gecaga',
-      },
-      {
-        series: 'Oxford Head Start English',
-        publisher: 'Oxford University Press (EA)',
-        authors: 'Angelina Kioko, Eunice Kamanthe & David Amayo',
+        authors: 'Phyllis Mwangi, Gatitu Kiguru, Charles Maina Gecaga, James Muchiri Mukunga & Anna Kula',
       },
       {
         series: 'Moran Skills in English',
         publisher: 'Moran (EA) Publishers',
-        authors: 'Diane Omondi, Joseph Ndirangu & Mark Chetambe',
+        authors: 'Diane Omondi, Joseph Ndirangu, Mark Chetambe, Kenneth Ngure & Judith Onywany',
+      },
+      {
+        series: 'Oxford Head Start English',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Angelina Kioko, Eunice Kamanthe, David Amayo & John Wangwe',
+      },
+      {
+        series: 'Mentor English',
+        publisher: 'Mentor Publishing',
+        authors: 'Carolyne Okemwa, John Samuel Auna, Martha Mbuvi, Monicah Onyancha & Nicholyne O. Odiero',
       },
       {
         series: 'Longhorn Advancing in English',
         publisher: 'Longhorn Publishers',
-        authors: 'Joab Tabakori & Elizabeth Odhiambo',
+        authors: "Joab Tabakori, Elizabeth Odhiambo, Catherine Ng'ang'a & Samuel Kuria",
+      },
+      {
+        series: 'Spotlight English',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Lucy Kamau, Ezekiel Wangusi, Stephen Adhoch & Zipporah Wambua',
+      },
+    ],
+    'Literature in English': [
+      {
+        series: 'Oxford Head Start Written Literature',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Frederick Shitubi, Judith Munyiri & Judith Ongweno',
+        note: 'Approved Set Texts: Dreams Denied (James Karuga), Echoes of the Heartland (Pamela Kinanu), The Bride (Austin Bukenya), A Cowrie of Hope (Binwell Sinyangwe), The Master Builder (Henrik Ibsen), Nina (Argwings Otieno)',
+      },
+      {
+        series: 'Moran Oral Literature for Senior School',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Mark Chetambe, Judith Onywany & Mukoya Mwairumba',
+        note: 'Approved Anthologies & Poetry: Unchained and Other Poems (Mugo Muhia), The Necklace and Other Stories (Oscar Macharia & Joseph Wangila), Senior School Poetry Companion (Charles Kebaya & Macharia Mwangi)',
+      },
+      {
+        series: 'Skilit Reference Book on Written Literature',
+        publisher: 'Skilit Publishers',
+        authors: 'Makenji Patrick Mukala & David Ayieko',
+      },
+      {
+        series: 'Master Poetry Textbook',
+        publisher: 'Booklyst Publishers',
+        authors: 'Abigail Kinya, Lucas Wafula & Otunga Oloo',
       },
     ],
     Kiswahili: [
       {
         series: 'Oxford Kiswahili Fasaha',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Ruth Omache, Ali Chembea, Enos Barasa & Chacha Mwita',
-        isKiswahili: true,
-      },
-      {
-        series: 'Longhorn Chemchemi za Kiswahili',
-        publisher: 'Longhorn Publishers',
-        authors: 'Kenan O. Ngere, Tobbie Wekesa & Jane Maina',
-        isKiswahili: true,
-      },
-      {
-        series: 'Kielekezi cha Kiswahili',
-        publisher: 'Mentor Publishing',
-        authors: 'Moses Owino, Patrick Kamithi & Sam Washika',
+        authors: 'Ruth Moraa Omache, Ali Hamisi Chembea, Enos Barasa Wafula & Leonard Chacha Mwita',
         isKiswahili: true,
       },
       {
         series: 'Moran Kiswahili Chanana',
         publisher: 'Moran (EA) Publishers',
-        authors: 'Boniface Ngugi & Evans Makhulo',
+        authors: "Boniface Ngugi, Evans Makhulo, Augustine Ochanji & Mary Ndung'u",
+        isKiswahili: true,
+      },
+      {
+        series: 'Longhorn Chemchemi za Kiswahili',
+        publisher: 'Longhorn Publishers',
+        authors: 'Kenan O. Ngere, Tobbie Wekesa, Nicholas Opere & Jane Maina',
+        isKiswahili: true,
+      },
+      {
+        series: 'Kielekezi cha Kiswahili',
+        publisher: 'Mentor Publishing',
+        authors: 'Christopher Lubanga, Moses Owino, Patrick Kamithi & Sam Washika',
+        isKiswahili: true,
+      },
+      {
+        series: 'Mbiu ya Kiswahili',
+        publisher: 'One Planet Publishing',
+        authors: 'John M. Kobia, Eunice Erina Nangira, Zipporah N. Rori & Njeru Kinoti M.',
+        isKiswahili: true,
+      },
+      {
+        series: 'Akili Pevu Kiswahili',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Mziwanda Banda, Mosol Kandagor, Nixon Sangili, Denis Mafura & Dan Bobea',
+        isKiswahili: true,
+      },
+    ],
+    'Fasihi ya Kiswahili': [
+      {
+        series: 'Oxford Fani ya Fasihi Simulizi na Marejeleo ya Fasihi Andishi',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Assumpta K. Matei, Regina Gicheru & Harrison Bahati Wabwire',
+        isKiswahili: true,
+        note: 'Vitabu Teule Vilivyoidhinishwa: Fumbo la Baba (Kenna Wasike), Mlemavu? Sio Mimi (Godfrey Ipalei), Narudi Nyumbani (Mziwanda Banda), Wema na Wawi (Mwenda Mbatiah), Kasri la Faraja (Bernard Ogutu), Kivuli Kilichopinda (Jeff Mandila), Sauti ya Kimya (K. W. Wamitila), Ahadi ya Neema (Assumpta K. Matei)',
+      },
+      {
+        series: 'Msingi wa Fasihi Andishi na Ushairi',
+        publisher: 'Newton Educational Resources',
+        authors: 'Assumpta K. Matei, Isaiah Mweteri, Hamisi Babusa & Evans Osoro',
+        isKiswahili: true,
+        note: 'Vitabu Teule: Mwisho wa Dhiki (Paul Nganga Mutua), Binti ya Waziri (Nicholas Ogol), Wasifu wa Mekatilili wa Menza (Hamisi Babusa)',
+      },
+      {
+        series: 'Dira ya Fasihi Andishi',
+        publisher: 'Access Publishers',
+        authors: 'Titus M. Kaui, Pamela Ngugi & Joseph Maitaria',
         isKiswahili: true,
       },
     ],
     'Community Service Learning (CSL)': [
       {
-        series: 'KLB Excelling Community Service Learning',
-        publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Maurice Saka, Agumba Ndalo & Florence Kamaitha',
-      },
-      {
         series: 'Oxford Essential Community Service Learning (CSL)',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Paul Wafula, Christine Mutua & Mildred Onyango',
+        authors: 'Paul Wafula, Christine Mutua, Mildred Onyango, Hannah Njenga & Arthur Nzau',
+      },
+      {
+        series: 'KLB Excelling Community Service Learning',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Maurice Saka, David Musungu, Florence Kamaitha, Agumba Ndalo & Misigo Lushya',
+      },
+      {
+        series: 'Moran Community Service Learning',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Elizabeth Mutisya & Kefa Simwa',
       },
       {
         series: 'Longhorn Pioneer Community Service Learning',
         publisher: 'Longhorn Publishers',
-        authors: 'Longhorn CSL Senior School Panel',
+        authors: 'Longhorn Publishers PLC',
       },
       {
         series: 'MTP Community Service Learning',
         publisher: 'Mountain Top Publishers (MTP)',
-        authors: 'MTP Senior School CSL Panel',
+        authors: 'Mountain Top Educational Publishers Ltd',
       },
     ],
     Biology: [
       {
         series: 'KLB Excelling Biology',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Kaluli Nengo, Rosebella Jerotich & Samson Ochar',
+        authors: 'Kaluli Nengo, Rosebella Jerotich, Everlyne Chitechi, Nancy Toroitich & Samson Ochar',
       },
       {
         series: 'Oxford Biology Today',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Fredrick Okwacho, Zedekiah Okwany & Peter Muchiri',
+        authors: 'Fredrick Okwacho, Zedekiah Okwany, Peter Muchiri, Lydia Njeru & Elizabeth Katei',
       },
       {
         series: 'Mentor Biology',
         publisher: 'Mentor Publishing',
-        authors: 'Charles Kogi, Emily Irene Njeri & Francis Ndaka Kinaka',
+        authors: 'Charles Kogi, Emily Irene Njeri, Francis Ndaka Kinaka, Makena Kiara & Miriam Gathogo',
+      },
+      {
+        series: 'Spotlight Biology',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Damaris Keli, Priscilla Ndiho, Joseph Mathenge, Hannah Mwangi & Paschal Wasonga',
       },
       {
         series: 'Longhorn Advancing in Biology',
         publisher: 'Longhorn Publishers',
-        authors: 'Zipporah Gatheche & Alfred Mukolwe Otipa',
+        authors: 'Zipporah Gatheche, Alfred Mukolwe Otipa, Samuel Kioko & Kenyatta Ezekiel',
+      },
+      {
+        series: 'Moran Biology',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Emmanuel Wawire, Alfonso Nyoroh & Patrick Talam',
       },
     ],
     Chemistry: [
       {
         series: 'Oxford Chemistry Today',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Grace Orado, Dickson Mugendi & Rosemary Nelima Wafula',
+        authors: 'Grace Orado, Dickson Mugendi, Rosemary Nelima Wafula, Mariam Chebet & Eliud Gachunga',
       },
       {
         series: 'KLB Excelling Chemistry',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Levi Mabogha, Pauline Wainaina & Zipporah Muli',
+        authors: 'Levi Mabogha, Pauline Wainaina, Peter Macharia, Silas Mango & Zipporah Muli',
       },
       {
         series: 'Longhorn Advancing in Chemistry',
         publisher: 'Longhorn Publishers',
-        authors: "Antoney Ochieng', Joel Mungai & Stephen Olwali Ahurah",
+        authors: "Antoney Ochieng', Violet Gudima, Joel Mungai & Stephen Olwali Ahurah",
       },
       {
         series: 'Mentor Chemistry',
         publisher: 'Mentor Publishing',
-        authors: 'Eunice Odago, Christopher Keya & Nebert Lumire',
+        authors: 'Eunice Odago, Christopher Keya, Nebert Lumire, Angela Bera & George Gathogo',
+      },
+      {
+        series: 'Smart Minds Chemistry',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Miriam Kemei, Wilberforce Chakongo, David N. Mungai & Abigail W. Waweru',
       },
     ],
     Physics: [
       {
         series: 'KLB Excelling Physics',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Hesborne O. Omollo, Oliver Minishi, Grace Mwangasha & Lilian Adika',
-      },
-      {
-        series: 'Longhorn Advancing in Physics',
-        publisher: 'Longhorn Publishers',
-        authors: 'Peterson Gichaba, Philip Obwage & Kefa Masita',
-      },
-      {
-        series: 'Mentor Physics',
-        publisher: 'Mentor Publishing',
-        authors: 'Joash Wamalwa & Lavenah Shitera',
+        authors: 'Hesborne O. Omollo, Oliver Minishi, Grace Wakio Mwangasha, Dysmas Kibet Kogo & Lilian Adika',
       },
       {
         series: 'Spotlight Physics',
         publisher: 'Spotlight Publishers (EA)',
-        authors: 'Isaac Ondieki & Theophilus Kanuna',
+        authors: 'Isaac Ondieki, Theophilus Kanuna & Mathew Opiyo',
+      },
+      {
+        series: 'Mentor Physics',
+        publisher: 'Mentor Publishing',
+        authors: 'Joash Wamalwa, Lavenah Shitera & Kiboi Dismas Chenge',
+      },
+      {
+        series: 'Moran Physics',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Bernard Maingi & Geoffrey Karumba',
+      },
+      {
+        series: 'Longhorn Advancing in Physics',
+        publisher: 'Longhorn Publishers',
+        authors: 'Peterson Gichaba, Philip Obwage & Kefa Angwenyi Masita',
+      },
+    ],
+    'General Science': [
+      {
+        series: 'KLB Excelling General Science',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Franco Munene, Givans Konga, Kelly Wambua, Frankline Carsiano & Bilhah Moemi',
+      },
+      {
+        series: 'Oxford General Science Today',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Eric Mulindi, Collins Sagege, Peter Yves, Eric Salano & Daniel Njuguna',
+      },
+      {
+        series: 'Mentor General Science',
+        publisher: 'Mentor Publishing',
+        authors: 'Nebert Lumire, Christopher Keya, Fridah Munjuri & Peter Gitundu',
+      },
+      {
+        series: 'Spotlight General Science',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Mathew Opiyo, Topister Sabilah, Erick Oyaro, James Shivina & Jacob Asenje',
+      },
+      {
+        series: 'Hummingbird General Science',
+        publisher: 'Hummingbird Publishers',
+        authors: "Rose Wangari, Christine Musembi, Calistus Wabwile & Maryleah Achieng'",
+      },
+    ],
+    Agriculture: [
+      {
+        series: 'Healthy Planet Agriculture',
+        publisher: 'One Planet Publishing',
+        authors: 'Daniel Kemei, Peter Sigei, Alex Kibet & Oyaro Erick',
+      },
+      {
+        series: 'Moran Agriculture',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Francis Musungu, David Mbaabu, Susan Kageni & Valentine Karani',
+      },
+      {
+        series: 'Mentor Agriculture',
+        publisher: 'Mentor Publishing',
+        authors: 'George Waweru, Patrick Munyao & Patrick Waithaka',
+      },
+      {
+        series: 'MTP Agriculture',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Philip Ngunyu & Mountain Top Publishers',
+      },
+      {
+        series: 'Smart Minds Agriculture',
+        publisher: 'East African Educational Publishers (EAEP)',
+        authors: 'Gladys Nakhulo, Peris Kabaria & Elizabeth Nzambuli',
+      },
+      {
+        series: 'Spotlight Agriculture',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Margaret Chege, Esther Nzomo & Paul Onami',
+      },
+    ],
+    'Computer Studies': [
+      {
+        series: 'KLB Excelling Computer Studies',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Petronilla Mutwiwa, Charles Loka, Kanyi Gioko, Juliana Kariuki & Rhoda Mukiri',
+      },
+      {
+        series: 'Oxford Active Computer Studies',
+        publisher: 'Oxford University Press (EA)',
+        authors: 'Dorothy Aluoch, Wycliffe Mutuli, Juanitah Mwende, Patrick Mumo & Linda Muriuki',
+      },
+      {
+        series: 'Modern Technology Computer Studies',
+        publisher: 'Modern Technology Publishers',
+        authors: 'Stephen N. Mburu & Charles W. Gitonga',
+      },
+      {
+        series: 'Longhorn Advancing in Computer Studies',
+        publisher: 'Longhorn Publishers',
+        authors: 'Alex Larry Kayeli, Benson Muguro Mungai & Solomon Mwaka Mbaluka',
+      },
+      {
+        series: 'Mentor Computer Studies',
+        publisher: 'Mentor Publishing',
+        authors: 'Claude Ochieng, Grace Nyaga, Patrick Sifuna & Roselyne Mbithe',
       },
     ],
     'Computer Science': [
       {
         series: 'KLB Excelling Computer Studies',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Petronilla Mutwiwa, Charles Loka & Kanyi Gioko',
+        authors: 'Petronilla Mutwiwa, Charles Loka, Kanyi Gioko & Juliana Kariuki',
         note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
       },
       {
@@ -996,75 +1331,142 @@ export const KICD_APPROVED_COURSEBOOKS = {
       {
         series: 'Longhorn Advancing in Computer Studies',
         publisher: 'Longhorn Publishers',
-        authors: 'Alex Larry Kayeli & Benson Muguro Mungai',
-        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+        authors: 'Alex Larry Kayeli, Benson Muguro Mungai & Solomon Mwaka Mbaluka',
       },
       {
         series: 'Mentor Computer Studies',
         publisher: 'Mentor Publishing',
         authors: 'Claude Ochieng, Grace Nyaga & Patrick Sifuna',
-        note: 'Approved under KICD Senior School Computer Studies Pathway Coursebooks',
+      },
+    ],
+    'Home Science': [
+      {
+        series: 'KLB Excelling Home Science',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: "Tom Orwa, Jemimah Nd'ungu, Lucy Nyamu, Emily Wahome & Roseland Shiramba",
+      },
+      {
+        series: 'Mentor Home Science',
+        publisher: 'Mentor Publishing',
+        authors: 'Josephine Opondo, Esther Karanja, Francis M. Kigondu & Jane W. Thungu',
+      },
+      {
+        series: 'MTP Home Science',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Mountain Top Educational Publishers Limited',
+      },
+      {
+        series: 'Booklyst Home Science',
+        publisher: 'Booklyst Publishers',
+        authors: 'Hillary Kavai, Faith Gaceri Ngutiku & Margaret N. Wachira',
+      },
+      {
+        series: 'StoryMoja Home Science',
+        publisher: 'StoryMoja Publishers',
+        authors: 'Keziah Zeruiyah Wandera, Carolyne Adalla, Lilian Obura & Valerie Wakaya',
+      },
+    ],
+    'Information Communication Technology (ICT)': [
+      {
+        series: 'KLB Excelling Information and Communication Technology',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Petronilla Mutwiwa, Joshua Mutie, Dorothy Aluoch, Linnet Maundu & Charity Mwaniki',
+      },
+      {
+        series: 'Spotlight Information and Communication Technology',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Daniel Arapai & Robert Waswa',
+      },
+      {
+        series: 'Modern Technology Information and Communication Technology (ICT)',
+        publisher: 'Modern Technology Publishers',
+        authors: 'Stephen N. Mburu, Charles W. Gitonga & Anuradha Khoda',
+      },
+      {
+        series: 'Longhorn Advancing in Information and Communication Technology',
+        publisher: 'Longhorn Publishers',
+        authors: 'Alex Larry Kayeli, Billy Clinton Taula & Benson Muguro Mungai',
+      },
+      {
+        series: 'Mentor Information Communication Technology (ICT)',
+        publisher: 'Mentor Publishing',
+        authors: 'Claude Ochieng & Patrick Sifuna',
       },
     ],
     'History and Citizenship': [
       {
         series: 'KLB Excelling History and Citizenship',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Dr. Susan Mutune, Dr. Gladys Kinyanjui & Assa Okoth',
+        authors: 'Dr. Susan Mutune, Dr. Gladys Kinyanjui, Dr. Kyule Mwanzia, Miriam Chemao & Assa Okoth',
       },
       {
         series: 'Oxford Evolving World History and Citizenship',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Maryclaire Indire, Mercy Muthoni & George Gitonga',
+        authors: 'Maryclaire Indire, Mercy Muthoni, George Gitonga, Akwalu Morris & Sobbins Wakala',
       },
       {
         series: 'Moran History and Citizenship',
         publisher: 'Moran (EA) Publishers',
-        authors: 'Agumba M. Ndaloh & Rachael Nyatichi',
+        authors: "Agumba M. Ndaloh, Rachael Nyatichi & Gilbert Ojwang'",
       },
       {
         series: 'Mentor History and Citizenship',
         publisher: 'Mentor Publishing',
-        authors: 'Evans Tsabuko, Felix Oduor & Wycliffe Mokaya',
+        authors: 'Evans Tsabuko, Felix Oduor, Wycliffe M. Mokaya & Emily Achieng',
+      },
+      {
+        series: 'Hummingbird History and Citizenship',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Jane Nyaga, John Karanja, Denis Luvate, Ann Wanyonyi & Mercy Akinyi',
       },
     ],
     Geography: [
       {
         series: 'Oxford Active Geography',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Nancy Kihwaga, Cephas Kamau & Patrick Esendi',
+        authors: 'Nancy Kihwaga, Cephas Kamau, Patrick Esendi & Kevin Owuor',
       },
       {
         series: 'KLB Excelling Geography',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Julius Huho, Maurice Saka & Adelaide Maghanga',
+        authors: 'Julius Huho, Maurice Saka, Adelaide Maghanga, Joseph Njoga & Sophy Wafula',
       },
       {
         series: 'Mentor Geography',
         publisher: 'Mentor Publishing',
-        authors: 'Evans Tsabuko & Florence Muigua',
+        authors: 'Evans Tsabuko, Florence Muigua & James Kariuki Njuguna',
       },
       {
         series: 'Moran Geography',
         publisher: 'Moran (EA) Publishers',
-        authors: "Ferdinanda Gachang'i, Isaac Biwott & Andrew Simolo",
+        authors: "Ferdinanda Gachang'i, Isaac Biwott, Andrew Simolo & Kevin Otieno",
+      },
+      {
+        series: 'Longhorn Comprehensive Geography',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn Publishers PLC',
       },
     ],
     'Business Studies': [
       {
         series: 'Oxford Active Business Studies',
         publisher: 'Oxford University Press (EA)',
-        authors: 'Kenneth Mbuvi, Patrick Otundo & Josephine Masika',
+        authors: 'Kenneth Mbuvi, Patrick Otundo, Josephine Masika & Michael Mutuma',
       },
       {
         series: 'KLB Excelling Business Studies',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Salome Boit, Tobias Yogo & Jared Bosire',
+        authors: 'Salome Boit, Tobias Yogo, Jared Bosire, Nancy Nyawira & Catherine Macharia',
       },
       {
         series: 'Mentor Business Studies',
         publisher: 'Mentor Publishing',
-        authors: 'Dr. George Gathogo & Mollyne Mahuga',
+        authors: 'Dr. George Gathogo, Hannah Gathogo, James Njehuri & Mollyne Mahuga',
+      },
+      {
+        series: 'Moran Business Studies',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Olive Gichuri Njoroge & Elvis Odhiambo',
       },
       {
         series: 'Smart Minds Business Studies',
@@ -1074,35 +1476,372 @@ export const KICD_APPROVED_COURSEBOOKS = {
     ],
     'Christian Religious Education (CRE)': [
       {
-        series: 'Hummingbird CRE',
+        series: 'Hummingbird Christian Religious Education',
         publisher: 'Hummingbird Publishers',
-        authors: 'Edith Gichohi & Edward Kiratu',
+        authors: 'Edith Gichohi, Edward Kiratu, Joyce Gikera & Peter Kimani',
       },
       {
-        series: 'MTP CRE',
+        series: 'MTP Christian Religious Education',
         publisher: 'Mountain Top Publishers (MTP)',
         authors: 'Nyamboki S. M. & Dinah K. Omweri',
       },
       {
-        series: 'Smart Minds CRE',
+        series: 'Smart Minds Christian Religious Education',
         publisher: 'East African Educational Publishers (EAEP)',
-        authors: 'Odhiambo Odongo & Nickson Juma',
+        authors: 'Odhiambo Odongo, Peter Mudogo, Nickson Juma, Mitambo Muchiri & Harriet Songa',
+      },
+      {
+        series: 'Access and Learn Christian Religious Education',
+        publisher: 'Access Publishers',
+        authors: 'Susan Kimbui, Jacob Njoroge & Mary Nderitu',
       },
     ],
     'Islamic Religious Education (IRE)': [
       {
         series: 'KLB Excelling Islamic Religious Education',
         publisher: 'Kenya Literature Bureau (KLB)',
-        authors: 'Idris Matsukhu Makokha, Khamis Mohamed Omar & Fatuma Kassim Mwatamu',
+        authors: 'Idris Matsukhu Makokha, Khamis Mohamed Omar, Mohamud A. Muhumed & Fatuma Kassim Mwatamu',
       },
       {
         series: 'Atfaal IRE',
         publisher: 'Atfaal Publishers',
-        authors: 'F. Shariff & Harun Abubakar',
+        authors: 'F. Shariff, Harun Abubakar, Wesonga Athman & Nawal Albeity',
+      },
+    ],
+    'Music and Dance': [
+      {
+        series: 'KLB Excelling Music and Dance',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Marsyden Matsigulu, Isaiah Oyugi, Charity Muraguri, Kevin Kimtai & Moses Maneno',
+      },
+      {
+        series: 'Hummingbird Music and Dance',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Mary Ondiso & Naftali Korir',
+      },
+      {
+        series: 'Moran Music and Dance',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Anthony Maina, Delphine Amimo, William Mureithi & Benjamin Ochami',
+      },
+      {
+        series: 'Mentor Music and Dance',
+        publisher: 'Mentor Publishing',
+        authors: "Anne Ndung'u, Ann Sylvia Muriuki, Patrick Oketch & Maxwell Osiemo Keraita",
+      },
+    ],
+    'Theatre and Film': [
+      {
+        series: 'KLB Excelling Theatre and Film',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Egara Kabaji, Argwings Otieno, Charity Wamuyu, Jared Mudanya & Miriam Achiso',
+      },
+      {
+        series: 'Master Theatre and Film',
+        publisher: 'Booklyst Publishers',
+        authors: 'Gadwill Odhiambo & Victor Muyekwe',
+      },
+      {
+        series: 'Distinction Theatre and Film',
+        publisher: 'Distinction Educational Publishers',
+        authors: "Morang'a Onyonka & Otundo Otundo",
+      },
+      {
+        series: 'Champion Theatre & Film',
+        publisher: 'Doritex Publishing',
+        authors: 'Doritex Publishing Investment Ltd',
+      },
+    ],
+    'Fine Arts': [
+      {
+        series: 'Hummingbird Fine Arts',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Auma Gloria Oyongo, Catherine Simiyu, Evans Ochieng Asol & Enid Rose Akinyi',
+      },
+      {
+        series: 'KLB Excelling Fine Arts',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Kiruki Kanogu, Okembo S. Lore, Catherine Mavyala & Nicholleta Muthoni',
+      },
+      {
+        series: 'Front Row Fine Arts',
+        publisher: 'Front Row Publishers',
+        authors: "Catherine N. Kaggwa, Allan Madegwa, Rita Mang'oli & Peter Sechero",
+      },
+      {
+        series: 'Mentor Fine Arts',
+        publisher: 'Mentor Publishing',
+        authors: 'Clement Mugambi & Dalton Mwangi',
+      },
+    ],
+    'Sports and Recreation': [
+      {
+        series: 'KLB Excelling Sports and Recreation',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Raphael Kithuka, Derrick Kitaruka, Sophia Mutuma, Peter Wanjihia & Ruth Kahiga',
+      },
+      {
+        series: 'Spotlight Sports and Recreation',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Veronica Simba, Nicholas Bailasha, Nancy Chepkirui, Collins Kiprop & Victor Gitonga',
+      },
+      {
+        series: 'Moran Sports and Recreation',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Esther Gachunge & James Chege',
+      },
+      {
+        series: 'MTP Sports and Recreation',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Mountain Top Publishers Limited',
+      },
+    ],
+    'Physical Education': [
+      {
+        series: 'Spotlight Physical Education',
+        publisher: 'Spotlight Publishers (EA)',
+        authors: 'Sisto Chege, Irene Njuguna, Veronica Simba, Robert Ndambo & Joseph Karuri',
+      },
+      {
+        series: 'KLB Excelling Physical Education',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Ruth Kahiga, Winnie Nyokabi, Elizabeth Kawira & Miriam Chemao',
+      },
+      {
+        series: 'Hummingbird Physical Education',
+        publisher: 'Hummingbird Publishers',
+        authors: 'Elijah Gitau, Grace Nelly Wanjiru & Humphrey Chemjor',
+      },
+      {
+        series: 'Moran Physical Education',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Paul Maina, Elvis Okoth, George Mwaura & Paul Mwangi',
+      },
+    ],
+    French: [
+      {
+        series: 'KLB Excelling in French',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Benjamin Kathonde, Dr. Consolata Mwimali, Laura Mulimi & Paul Odhiambo Ope',
+      },
+      {
+        series: 'One Planet Methode de francais',
+        publisher: 'One Planet Publishing',
+        authors: 'Mboni E. Aura, Edna N. Maloba & Mainga P. Mayabi',
+      },
+    ],
+    Arabic: [
+      {
+        series: 'KLB Excelling Arabic',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Ahmed A. Ahmed, Abdullahi A. Mohamed & Mohamed A. Mohamed',
+      },
+      {
+        series: 'Atfaal Arabic',
+        publisher: 'Atfaal Publishers',
+        authors: 'Harun Abubakar',
+      },
+    ],
+    German: [
+      {
+        series: 'KLB Deutsch Mit Erfolg',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Patrick Akhudu, Lucy Mutola, Robert Mwangi & David Wakwabubi',
+      },
+    ],
+    'Life Skills': [
+      {
+        series: 'Life Skills for Senior School Learners',
+        publisher: 'Chalan Foundation',
+        authors: 'Margaret Koech & Sally Keiyo',
+      },
+    ],
+    Aviation: [
+      {
+        series: 'KLB Excelling Aviation',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'James G. Nyagah, Vincent K. Kathurima, Mercy Naliaka & Vivian Chepkonga',
+      },
+      {
+        series: 'Bookmark Aviation',
+        publisher: 'Bookmark Publishers',
+        authors: 'C. Matanya, V. Oduor & S. Musumba',
+      },
+      {
+        series: 'Penguin Aviation',
+        publisher: 'Penguin Publishers',
+        authors: 'James W. Nderitu',
+      },
+    ],
+    'Building Construction': [
+      {
+        series: 'KLB Excelling Building Construction',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Omukaga O. Panyako, Richard Kimiti, Fwamba Julius, Hellen Chebet & Lucy Mulimba',
+      },
+      {
+        series: 'Moran Building Construction',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Micah Nakhisa, Abraham Kirugo, John Mburu & David Mungai',
+      },
+      {
+        series: 'Longhorn Advancing in Building Construction',
+        publisher: 'Longhorn Publishers',
+        authors: 'Christine Khatali, Naomi Ogati, Ghonzo M. Odongo & Martin Kipkemboi',
+      },
+      {
+        series: 'Mentor Building Construction',
+        publisher: 'Mentor Publishing',
+        authors: 'Esther Njoki & Racheal Njeri',
+      },
+    ],
+    Electricity: [
+      {
+        series: 'KLB Excelling Electricity',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Honorad Ochayo, Tom Ben Makomere, Daniel Kipkemboi, Jackson Muasya & Peter Kiteetu',
+      },
+      {
+        series: 'Moran Electricity',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'John Mburu, Joseph Mukaisi, Darius Nyambuto & Vincent Maroro',
+      },
+      {
+        series: 'Master Electricity',
+        publisher: 'Booklyst Publishers',
+        authors: 'Honorad Mwikami Ochayo & Sammy Kuya',
+      },
+      {
+        series: 'Mentor Electricity',
+        publisher: 'Mentor Publishing',
+        authors: 'Joash Wamalwa',
+      },
+    ],
+    'Metal Work': [
+      {
+        series: 'KLB Excelling Metalwork',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Omukaga O. Panyako, Peter Kimiti, Leonard Mwanja & Job Nyangeri',
+      },
+      {
+        series: 'Moran Metal Work',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'Abraham Kirugo, David Mungai & John Mburu',
+      },
+      {
+        series: 'Longhorn Advancing in Metal Work',
+        publisher: 'Longhorn Publishers',
+        authors: 'Aggrey Welashina, Duncan Kamau & Johnson Maoga',
+      },
+      {
+        series: 'Mentor Metalwork',
+        publisher: 'Mentor Publishing',
+        authors: 'Joash Wamalwa',
+      },
+    ],
+    'Power Mechanics': [
+      {
+        series: 'KLB Excelling Power Mechanics',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'John K. Chepkwony, Walter Oketch & Richard Odhiambo Omuiya',
+      },
+      {
+        series: 'Moran Power Mechanics',
+        publisher: 'Moran (EA) Publishers',
+        authors: 'John Mburu, Ibrahim Kirugo, David Mungai & Pius Gichini',
+      },
+      {
+        series: 'Mentor Power Mechanics',
+        publisher: 'Mentor Publishing',
+        authors: 'Joash Wamalwa',
+      },
+      {
+        series: 'Booklyst Master Power Mechanics',
+        publisher: 'Booklyst Publishers',
+        authors: "Michael Mwangi Ndung'u & Peter Irungu Kamau",
+      },
+    ],
+    Woodwork: [
+      {
+        series: 'KLB Excelling Woodwork',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Lucy J. Mulimba, Samuel Kariuki Ngunyi, Alexander Lubanga & Henry Masinde Anaswa',
+      },
+      {
+        series: 'Bookmark Woodwork',
+        publisher: 'Bookmark Publishers',
+        authors: 'Sonny Adams, Simon Gichoru, Grace Kamau, Brian Opondo & Rose Maiyo',
+      },
+      {
+        series: 'Longhorn Advancing in Woodwork',
+        publisher: 'Longhorn Publishers',
+        authors: 'Longhorn Publishers PLC',
+      },
+      {
+        series: 'MTP Woodwork',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Mountain Top Publishers Limited',
+      },
+    ],
+    'Media Technology': [
+      {
+        series: 'KLB Excelling Media Technology',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: "Christopher Odhiambo, Wycliffe Buhere, Gabriel Thuku, Clifford Ouma & John Ng'onde",
+      },
+      {
+        series: 'Front Row Media Technology',
+        publisher: 'Front Row Publishers',
+        authors: 'Hudson Munayi, Juliet Musimbi & John Ndavula',
+      },
+      {
+        series: 'One Planet Media Technology',
+        publisher: 'One Planet Publishing',
+        authors: 'Bernard Ogutu, Kithusi Mulonzya & Ngulamu Mwaviro',
+      },
+    ],
+    'Marine and Fisheries Technology': [
+      {
+        series: 'KLB Excelling Marine and Fisheries Technology',
+        publisher: 'Kenya Literature Bureau (KLB)',
+        authors: 'Dr. Callen Onura, Franco Munene, Finnan Agenga, Josh Omondi & Omondi Kashin',
+      },
+      {
+        series: 'Booklyst Master Marine and Fisheries Technology',
+        publisher: 'Booklyst Publishers',
+        authors: 'Christine Wasonga Olubayi',
+      },
+      {
+        series: 'MTP Marine and Fisheries Technology',
+        publisher: 'Mountain Top Publishers (MTP)',
+        authors: 'Mountain Top Publishers Limited',
       },
     ],
   },
 };
+
+export const KICD_OFFICIAL_APPROVED_PORTAL_URL =
+  'https://kicd.ac.ke/cbc-materials/approved-cbc-course-materials/';
+
+/**
+ * Returns ALL KICD Orange Book & 2026 Addendum Approved Coursebooks for a given (grade, subject).
+ */
+export function getAllApprovedCoursebooksForGradeSubject(grade, subject) {
+  const isPP1 = grade === 'PP1' || grade === -1;
+  const isPP2 = grade === 'PP2' || grade === 0;
+  const bandKey =
+    isPP1 || isPP2
+      ? 'preprimary'
+      : Number(grade) <= 3
+      ? 'lower'
+      : Number(grade) <= 6
+      ? 'upper'
+      : Number(grade) <= 9
+      ? 'jss'
+      : 'senior';
+  const bandObj = KICD_APPROVED_COURSEBOOKS[bandKey] || {};
+  return bandObj[subject] || [];
+}
 
 /**
  * Deterministically returns the exact KICD Orange Book Approved Primary Coursebook
@@ -2223,6 +2962,381 @@ export const SUBJECT_SYLLABUS = {
       ],
     },
   },
+
+  'Essential Mathematics': {
+    shortCode: 'ESS-MATH',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 COMMERCIAL ARITHMETIC & PERSONAL FINANCE', subs: ['Whole Numbers, Fractions, Decimals, Ratios & Proportions in Trade', 'Simple & Compound Interest, Hire Purchase, Discounts & Commissions', 'Personal & Household Budgeting, Mobile Money Tariffs & Income Tax (PAYE / VAT)'], kiq: 'How do compound interest, hire purchase, and budgeting guide smart financial decisions?', resources: 'Scientific calculators, KRA PAYE tax tables, bank interest charts' },
+      ],
+      2: [
+        { strand: '2.0 PRACTICAL MEASUREMENT, SCALE DRAWING & GEOMETRY', subs: ['Perimeter, Area & Surface Area of Everyday Land Plots and Containers', 'Volume, Capacity, Mass, Density & Time/Travel Timetables', 'Scale Drawing, Bearings, Angles of Elevation/Depression & Plans'], kiq: 'How do scale drawings and bearings assist technicians, farmers, and designers?', resources: 'Geometrical sets, tape measures, scale rulers, graph books' },
+      ],
+      3: [
+        { strand: '3.0 APPLIED ALGEBRA, GRAPHS, STATISTICS & PROBABILITY', subs: ['Linear Equations, Simultaneous Equations & Travel/Conversion Graphs', 'Statistical Data Representation: Pie Charts, Histograms, Mean, Median & Mode', 'Experimental & Theoretical Probability in Everyday Decision-Making'], kiq: 'How do statistical measures and graphs summarize community and business trends?', resources: 'Squared graph books, dice/coins for probability, KNBS statistical charts' },
+      ],
+    },
+  },
+
+  'General Science': {
+    shortCode: 'GEN-SCI',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 HUMAN HEALTH, NUTRITION & BIOLOGICAL SYSTEMS', subs: ['Cell Structure, Nutrition, Balanced Diet & Digestive Health', 'Circulatory, Respiratory & Excretory Systems; Communicable & Lifestyle Diseases', 'Ecology, Biodiversity Conservation & Sustainable Waste Management'], kiq: 'How do balanced nutrition, hygiene, and vaccination prevent common diseases?', resources: 'Light microscopes, human torso model, nutrition charts, first-aid kit' },
+      ],
+      2: [
+        { strand: '2.0 MATTER, WATER CHEMISTRY & EVERYDAY MATERIALS', subs: ['States of Matter, Atomic Structure, Periodic Trends & Bonding Basics', 'Acids, Bases, Indicators, Water Hardness & Domestic Water Purification', 'Fuels, Polymers, Detergents, Soil pH & Environmental Chemistry'], kiq: 'How are acids, bases, and water-treatment chemicals used safely in Kenyan homes?', resources: 'Litmus/universal indicator, beakers, water filter models, household samples' },
+      ],
+      3: [
+        { strand: '3.0 ENERGY, ELECTRICITY, WAVES & RENEWABLE TECHNOLOGY', subs: ['Force, Work, Power, Simple Machines & Thermal Energy Transfer', 'Domestic Electricity, Wiring Safety (Fuse/MCB/Earthing) & Power Costing (kWh)', 'Light Optics, Sound Waves & Solar/Geothermal/Wind Energy in Kenya'], kiq: 'How do solar panels and geothermal plants supply clean electricity in Kenya?', resources: 'Solar cell kit, 3-pin plug, ammeter/voltmeter, KPLC token meter chart' },
+      ],
+    },
+  },
+
+  'Literature in English': {
+    shortCode: 'LIT-ENG',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 ORAL LITERATURE & AFRICAN PERFORMANCE TRADITIONS', subs: ['Classification & Features of Oral Narratives (Trickster, Dilemma, Etiological, Legends)', 'Oral Songs/Poetry, Proverbs, Riddles, Tongue Twisters & Fieldwork Methods', 'Performance Techniques: Voice Projection, Tonal Variation, Facial Expression & Audience'], kiq: 'How do performance cues bring oral narratives and songs to life?', resources: 'Moran Oral Literature for Senior School, audio/video recordings, fieldwork guides' },
+      ],
+      2: [
+        { strand: '2.0 INTENSIVE STUDY OF APPROVED NOVELS & SHORT STORIES', subs: ['Plot Structure, Setting & Conflict in Approved Novels (Dreams Denied / Echoes of the Heartland / A Cowrie of Hope / The Crucial Interview)', 'Characterization, Themes & Moral Values in Approved Short Stories (The Gold Frame / The Necklace and Other Stories)', 'Stylistic Devices: Irony, Symbolism, Flashback, Foreshadowing, Satire & Dialogue'], kiq: 'How do authors use characterization and style to mirror contemporary society?', resources: 'Approved KICD Novels, Short Story Anthologies & Oxford Head Start Written Literature' },
+      ],
+      3: [
+        { strand: '3.0 DRAMA (PLAYS), POETRY & AUTOBIOGRAPHY / BIOGRAPHY', subs: ['Dramatic Elements, Stage Directions & Conflict in Approved Plays (The Bride / The Master Builder / The Forest No Longer Cries / Nina)', 'Poetic Persona, Imagery, Rhyme, Rhythm, Tone & Mood (Unchained and Other Poems / Senior School Poetry Companion)', 'Autobiography & Life Writing Analysis (What Next? / Rays in the Raindrops) & Critical Essay Writing'], kiq: 'What distinguishes dramatic action and poetic imagery from prose fiction?', resources: 'Approved KICD Plays, Poetry Anthologies & Biographies' },
+      ],
+    },
+  },
+
+  'Fasihi ya Kiswahili': {
+    shortCode: 'FAS-KIS',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 FASIHI SIMULIZI NA UTAFITI WA NYANJANI', subs: ['Maana, Sifa na Dhima ya Fasihi Simulizi; Hadithi (Ngano, Hekaya, Hurafa, Visasili, Mighani)', 'Nyimbo, Maigizo, Semi (Methali, Vitendawili, Nahau, Misemo, Vitanza Ndimi) na Ngomezi', 'Mbinu za Ukusanyaji na Uhifadhi wa Data ya Fasihi Simulizi Nyanjani'], kiq: 'Fasihi simulizi ina nafasi gani katika kuhifadhi utamaduni na maadili ya jamii?', resources: 'Oxford Fani ya Fasihi Simulizi (Assumpta K. Matei), vinasa sauti, chati' },
+      ],
+      2: [
+        { strand: '2.0 UCHAMBUZI WA RIWAYA, HADITHI FUPI NA TAWASIFU TEULE', subs: ['Ploti, Mandhari na Dhamira katika Riwaya Teule (Fumbo la Baba / Ahadi ya Neema / Wema Waliobaki / Mwisho wa Dhiki / Binti ya Waziri)', 'Wahusika na Mbinu za Lugha katika Hadithi Fupi (Kichaa cha Mlungula na Hadithi Nyingine)', 'Tawasifu na Wasifu Teule (Mlemavu? Sio Mimi / Wasifu wa Mekatilili wa Menza)'], kiq: 'Riwaya na hadithi fupi teule zinaangazia vipi changamoto na matumaini ya jamii ya leo?', resources: 'Riwaya, Hadithi Fupi na Tawasifu Teule Zilizoidhinishwa na KICD' },
+      ],
+      3: [
+        { strand: '3.0 UCHAMBUZI WA TAMTHILIA NA USHAIRI WA KISWAHILI', subs: ['Muundo, Mgogoro na Uigizaji katika Tamthilia Teule (Narudi Nyumbani / Wema na Wawi / Kasri la Faraja / Kivuli Kilichopinda / Sauti ya Kimya / Si Shwari)', 'Bahari za Mashairi (Tarbia, Takhmisa, Mashairi Huru), Vina, Mizani, Kibwagizo na Toni', 'Uhakiki wa Kazi za Fasihi Andishi na Uandishi wa Insha za Kiuambuzi'], kiq: 'Tunachambuaje arudhi, lugha ya picha na ujumbe katika ushairi na tamthilia?', resources: 'Tamthilia Teule, Msingi wa Ushairi na Dira ya Fasihi Andishi' },
+      ],
+    },
+  },
+
+  Agriculture: {
+    shortCode: 'AGRIC',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 SOIL SCIENCE, WATER CONSERVATION & CROP PRODUCTION', subs: ['Soil Profile, Soil Testing (pH & Nutrients), Organic Manures & Inorganic Fertilizers', 'Micro-Catchments, Drip/Sprinkler Irrigation & Climate-Smart Conservation Tillage', 'Nursery Establishment, Vegetative Propagation, Pest/Disease IPM & Post-Harvest Handling'], kiq: 'How do soil testing and drip irrigation maximize crop yields in Kenya?', resources: 'Soil testing kit, drip lines, grafting knives, Healthy Planet / Moran Agriculture' },
+      ],
+      2: [
+        { strand: '2.0 LIVESTOCK PRODUCTION, HEALTH & BREEDING', subs: ['Dairy, Beef, Poultry, Sheep, Goat, Pig & Apiculture Breeds and Housing Structures', 'Livestock Nutrition, Ration Formulation, Parasite Control & Vaccination Schedules', 'Clean Milk Production, Egg Handling & Value Addition of Livestock Products'], kiq: 'How does balanced ration formulation improve dairy and poultry productivity?', resources: 'Feed samples, knapsack sprayer, livestock charts, KLB / Mentor Agriculture' },
+      ],
+      3: [
+        { strand: '3.0 AGROFORESTRY, FARM MECHANIZATION & AGRIBUSINESS ECONOMICS', subs: ['Agroforestry Tree-Crop-Livestock Integration & Farm Structures Maintenance', 'Farm Tools, Tractor Implements & Renewable Biogas/Solar Farm Power', 'Production Economics, Farm Records, Gross Margin Budgets & Agricultural Co-operatives'], kiq: 'How do gross margin budgets and value addition turn farming into a profitable enterprise?', resources: 'Farm inventory ledgers, agroforestry seedlings, MTP / Smart Minds Agriculture' },
+      ],
+    },
+  },
+
+  'Computer Studies': {
+    shortCode: 'COMP-STD',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 COMPUTER SYSTEMS, HARDWARE & OPERATING SYSTEMS', subs: ['Central Processing Unit (ALU, Control Unit, Registers), Buses & Memory (RAM/ROM/Cache)', 'Number Systems (Binary, Octal, Hexadecimal), Character Coding & Logic Gates', 'Operating Systems Management, File Systems, Drivers & Preventive Hardware Maintenance'], kiq: 'How do CPU components coordinate during the fetch-decode-execute cycle?', resources: 'Computer lab, motherboard components, KLB Excelling / Oxford Active Computer Studies' },
+      ],
+      2: [
+        { strand: '2.0 PRODUCTIVITY SOFTWARE, PROGRAMMING & DATABASES', subs: ['Advanced Spreadsheets (Formulas, Pivot Tables, Charts) & Desktop Publishing', 'Algorithm Design (Flowcharts, Pseudocode) & Structured Programming (Variables, Loops, Functions)', 'Relational Database Management Systems (Tables, Primary/Foreign Keys, Forms, SQL Queries & Reports)'], kiq: 'How do relational databases eliminate data redundancy in school and hospital systems?', resources: 'Python/SQL IDE, spreadsheet software, Modern Technology / Longhorn Computer Studies' },
+      ],
+      3: [
+        { strand: '3.0 DATA COMMUNICATION, NETWORKS, CYBERSECURITY & SYSTEMS PROJECT', subs: ['Network Topologies, Transmission Media (Fibre Optic, UTP, Wireless), Routers & IP Addressing', 'Cybersecurity Threats, Encryption, Backups & Kenya Data Protection Act Compliance', 'System Development Life Cycle (SDLC): Fact-Finding, Design, Testing & Documentation'], kiq: 'Which technical and legal safeguards protect organizations against cyberattacks?', resources: 'LAN switches, RJ45 crimping tools, Mentor Computer Studies' },
+      ],
+    },
+  },
+
+  'Home Science': {
+    shortCode: 'HOME-SCI',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 FOODS, NUTRITION & MEAL MANAGEMENT', subs: ['Macro- & Micro-Nutrients, Nutritional Deficiency Disorders & Food Fortification', 'Kitchen Equipment, Hygiene, Cooking Methods (Moist/Dry Heat) & Nutrient Conservation', 'Meal Planning for Special Groups (Expectant Mothers, Infants, Invalid, Elderly) & Food Preservation'], kiq: 'How do cooking methods and balanced meal planning preserve vital nutrients?', resources: 'Home Science kitchen lab, food group charts, KLB / Mentor Home Science' },
+      ],
+      2: [
+        { strand: '2.0 CLOTHING, TEXTILES & GARMENT CONSTRUCTION', subs: ['Classification & Properties of Natural and Synthetic Textile Fibres', 'Sewing Machine Parts, Fault-Finding, Stitches, Seams & Control of Fullness', 'Commercial Pattern Interpretation, Cutting Out, Garment Assembly & Laundrywork'], kiq: 'Why must care labels and fibre properties guide laundry and ironing temperatures?', resources: 'Sewing machines, fabric swatches, tape measures, MTP / StoryMoja Home Science' },
+      ],
+      3: [
+        { strand: '3.0 MATERNAL/CHILD HEALTH CARE, HOME MANAGEMENT & CONSUMER EDUCATION', subs: ['Antenatal/Postnatal Care, Immunization Schedule (KEPI), Weaning & Play Safety', 'Ventilation, Lighting, Sanitation, Household Budgeting & Consumer Rights', 'Hospitality Etiquette, Table Setting, Flower Arrangement & Cake Decoration'], kiq: 'How does adherence to the KEPI immunization schedule protect child health?', resources: 'Maternal-child health clinic card sample, household budget sheets, Booklyst Home Science' },
+      ],
+    },
+  },
+
+  'Information Communication Technology (ICT)': {
+    shortCode: 'ICT',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 ICT INFRASTRUCTURE, CLOUD TOOLS & DIGITAL WORKSPACES', subs: ['Computing Devices, Peripherals, Storage Media & Basic Troubleshooting', 'Operating Systems, Cloud Storage, Collaborative Suites & Digital File Hygiene', 'Word Processing, Electronic Presentations & Professional Document Formatting'], kiq: 'How do cloud collaboration tools improve productivity and version control?', resources: 'Desktop/laptop computers, projector, KLB / Spotlight ICT' },
+      ],
+      2: [
+        { strand: '2.0 SPREADSHEET ANALYTICS, MULTIMEDIA & WEB TECHNOLOGIES', subs: ['Data Analysis in Spreadsheets (Logical Functions, VLOOKUP, Conditional Formatting & Charts)', 'Digital Graphics, Audio-Visual Editing & Desktop Publishing Layouts', 'Web Design Fundamentals (HTML5, CSS3, Accessibility & Domain Hosting)'], kiq: 'How do HTML5, CSS3, and spreadsheets power modern digital businesses?', resources: 'Code editor, spreadsheet software, Modern Technology / Longhorn ICT' },
+      ],
+      3: [
+        { strand: '3.0 INTERNET NETWORKING, CYBER SAFETY & EMERGING TECHNOLOGIES', subs: ['Internet Protocols, Wi-Fi Configuration, E-Commerce & E-Citizen Digital Services', 'Cyber Hygiene, Two-Factor Authentication, Plagiarism Ethics & Data Privacy', 'Artificial Intelligence (AI), Internet of Things (IoT) & Digital Freelancing Portfolio'], kiq: 'How can learners use AI tools ethically while protecting personal data online?', resources: 'Router setup lab, cybersecurity checklists, Mentor ICT' },
+      ],
+    },
+  },
+
+  'Music and Dance': {
+    shortCode: 'MUS-DNC',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 FOUNDATIONS OF MUSIC THEORY, RHYTHM & PITCH', subs: ['Staff Notation (Treble & Bass Clefs), Time Signatures, Rests & Dotted Notes', 'Major & Minor Scales, Key Signatures, Intervals & Triads', 'Sight-Singing (Sol-fa & Staff), Aural Rhythm/Melody Dictation & Vocal Technique'], kiq: 'How do time signatures and key signatures organize musical harmony and rhythm?', resources: 'Keyboard/piano, manuscript books, pitch pipe, KLB / Hummingbird Music and Dance' },
+      ],
+      2: [
+        { strand: '2.0 KENYAN INDIGENOUS, AFRICAN & WESTERN PERFORMANCE AND DANCE', subs: ['Classification of African Traditional Instruments (Chordophones, Membranophones, Aerophones, Idiophones)', 'Choreography, Space, Costumes & Storytelling in Kenyan Cultural and Contemporary Dances', 'Solo, Choral & Instrumental Ensemble Rehearsal and Stagecraft'], kiq: 'How do traditional Kenyan dances preserve historical identity and social cohesion?', resources: 'Kayamba, nyatiti/orutu/isukuti models, rehearsal space, Moran / Mentor Music and Dance' },
+      ],
+      3: [
+        { strand: '3.0 DIGITAL MUSIC PRODUCTION, COMPOSITION & CREATIVE ENTERPRISE', subs: ['Melody Writing, Four-Part Harmony Basics & Song Arrangement', 'Digital Audio Workstations (DAWs), Microphone Recording & Sound Mixing', 'Copyright Law (KECOBO/MCSK), Event Management & Music Career Pathways'], kiq: 'How does copyright registration protect Kenyan musicians and choreographers?', resources: 'DAW software, condenser microphone, manuscript scores' },
+      ],
+    },
+  },
+
+  'Theatre and Film': {
+    shortCode: 'THT-FLM',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 DRAMATIC WRITING, SCRIPT ANALYSIS & ACTING TECHNIQUES', subs: ['Elements of Drama: Plot, Character Arc, Conflict, Dialogue & Subtext', 'Stage Scripting, Screenplay Formatting & Storyboarding', 'Voice, Movement, Improvisation, Character Motivation & Blocking'], kiq: 'How do subtext, blocking, and voice modulation make stage characters believable?', resources: 'Sample stage/film scripts, rehearsal stage, KLB Excelling / Master Theatre and Film' },
+      ],
+      2: [
+        { strand: '2.0 STAGECRAFT, CINEMATOGRAPHY, LIGHTING & SOUND DESIGN', subs: ['Set Design, Props, Costuming & Stage Make-Up', 'Camera Shot Sizes, Angles, Framing (Rule of Thirds), Lighting (Three-Point) & Sound Capture', 'Directing Actors for Stage vs Camera & Production Continuity'], kiq: 'How do camera angles and three-point lighting shape audience emotion in film?', resources: 'DSLR/smartphone rig, tripod, lapel mic, LED lights, Distinction Theatre and Film' },
+      ],
+      3: [
+        { strand: '3.0 POST-PRODUCTION EDITING, CRITICISM & FILM ENTREPRENEURSHIP', subs: ['Non-Linear Video Editing, Pacing, Transitions, Foley Sound & Colour Grading', 'Theatre & Film Critique, Kenya Film Classification Guidelines & Ethics', 'Film Budgeting, Pitching, Distribution & Creative Festival Showcase'], kiq: 'How does post-production editing transform raw footage into a compelling narrative?', resources: 'Video editing workstation, storyboard templates, Champion Theatre & Film' },
+      ],
+    },
+  },
+
+  'Fine Arts': {
+    shortCode: 'FINE-ART',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 DRAWING, PAINTING & TWO-DIMENSIONAL DESIGN', subs: ['Elements & Principles of Art: Line, Tone, Texture, Perspective (1- & 2-Point) & Proportion', 'Still-Life, Landscape & Human Figure Drawing (Charcoal, Graphite, Ink)', 'Colour Theory (Colour Wheel, Tints/Shades, Complementary) & Acrylic/Watercolour Painting'], kiq: 'How do linear perspective and tonal shading create depth on a flat surface?', resources: 'Sketchbooks, B-series pencils, easels, acrylic/watercolour paints, Hummingbird / KLB Fine Arts' },
+      ],
+      2: [
+        { strand: '2.0 GRAPHIC DESIGN, PRINTMAKING, FABRIC DECORATION & COLLAGE', subs: ['Typography, Logo/Brand Identity, Poster Illustration & Digital Layout', 'Relief/Stencil/Screen Printing & Fabric Decoration (Tie-and-Dye, Batik)', 'Mosaic, Collage & Mixed-Media Surface Composition'], kiq: 'How do typography and visual hierarchy make graphic posters communicate instantly?', resources: 'Squeegees, silk screens, fabric dyes, wax, Front Row / Mentor Fine Arts' },
+      ],
+      3: [
+        { strand: '3.0 SCULPTURE, CERAMICS, WEAVING & ART CURATION', subs: ['Clay Preparation, Hand-Building Ceramics (Pinch, Coil, Slab), Glazing & Firing', 'Sculpture in Relief and in the Round (Carving, Casting, Armature Modelling) & Basketry/Weaving', 'Art History Appreciation, Portfolio Mounting, Pricing & Gallery Exhibition'], kiq: 'Why must clay be wedged properly before modelling and kiln firing?', resources: 'Potter clay, modelling tools, looms, mounting boards' },
+      ],
+    },
+  },
+
+  'Sports and Recreation': {
+    shortCode: 'SPT-REC',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 EXERCISE PHYSIOLOGY, ANATOMY & SPORTS NUTRITION', subs: ['Skeletal & Muscular Systems in Human Movement (Joints, Agonist/Antagonist Pairs)', 'Cardiorespiratory Endurance, Energy Systems (Aerobic vs Anaerobic) & Hydration', 'Warm-Up, Cool-Down, Sports Injury Prevention (RICER) & Anti-Doping Ethics (ADAK)'], kiq: 'How do aerobic and anaerobic energy systems fuel sprinters versus marathoners?', resources: 'Anatomical charts, stopwatches, first-aid kit, KLB / Spotlight Sports and Recreation' },
+      ],
+      2: [
+        { strand: '2.0 OFFICIATING, COACHING & TACTICS IN INDIVIDUAL AND TEAM SPORTS', subs: ['Track & Field Athletics: Sprints, Middle/Long Distance, Jumps & Throws Rules', 'Court & Field Invasion Games (Football, Basketball, Volleyball, Netball, Handball, Rugby)', 'Racket, Aquatics & Indigenous Recreational Games'], kiq: 'What principles govern fair officiating and tactical positioning in team sports?', resources: 'Marked pitches/courts, balls, whistles, cones, Moran / MTP Sports and Recreation' },
+      ],
+      3: [
+        { strand: '3.0 OUTDOOR RECREATION, TOURNAMENT MANAGEMENT & SPORTS ENTERPRISE', subs: ['Outdoor Adventure, Camping Safety, Orienteering & Wellness Fitness Programming', 'Tournament Draw Formats (Knockout, Round-Robin / League, Seeding)', 'Sports Marketing, Talent Management & Facility Maintenance'], kiq: 'How do tournament organizers schedule fair round-robin and knockout fixtures?', resources: 'Fixture templates, compasses, fitness mats' },
+      ],
+    },
+  },
+
+  'Physical Education': {
+    shortCode: 'PHYS-ED',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 HEALTH-RELATED & SKILL-RELATED PHYSICAL FITNESS', subs: ['Components of Fitness: Flexibility, Muscular Strength/Endurance, Agility, Balance & Reaction Time', 'Posture, Safe Stretching, Circuit Training & Heart-Rate Monitoring', 'First Aid for Sprains, Strains, Cramps & Heat Exhaustion'], kiq: 'How does regular circuit training improve cardiovascular health and academic focus?', resources: 'Skipping ropes, cones, stopwatches, mats, Spotlight / KLB Physical Education' },
+      ],
+      2: [
+        { strand: '2.0 ATHLETICS, GYMNASTICS & BALL GAMES EXECUTION', subs: ['Baton Exchange in Relays, Hurdling, Long/Triple Jump & Shot Put/Javelin Safety', 'Gymnastic Balances, Vaulting & Rhythmic Sequences', 'Skills, Rules & Fair Play in Volleyball, Football, Netball, Basketball & Handball'], kiq: 'Why is proper baton-exchange timing inside the takeover zone critical in relays?', resources: 'Relay batons, balls, landing mats, Hummingbird / Moran Physical Education' },
+      ],
+      3: [
+        { strand: '3.0 SWIMMING / WATER SAFETY, INCLUSIVE ADAPTED PE & LEADERSHIP', subs: ['Pool Hygiene, Water Rescue Reach-Throw Techniques & Basic Swimming Strokes', 'Adapted Physical Activities for Learners with Special Needs', 'Organizing Intramural School Sports Days & Sportsmanship Values'], kiq: 'What safe non-entry rescue techniques prevent drowning emergencies?', resources: 'Rescue poles/floats, whistles, score sheets' },
+      ],
+    },
+  },
+
+  French: {
+    shortCode: 'FRENCH',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 COMPRÉHENSION ET EXPRESSION ORALES (SALUTATIONS, FAMILLE & ÉCOLE)', subs: ['Les salutations, se présenter (nom, âge, nationalité, profession) et les formules de politesse', 'La famille, les objets de la classe, les nombres, les jours, les mois et l’heure', 'Les articles définis/indéfinis, le genre/nombre des noms et les verbes être, avoir et -er au présent'], kiq: 'Comment se présenter poliment et décrire sa famille et son école en français?', resources: 'KLB Excelling in French / One Planet Méthode de français, cartes lexicales, audio' },
+      ],
+      2: [
+        { strand: '2.0 VIE QUOTIDIENNE, ACHATS, VOYAGES ET GRAMMAIRE FONCTIONNELLE', subs: ['Les repas, au marché/restaurant, les articles partitifs (du, de la, des) et les prix', 'La météo, les vêtements, les moyens de transport et demander/indiquer le chemin', 'Les adjectifs possessifs/qualificatifs, la négation (ne...pas), les verbes en -ir/-re et le futur proche'], kiq: 'Comment faire des achats au marché et demander son chemin en français?', resources: 'Dialogues enregistrés, menus français, cartes de ville, Longhorn Français' },
+      ],
+      3: [
+        { strand: '3.0 LECTURE, RÉDACTION FONCTIONNELLE ET FRANCOPHONIE', subs: ['Raconter des événements au passé composé (auxiliaires avoir et être) et à l’imparfait', 'Les pronoms compléments, la santé, l’environnement et les technologies numériques', 'Rédaction de courriels, lettres amicales/formelles et découverte du monde francophone en Afrique'], kiq: 'Pourquoi le français est-il un atout majeur pour la diplomatie et le commerce en Afrique?', resources: 'Carte de la Francophonie, textes de compréhension, dictionnaire français' },
+      ],
+    },
+  },
+
+  Arabic: {
+    shortCode: 'ARABIC',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 AL-ISTIMA WA AL-TAHADDUTH (LISTENING, SPEAKING & SCRIPT)', subs: ['Arabic Alphabet Articulation (Makharij), Short/Long Vowels (Harakat & Madd), Sukun & Shaddah', 'Greetings (At-Tahiyyat), Self-Introduction (Ta’aruf), Family & School Vocabulary', 'Demonstrative Pronouns (Hadha/Hadhihi), Masculine/Feminine Nouns (Mudhakkar/Mu’annath) & Sun/Moon Letters'], kiq: 'How do vowel diacritics (Harakat) change word pronunciation and meaning in Arabic?', resources: 'KLB Excelling Arabic / Atfaal Arabic, alphabet charts, audio recitations' },
+      ],
+      2: [
+        { strand: '2.0 AL-QIRA’AH WA AL-QAWA’ID (READING COMPREHENSION & GRAMMAR)', subs: ['Nominal Sentences (Al-Jumlah Al-Ismiyyah: Mubtada & Khabar) and Verbal Sentences (Al-Jumlah Al-Fi’liyyah)', 'Singular, Dual (Muthanna) & Plural (Jam’u) Forms; Prepositions (Huruf Al-Jarr) & Numbers', 'Reading Dialogues on Time, Market Shopping, Travel, Health & Environment'], kiq: 'How do nominal and verbal sentences differ in structure and agreement in Arabic?', resources: 'Graded Arabic passages, flashcards, grammar charts' },
+      ],
+      3: [
+        { strand: '3.0 AL-KITABAH (FUNCTIONAL WRITING, PRONOUNS & TENSES)', subs: ['Past Tense (Al-Fi’l Al-Madhi), Present/Future Tense (Al-Mudhari’) & Imperative (Al-Amr)', 'Attached & Detached Pronouns (Ad-Dhama’ir) and Adjectives (An-Na’t wa Al-Man’ut)', 'Guided Composition, Friendly/Formal Letters & Translation Practice'], kiq: 'How does proficiency in Arabic open global trade, diplomacy, and scholarship opportunities?', resources: 'Arabic ruled notebooks, bilingual glossaries, KLB / Atfaal Arabic' },
+      ],
+    },
+  },
+
+  German: {
+    shortCode: 'GERMAN',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 BEGRÜSSUNG, FAMILIE, SCHULE UND GRUNDGRAMMATIK', subs: ['Begrüßung, Sich vorstellen (Name, Herkunft, Alter, Wohnort) und Aussprache (Umlaute ä, ö, ü, ß)', 'Zahlen, Uhrzeit, Wochentage, Schulsachen und Familie', 'Bestimmter/unbestimmter Artikel (der, die, das), Personalpronomen und Verbkonjugation im Präsens (sein, haben)'], kiq: 'Wie stellt man sich auf Deutsch höflich vor und beschreibt seinen Schulalltag?', resources: 'KLB Deutsch Mit Erfolg Schülerbuch, Wortkarten, Hörtexte' },
+      ],
+      2: [
+        { strand: '2.0 ALLTAG, FREIZEIT, EINKAUFEN UND SATZBAU', subs: ['Essen und Trinken, Einkaufen im Supermarkt, Preise und Akkusativ', 'Freizeit, Hobbys, Wetter, Kleidung und Modalverben (können, müssen, wollen, möchten)', 'Trennbare Verben, Wortstellung im Hauptsatz (Position 2) und W-Fragen / Ja-Nein-Fragen'], kiq: 'Wie bildet man korrekte Sätze mit Modalverben und Akkusativ im Alltag?', resources: 'Dialogkarten, Speisekarten, KLB Deutsch Mit Erfolg' },
+      ],
+      3: [
+        { strand: '3.0 REISEN, GESUNDHEIT, PERFEKT UND TEXTPRODUKTION', subs: ['Wegbeschreibung, Verkehrsmittel, Körperteile, Gesundheit und Dativ-Präpositionen', 'Über Vergangenes sprechen: Das Perfekt mit haben und sein', 'E-Mails, Postkarten und kurze Aufsätze schreiben; Landeskunde (DACH-Länder & Kenia)'], kiq: 'Wie berichtet man auf Deutsch im Perfekt über vergangene Erlebnisse?', resources: 'Landkarte Deutschlands, Lesetexte, Übungshefte' },
+      ],
+    },
+  },
+
+  'Life Skills': {
+    shortCode: 'LIFE-SKL',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 SELF-AWARENESS, SELF-ESTEEM & EMOTIONAL REGULATION', subs: ['Personal Identity, Strengths, Values, Temperaments & Growth Mindset', 'Managing Stress, Anxiety, Anger & Academic Pressure Constructively', 'Personal Hygiene, Healthy Boundaries & Adolescent Well-Being'], kiq: 'How do self-awareness and emotional regulation help learners overcome peer pressure?', resources: 'Life Skills for Senior School Learners (Chalan Foundation), reflective journals' },
+      ],
+      2: [
+        { strand: '2.0 INTERPERSONAL RELATIONSHIPS, EFFECTIVE COMMUNICATION & CONFLICT RESOLUTION', subs: ['Active Listening, Assertiveness vs Aggression/Passivity & Empathy', 'Resisting Negative Peer Influence, Drug & Substance Abuse Prevention & Digital Safety', 'Peaceful Conflict Resolution, Negotiation, Mediation & Respect for Diversity'], kiq: 'Why is assertive communication more effective than passive or aggressive responses?', resources: 'Role-play scenario cards, NACADA awareness charts, case studies' },
+      ],
+      3: [
+        { strand: '3.0 DECISION-MAKING, CRITICAL THINKING, LEADERSHIP & CAREER PLANNING', subs: ['Structured Decision-Making Steps, Problem-Solving & Critical Evaluation of Media', 'Goal Setting (SMART Goals), Time Management, Financial Literacy & Ethical Leadership', 'Career Pathway Alignment, Interview Readiness & Community Citizenship'], kiq: 'How do SMART goals and ethical decision-making prepare youth for career success?', resources: 'Career wheel charts, personal timetable templates' },
+      ],
+    },
+  },
+
+  Aviation: {
+    shortCode: 'AVIAT',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 AVIATION SAFETY, AIRCRAFT STRUCTURES & THEORY OF FLIGHT', subs: ['Workshop/Airfield Safety, Foreign Object Debris (FOD) Prevention & Aviation Regulatory Bodies (KCAA / ICAO)', 'Aircraft Classification, Major Airframe Components (Fuselage, Wings, Empennage, Landing Gear)', 'Four Forces of Flight (Lift, Weight, Thrust, Drag), Bernoulli’s Principle & Primary Flight Controls (Ailerons, Elevator, Rudder)'], kiq: 'How does an aerofoil cross-section generate lift using Bernoulli’s principle and angle of attack?', resources: 'Aerofoil wind-tunnel model, aircraft component charts, KLB / Bookmark / Penguin Aviation' },
+      ],
+      2: [
+        { strand: '2.0 AIRCRAFT PROPULSION, FLIGHT INSTRUMENTS & AVIATION METEOROLOGY', subs: ['Piston Reciprocating Engines vs Gas Turbine (Turbojet, Turbofan, Turboprop) Principles', 'Pitot-Static Six-Pack Flight Instruments (Airspeed Indicator, Altimeter, VSI, Attitude, Heading, Turn Coordinator)', 'Atmospheric Layers, Cloud Types, Wind Shear, Icing & METAR/TAF Aviation Weather Reports'], kiq: 'Why must pilots calibrate the altimeter pressure setting (QNH) before takeoff and landing?', resources: 'Cockpit instrument simulator panel, weather charts, KLB Excelling Aviation' },
+      ],
+      3: [
+        { strand: '3.0 AIR NAVIGATION, AIRPORT OPERATIONS & AIRCRAFT MAINTENANCE BASICS', subs: ['Latitude/Longitude, Magnetic Compass Errors, Aeronautical Charts & Dead Reckoning', 'Aerodrome Markings, Runway Lighting, Air Traffic Control (ATC) Phonetic Alphabet & Phraseology', 'Aircraft Materials, Non-Destructive Inspection Basics & Emerging Drone (UAV) Operations'], kiq: 'Why do pilots and air traffic controllers use standard ICAO phonetic phraseology?', resources: 'ICAO phonetic chart, aeronautical map excerpts, model runway layout' },
+      ],
+    },
+  },
+
+  'Building Construction': {
+    shortCode: 'BLD-CON',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 WORKSHOP SAFETY, BUILDING TOOLS, MATERIALS & SITE PREPARATION', subs: ['Construction Site PPE, Scaffolding Safety &NCA/OSHA Building Regulations', 'Masonry Hand/Power Tools, Aggregates, Cement, Mortar/Concrete Batching Ratios (1:2:4) & Curing', 'Site Clearance, Setting Out (3-4-5 Builder’s Square & Profile Boards), Trench Excavation & Timbering'], kiq: 'Why must freshly cast concrete be cured properly to achieve design compressive strength?', resources: 'Spirit levels, plumb bobs, builder square, cement/sand samples, KLB / Moran Building Construction' },
+      ],
+      2: [
+        { strand: '2.0 FOUNDATIONS, WALLING BONDS, DAMP PROOFING & ARCHITECTURAL DRAWING', subs: ['Strip, Pad, Raft & Pile Foundations Suitable for Varied Kenyan Soil Types (e.g. Black Cotton Soil)', 'Brick/Block/Stone Walling Bonds (Stretcher, English, Flemish), Bridging Openings (Lintels & Arches) & DPC', 'Architectural Floor Plans, Elevations, Cross-Sections & Quantity Take-Off Estimation'], kiq: 'Why do expansive black cotton soils require specialized foundation designs?', resources: 'Building blocks, trowels, drawing boards, scale rulers, Longhorn / Mentor Building Construction' },
+      ],
+      3: [
+        { strand: '3.0 ROOFING, FLOORS, FINISHES, PLUMBING & DRAINAGE SYSTEMS', subs: ['Pitched & Flat Roof Trusses, Covering Materials & Rainwater Goods', 'Solid Ground Floors, Screeding, Plastering, Rendering, Tiling & Painting Finishes', 'Domestic Cold/Hot Water Supply Pipework, Sanitary Appliances, Traps & Septic/Sewer Drainage'], kiq: 'How do water-seal traps prevent foul sewer gases from entering residential buildings?', resources: 'PVC pipe fittings, traps, roof truss models, estimation sheets' },
+      ],
+    },
+  },
+
+  Electricity: {
+    shortCode: 'ELECTR',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 ELECTRICAL SAFETY, DC/AC CIRCUIT THEORY & MEASURING INSTRUMENTS', subs: ['Electrical Workshop Safety, Shock First Aid, Fire Extinguishers (CO2/Dry Powder) & IEE/EPRA Wiring Rules', 'Charge, Current, Voltage, Resistance, Ohm’s Law, Kirchhoff’s Laws & Series-Parallel Networks', 'Power (P = VI = I2R), Electrical Energy (kWh) & Digital Multimeter / Megger Measurements'], kiq: 'How do Kirchhoff’s current and voltage laws verify complex electrical circuits?', resources: 'Digital multimeters, resistors, breadboards, DC power supplies, KLB / Moran Electricity' },
+      ],
+      2: [
+        { strand: '2.0 DOMESTIC WIRING INSTALLATIONS, EARTHING & PROTECTION', subs: ['Final Sub-Circuits: Radial Lighting Circuits, Two-Way/Intermediate Switching & Ring Main Socket Circuits', 'Consumer Control Unit (Main Switch, MCBs, RCD/ELCB), Cable Sizing & Earthing Systems', 'Inspection, Continuity, Insulation Resistance & Polarity Testing of Installations'], kiq: 'How do earth wires and Residual Current Devices (RCDs) protect users from electrocution?', resources: ' Wiring boards, MCB consumer unit, twin-and-earth cables, Master / Mentor Electricity' },
+      ],
+      3: [
+        { strand: '3.0 MAGNETISM, TRANSFORMERS, ELECTRIC MOTORS, ELECTRONICS & SOLAR PV', subs: ['Electromagnetic Induction, Single-Phase Transformers (Turns Ratio & Efficiency) & DC/Induction Motors', 'Semiconductor Diodes, Bridge Rectifiers, Transistors & Basic Logic/Sensor Circuits', 'Solar Photovoltaic (PV) Sizing (Panels, Charge Controller, Inverter, Battery Bank) & Maintenance'], kiq: 'How do engineers size a solar PV battery and inverter system for a Kenyan household?', resources: 'Step-down transformers, diodes/capacitors, solar PV training kit' },
+      ],
+    },
+  },
+
+  'Metal Work': {
+    shortCode: 'MTL-WRK',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 WORKSHOP SAFETY, METALLURGY & PRECISION MARKING/MEASURING', subs: ['Metalwork PPE, Machine Guards & Safe Workshop Housekeeping', 'Ferrous Metals (Cast Iron, Mild/High-Carbon/Stainless Steel) & Non-Ferrous Metals/Alloys (Aluminium, Brass, Bronze, Copper)', 'Precision Measuring & Marking Out: Vernier Callipers, Micrometers, Scribers, Dividers & Surface Plate'], kiq: 'How does carbon content change the hardness and ductility of plain carbon steels?', resources: 'Vernier callipers, micrometers, metal specimens, KLB / Moran Metal Work' },
+      ],
+      2: [
+        { strand: '2.0 BENCH FITTING, SHEET METAL WORK, HEAT TREATMENT & FORGING', subs: ['Hacksawing, Filing, Chiselling, Drilling, Thread Tapping & Dieing', 'Sheet Metal Pattern Development (Parallel Line & Radial), Seams, Soldering & Riveting', 'Heat Treatment Processes (Annealing, Normalizing, Hardening, Tempering) & Forge Shaping'], kiq: 'Why must hardened high-carbon steel tools be tempered before workshop use?', resources: 'Bench vices, hacksaws, files, taps & dies, tin snips, Longhorn / Mentor Metalwork' },
+      ],
+      3: [
+        { strand: '3.0 LATHE MACHINING, WELDING FABRICATION & CORROSION PROTECTION', subs: ['Centre Lathe Operations: Facing, Parallel/Taper Turning, Knurling & Cutting Speeds', 'Manual Metal Arc (MMA) Welding, Gas (Oxy-Acetylene) Welding, Brazing & Weld Defect Inspection', 'Grinding, Buffing, Electroplating, Galvanizing, Spray Painting & Project Costing'], kiq: 'What welding safety PPE and current settings prevent arc-eye and slag inclusion?', resources: 'Welding inverter, auto-darkening helmet, centre lathe chart' },
+      ],
+    },
+  },
+
+  'Power Mechanics': {
+    shortCode: 'PWR-MECH',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 AUTOMOTIVE WORKSHOP SAFETY, TOOLS, FASTENERS & ENGINE FUNDAMENTALS', subs: ['Garage Safety, Lifting Jacks/Axle Stands, Fire Safety & Torque Wrench Precision', 'Bolts, Nuts, Locking Devices, Gaskets, Seals & Bearings', 'Internal Combustion Engine Components (Cylinder Block, Piston, Crankshaft, Camshaft, Valves) & 4-Stroke vs 2-Stroke Cycles'], kiq: 'How do the intake, compression, power, and exhaust strokes differ between petrol (SI) and diesel (CI) engines?', resources: 'Cutaway 4-stroke engine model, torque wrenches, feeler gauges, KLB / Moran Power Mechanics' },
+      ],
+      2: [
+        { strand: '2.0 ENGINE FUEL, LUBRICATION, COOLING & IGNITION/ELECTRICAL SYSTEMS', subs: ['Electronic Fuel Injection (EFI), Diesel Common-Rail Systems, Air Cleaners & Turbochargers', 'Pressurized Cooling System (Radiator, Thermostat, Water Pump) & Engine Lubrication (Oil Grades, Filters, Pumps)', 'Battery Care, Starting System, Charging (Alternator) & Electronic Ignition Diagnostics'], kiq: 'How does a thermostat regulate optimal engine operating temperature?', resources: 'Alternator/starter units, hydrometer, radiator cap tester, Mentor / Booklyst Power Mechanics' },
+      ],
+      3: [
+        { strand: '3.0 POWER TRANSMISSION, BRAKES, SUSPENSION, STEERING & HYBRID/EV BASICS', subs: ['Clutch Assembly, Manual/Automatic Gearboxes, Propeller Shaft, Differential & Final Drive', 'Hydraulic Disc/Drum Brakes, ABS, Suspension (Coil/Leaf Springs, Shock Absorbers), Steering Geometry & Wheel Alignment', 'OBD-II Fault Scanning, Preventive Servicing & Hybrid / Electric Vehicle High-Voltage Safety'], kiq: 'How does the differential gear allow outer wheels to rotate faster when cornering?', resources: 'Gearbox/differential cutaway, brake caliper assembly, OBD-II scanner' },
+      ],
+    },
+  },
+
+  Woodwork: {
+    shortCode: 'WD-WRK',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 TIMBER TECHNOLOGY, SEASONING, CONVERSION & WORKSHOP SAFETY', subs: ['Woodshop Safety, Personal Protective Equipment & Safe Tool Storage', 'Tree Growth, Indigenous vs Exotic Kenyan Timbers (Camphor, Mahogany, Cypress, Pine, Bluegum), Conversion & Seasoning', 'Timber Defects, Preservation Against Borers/Fungi & Manufactured Boards (Plywood, MDF, Blockboard, Chipboard)'], kiq: 'Why must timber be seasoned to equilibrium moisture content before furniture making?', resources: 'Timber species samples, moisture meter, workbenches, KLB / Bookmark Woodwork' },
+      ],
+      2: [
+        { strand: '2.0 WOODWORKING PLANES, SAWS, CHISELS, JOINERY & WORKING DRAWINGS', subs: ['Measuring/Marking Tools, Hand Planes (Jack, Smoothing, Rebate), Saws & Sharpening/Honing Blades', 'Woodworking Joints: Halving, Bridle, Mortise-and-Tenon, Dovetail, Housing & Dowelled Edge Joints', 'Orthographic/Isometric Furniture Working Drawings & Timber Cutting Lists (Board-Foot / Running-Metre Costing)'], kiq: 'Which woodworking joint provides the strongest resistance to pulling forces in drawer and frame construction?', resources: 'Tenon saws, mortise chisels, jack planes, sash cramps, Longhorn / MTP Woodwork' },
+      ],
+      3: [
+        { strand: '3.0 PORTABLE POWER TOOLS, ADHESIVES, IRONMONGERY & SURFACE FINISHING', subs: ['Safe Operation of Circular Saws, Jigsaws, Routers, Orbital Sanders & Cordless Drills', 'PVA/Contact/Epoxy Adhesives, Screws, Nails, Hinges, Locks & Knock-Down Fittings', 'Scraping, Sanding, Wood Filler, Staining, Varnishing, French Polishing & Spray Lacquering'], kiq: 'Why must sanding always follow the direction of the wood grain before varnishing?', resources: 'Sandpaper grades, wood stains/varnish, hinges, cramps' },
+      ],
+    },
+  },
+
+  'Media Technology': {
+    shortCode: 'MED-TECH',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 PHOTOGRAPHY, CAMERA OPTICS & VISUAL STORYTELLING', subs: ['Exposure Triangle (Aperture/f-stop, Shutter Speed, ISO), White Balance & Depth of Field', 'Composition Principles (Rule of Thirds, Leading Lines, Framing) & Studio/Natural Lighting', 'Photojournalism Ethics, Media Law in Kenya & Digital Image Editing Workflows'], kiq: 'How do aperture, shutter speed, and ISO balance exposure and motion blur?', resources: 'DSLR/mirrorless cameras, reflectors, tripods, KLB / Front Row Media Technology' },
+      ],
+      2: [
+        { strand: '2.0 AUDIO ENGINEERING, RADIO PODCASTING & MULTI-CAMERA VIDEO PRODUCTION', subs: ['Microphone Polar Patterns (Cardioid, Omnidirectional, Shotgun), Audio Mixers & Acoustic Treatment', 'Radio/Podcast Scripting, Voice Presentation & Multi-Track Audio Editing', 'Video Production Pipeline: Pre-Production Scripting, Cinematography, Gimbal Movement & Green-Screen Keying'], kiq: 'Why is a cardioid or shotgun microphone preferred over an omnidirectional mic in noisy locations?', resources: 'Audio interface, microphones, headphones, One Planet Media Technology' },
+      ],
+      3: [
+        { strand: '3.0 POST-PRODUCTION, MOTION GRAPHICS, LIVE STREAMING & DIGITAL MEDIA BUSINESS', subs: ['Non-Linear Video Editing, Lower-Thirds Motion Graphics, Colour Correction & Export Codecs (H.264/MP4)', 'Multi-Camera Live Streaming Setup (OBS/Switchers), Bitrate Optimization & Broadcast Standards', 'Intellectual Property, Client Briefs, Media Production Budgeting & Portfolio Showreel'], kiq: 'How do video codecs and bitrates affect live-streaming clarity over mobile networks?', resources: 'Non-linear editing suite, capture card, lighting kit' },
+      ],
+    },
+  },
+
+  'Marine and Fisheries Technology': {
+    shortCode: 'MAR-FSH',
+    strandsByTerm: {
+      1: [
+        { strand: '1.0 AQUATIC ECOSYSTEMS, WATER SAFETY & KENYA’S BLUE ECONOMY', subs: ['Marine (Indian Ocean) & Inland Freshwater Ecosystems (Lakes Victoria, Turkana, Naivasha & Rivers)', 'Water Safety, Personal Flotation Devices (Lifejackets), Swimming Survival & Maritime Regulations (KMA)', 'Fish Anatomy, Commercial Fish Species (Nile Perch, Tilapia, Catfish, Trout, Tuna, Prawns) & Sustainable Capture Gear'], kiq: 'Why are illegal undersized gillnets destructive to fish breeding stocks in Kenyan lakes?', resources: 'Lifejackets, fish anatomy charts, legal mesh-size samples, KLB / Booklyst Marine & Fisheries' },
+      ],
+      2: [
+        { strand: '2.0 AQUACULTURE (FISH FARMING), POND CONSTRUCTION & WATER QUALITY', subs: ['Earthen Pond, Liner Pond, Tank, Recirculating (RAS) & Cage Fish Farming Design', 'Water Quality Management: Dissolved Oxygen, Temperature, pH, Turbidity & Pond Liming/Fertilization', 'Fingerling Stocking Density, Formulated Fish Feeds, Predator Control & Fish Disease Management'], kiq: 'How do dissolved oxygen, pH, and water temperature govern tilapia growth rates in ponds?', resources: 'pH/DO water test kit, floating fish pellets, MTP Marine and Fisheries Technology' },
+      ],
+      3: [
+        { strand: '3.0 SEAMANSHIP, SMALL VESSEL MAINTENANCE, POST-HARVEST HYGIENE & MARKETING', subs: ['Boat Parts, Ropework/Knots, Chart Navigation Basics, Tides & Outboard Engine Care', 'Hygienic Fish Handling, Cold-Chain Icing, Smoking, Solar Tent Drying, Filleting & Value Addition', 'Fisheries Co-operatives, Quality Standards (KEBS) & Blue Economy Entrepreneurship'], kiq: 'How does immediate cold-chain icing prevent post-harvest fish spoilage?', resources: 'Cooler boxes, solar dryer model, marine rope knots board' },
+      ],
+    },
+  },
 };
 
 /**
@@ -2498,7 +3612,7 @@ export const GRADES_CURRICULUM_PLAN = [
       'Islamic Religious Education (IRE)',
     ],
   })),
-  // Junior Secondary (Grades 7-9): 10 rationalized subjects per grade
+  // Junior Secondary (Grades 7-9): All KICD Approved Rationalized JSS Learning Areas
   ...[7, 8, 9].map((grade) => ({
     grade,
     level: 'Junior Secondary',
@@ -2514,27 +3628,54 @@ export const GRADES_CURRICULUM_PLAN = [
       'Creative Arts and Sports',
       'Christian Religious Education (CRE)',
       'Islamic Religious Education (IRE)',
+      'French',
+      'Arabic',
     ],
   })),
-  // Senior School (Grades 10-12): Core + Pathway subjects (13 subjects per grade)
+  // Senior School (Grades 10-12): ALL Official KICD Approved Pathway Learning Areas
+  // Verified verbatim from KICD March 2026 (Grade 10) & October 5, 2026 (Grade 11/12) Approved Lists!
   ...[10, 11, 12].map((grade) => ({
     grade,
     level: 'Senior School',
     examBadge: grade === 12 ? 'CBE Senior Assessment' : 'Senior School',
     subjects: [
       'Core Mathematics',
+      'Essential Mathematics',
       'English',
+      'Literature in English',
       'Kiswahili',
+      'Fasihi ya Kiswahili',
       'Community Service Learning (CSL)',
       'Biology',
       'Chemistry',
       'Physics',
-      'Computer Science',
+      'General Science',
+      'Agriculture',
+      'Computer Studies',
+      'Home Science',
+      'Information Communication Technology (ICT)',
       'History and Citizenship',
       'Geography',
       'Business Studies',
       'Christian Religious Education (CRE)',
       'Islamic Religious Education (IRE)',
+      'Life Skills',
+      'Music and Dance',
+      'Theatre and Film',
+      'Fine Arts',
+      'Sports and Recreation',
+      'Physical Education',
+      'French',
+      'Arabic',
+      'German',
+      'Aviation',
+      'Building Construction',
+      'Electricity',
+      'Metal Work',
+      'Power Mechanics',
+      'Woodwork',
+      'Media Technology',
+      'Marine and Fisheries Technology',
     ],
   })),
 ];

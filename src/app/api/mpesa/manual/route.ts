@@ -15,11 +15,13 @@ export async function POST(req: Request) {
   void req.headers.get('user-agent');
 
   try {
-    const { mpesaCode, phoneNumber, resourceId, serviceType } = await req.json();
+    const { mpesaCode, phoneNumber, resourceId, serviceType, bookTitle } = await req.json();
+    const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
 
     await recordPurchaseAttempt({
       channel: 'M-Pesa Direct Code',
       itemTitle:
+        cleanBookTitle ||
         serviceType ||
         (resourceId ? `Resource #${resourceId}` : 'M-Pesa Submission'),
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
@@ -72,6 +74,28 @@ export async function POST(req: Request) {
         id: null,
         price: 20,
         title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
+      };
+    } else if (serviceType === 'BOOK_GRADE_UP') {
+      resource = {
+        id: null,
+        price: 500,
+        title: cleanBookTitle || 'CBC GRADE UP — 50-Page Book + Marking Schemes (KSh 500)',
+      };
+    } else if (serviceType === 'BOOK_MADE_FAMILIAR') {
+      resource = {
+        id: null,
+        price: 750,
+        title:
+          cleanBookTitle ||
+          'COMPETENCY BASED MADE FAMILIAR — 50-Page Point-Form Notes + Q&A (KSh 750)',
+      };
+    } else if (serviceType === 'BOOK_COMPLETE_BUNDLE') {
+      resource = {
+        id: null,
+        price: 1500,
+        title:
+          cleanBookTitle ||
+          'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (KSh 1,500)',
       };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
