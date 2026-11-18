@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { ALL_GRADE_KEYS, formatGradeLabel } from '@/lib/material-utils';
 import { AdSlot, useMonetization } from '@/components/MonetizationEngine';
+import PurchaseThankYouBanner from './PurchaseThankYouBanner';
 import {
   COORDINATOR_MPESA_LOCAL,
   COORDINATOR_WHATSAPP_LOCAL,
@@ -981,6 +982,12 @@ export default function SubjectGamingHub({
               {/* VIEW 2: ACTIVE 20-MINUTE LIVE GAMING ARENA */}
               {view === 'PLAYING' && question && (
                 <div className="space-y-5">
+                  {sessionPoints === 0 && (
+                    <PurchaseThankYouBanner
+                      buyerName={player?.playerName || playerName}
+                      compact
+                    />
+                  )}
                   {/* Subject Switcher + Progress Toward 1,000 Pts = KSh 5 */}
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">

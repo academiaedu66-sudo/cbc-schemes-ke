@@ -9,6 +9,11 @@ import {
   triggerInstantPayHeroPayout,
 } from '@/lib/mpesa';
 import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
+import {
+  extractMpesaNameFromPayload,
+  recordBuyerMpesaName,
+  resolveBuyerMpesaName,
+} from '@/lib/buyer-identity';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -39,6 +44,14 @@ async function verifyPayHeroOrder(
 
     if (st === 'SUCCESS' || st === 'COMPLETED') {
       const receipt = json?.provider_reference || json?.third_party_reference || reference;
+      const phName = extractMpesaNameFromPayload(json);
+      if (phName) {
+        await recordBuyerMpesaName({
+          checkoutRequestId,
+          phone: String(json?.phone_number || ''),
+          buyerName: phName,
+        });
+      }
       await supabaseAdmin
         .from('orders')
         .update({
@@ -246,7 +259,7 @@ export async function POST(req: Request) {
     const idStr = String(checkoutRequestId);
     const { data: initialOrder } = await supabaseAdmin
       .from('orders')
-      .select('status, resource_id, amount, created_at')
+      .select('status, resource_id, amount, phone_number, created_at')
       .eq('checkout_request_id', idStr)
       .maybeSingle();
 
@@ -291,6 +304,7 @@ export async function POST(req: Request) {
               status: 'COMPLETED',
               resource_id: null,
               amount: amt,
+              phone_number: phPhone,
               created_at: new Date().toISOString(),
             };
           } else {
@@ -329,8 +343,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: currentStatus, message: 'Processing' }, { status: 200 });
     }
 
+    const buyerName = await resolveBuyerMpesaName({
+      checkoutRequestId: idStr,
+      phone: order.phone_number,
+    });
+
     if (!order.resource_id) {
-      return NextResponse.json({ status: 'COMPLETED', downloadUrl: '#' });
+      return NextResponse.json({
+        status: 'COMPLETED',
+        downloadUrl: '#',
+        buyerName: buyerName || null,
+      });
     }
 
     const { data: resource, error: resourceError } = await supabaseAdmin
@@ -360,6 +383,7 @@ export async function POST(req: Request) {
       if (!signedErr && signedData?.signedUrl) {
         return NextResponse.json({
           status: 'COMPLETED',
+          buyerName: buyerName || null,
           downloadUrl: signedData.signedUrl,
           docxDownloadUrl: isStoredDocx ? signedData.signedUrl : `${companionBase}&format=docx`,
           pdfDownloadUrl: !isStoredDocx ? signedData.signedUrl : `${companionBase}&format=pdf`,
@@ -382,6 +406,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       status: 'COMPLETED',
+      buyerName: buyerName || null,
       downloadUrl: fallbackUrl,
       docxDownloadUrl: isStoredDocx ? fallbackUrl : `${companionBase}&format=docx`,
       pdfDownloadUrl: !isStoredDocx ? fallbackUrl : `${companionBase}&format=pdf`,

@@ -29,7 +29,7 @@ import {
   getApprovedCoursebook,
   buildDomainLessonNotes,
 } from '../../../../../scripts/cbc-syllabus-data.mjs';
-import { generateCbcBookDocxBuffer } from '@/lib/cbc-books-engine';
+import { generateCbcBookDocxBuffer, normalizeBookTerm } from '@/lib/cbc-books-engine';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -254,14 +254,14 @@ async function buildPrintPdfFromDocx(
   pages.forEach((p, idx) => {
     p.drawText(
       toWinAnsiSafe(
-        `CBC Kenya Resource Hub — ${gradeLabel} ${resource.subject} (${termLabel}) — Page ${idx + 1} of ${pages.length}`
+        `Copyright (c) 2026 https://www.cbcmaterials.shop  *  Tel/WhatsApp: 0705 759 072  *  Page ${idx + 1} of ${pages.length}`
       ),
       {
         x: margin,
         y: 18,
         size: 8,
-        font: fontRegular,
-        color: rgb(0.45, 0.5, 0.56),
+        font: fontBold,
+        color: rgb(0.25, 0.32, 0.4),
       }
     );
   });
@@ -736,6 +736,21 @@ async function buildEditableDocxForResource(resource: {
     );
   }
 
+  children.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240, after: 80 },
+      children: [
+        new TextRun({
+          text: 'Copyright © 2026 https://www.cbcmaterials.shop • Official CBC Curriculum Materials • Tel/WhatsApp: 0705 759 072 • M-Pesa: 0728 595 160',
+          bold: true,
+          size: 18,
+          color: '065F46',
+        }),
+      ],
+    })
+  );
+
   const doc = new Document({
     sections: [
       {
@@ -842,6 +857,7 @@ export async function GET(request: NextRequest) {
         bookType,
         gradeKey: gKey,
         subject: resource.subject || 'Mathematics',
+        term: normalizeBookTerm(resource.term),
       });
       return new NextResponse(new Uint8Array(bookDocx), {
         status: 200,

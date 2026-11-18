@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ALL_GRADE_KEYS, formatGradeLabel } from '@/lib/material-utils';
 import { useMonetization } from '@/components/MonetizationEngine';
+import PurchaseThankYouBanner from './PurchaseThankYouBanner';
 import {
   COORDINATOR_MPESA_LOCAL,
   COORDINATOR_WHATSAPP_LOCAL,
@@ -1056,6 +1057,7 @@ export default function HolidayTuitionCenter({
               {/* STEP 3: SUBJECT MATCHES READY -> MANDATORY WHATSAPP 0705759072 CONNECTION */}
               {step === 'MATCHED' && (
                 <div className="space-y-5">
+                  <PurchaseThankYouBanner buyerName={fullName} />
                   <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center space-y-2">
                     <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-7 h-7" />

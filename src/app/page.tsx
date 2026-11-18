@@ -40,6 +40,7 @@ import GeminiHomeworkHub from '@/components/GeminiHomeworkHub';
 import CbcBooksHub, {
   type ExternalBookModalLaunch,
 } from '@/components/CbcBooksHub';
+import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
 import {
@@ -122,6 +123,8 @@ export default function HomePage() {
   // Checkout Modal State (PayHero Live STK Express primary + Direct M-Pesa Code backup)
   const [modalItem, setModalItem] = useState<ResourceItem | null>(null);
   const [checkoutTab, setCheckoutTab] = useState<'STK' | 'DIRECT'>('STK');
+  const [buyerMpesaName, setBuyerMpesaName] = useState('');
+  const [verifiedBuyerName, setVerifiedBuyerName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mpesaCode, setMpesaCode] = useState('');
   const [submittedReceipt, setSubmittedReceipt] = useState('');
@@ -236,6 +239,7 @@ export default function HomePage() {
 
         if (data.status === 'COMPLETED' && data.downloadUrl) {
           const primaryFileUrl = data.docxDownloadUrl || data.downloadUrl;
+          if (data.buyerName) setVerifiedBuyerName(String(data.buyerName));
           setPaymentStatus('COMPLETED');
           setDownloadUrl(data.downloadUrl);
           setDocxDownloadUrl(primaryFileUrl);
@@ -379,6 +383,7 @@ export default function HomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber,
+          buyerName: buyerMpesaName.trim() || undefined,
           resourceId: modalItem?.id,
         }),
       });
@@ -430,6 +435,7 @@ export default function HomePage() {
         body: JSON.stringify({
           mpesaCode,
           phoneNumber,
+          buyerName: buyerMpesaName.trim() || undefined,
           resourceId: modalItem?.id,
         }),
       });
@@ -1450,6 +1456,10 @@ export default function HomePage() {
 
             {paymentStatus === 'COMPLETED' && downloadUrl ? (
               <div className="space-y-3.5 text-center">
+                <PurchaseThankYouBanner
+                  buyerName={verifiedBuyerName || buyerMpesaName}
+                  compact
+                />
                 <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold text-sm">
                   <CheckCircle className="w-5 h-5" />
                   <span>Payment Verified! Both Formats Unlocked</span>
@@ -1514,7 +1524,20 @@ export default function HomePage() {
                 </div>
 
                 {checkoutTab === 'STK' ? (
-                  <form onSubmit={handleMpesaStkPay} className="space-y-4">
+                  <form onSubmit={handleMpesaStkPay} className="space-y-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                        Your M-Pesa Name (For Official Greeting)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. JOHN KAMAU MWANGI"
+                        value={buyerMpesaName}
+                        onChange={(e) => setBuyerMpesaName(e.target.value)}
+                        disabled={isProcessing}
+                        className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
                         Enter Your M-Pesa Number

@@ -2,17 +2,28 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 import {
+  extractMpesaNameFromPayload,
+  recordBuyerMpesaName,
+  resolveBuyerMpesaName,
+} from '@/lib/buyer-identity';
+import {
+  BOOK_ALL_TERMS_PRICES_KES,
   BOOK_PRICES_KES,
   BOOK_SERIES_TITLES,
   buildFullBookQuestionPool,
   buildStructuredSyllabusNotesTree,
   collectOrderedSubTopics,
   formatBookGradeLabel,
+  formatBookTermLabel,
   generateCbcBookDocxBuffer,
   generateCbcGradeUpPdfBuffer,
   generateCompleteCompilationPdfBuffer,
   generateMadeFamiliarPdfBuffer,
+  getBookPriceKes,
+  getBookQuestionCounts,
   getSubjectsForGradeKey,
+  normalizeBookTerm,
+  type BookTermOption,
   type CbcBookType,
 } from '@/lib/cbc-books-engine';
 
@@ -62,6 +73,7 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
     .maybeSingle();
 
   let order = initialOrder;
+  let detectedMpesaName = '';
 
   if (
     checkoutRequestId.startsWith('PAYHERO_') &&
@@ -88,6 +100,7 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
         );
         const phJson = await phRes.json();
         const st = String(phJson?.status || '').toUpperCase();
+        detectedMpesaName = extractMpesaNameFromPayload(phJson);
         if (st === 'SUCCESS' || st === 'COMPLETED') {
           const receipt = String(
             phJson?.provider_reference ||
@@ -101,6 +114,13 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
           const phPhone = String(
             phJson?.phone_number || order?.phone_number || '254700000000'
           );
+          if (detectedMpesaName) {
+            await recordBuyerMpesaName({
+              checkoutRequestId,
+              phone: phPhone,
+              buyerName: detectedMpesaName,
+            });
+          }
           await supabaseAdmin.from('orders').upsert(
             {
               checkout_request_id: checkoutRequestId,
@@ -134,7 +154,15 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
     }
   }
 
-  return order;
+  const buyerName = order
+    ? await resolveBuyerMpesaName({
+        checkoutRequestId,
+        phone: order.phone_number,
+        fallbackName: detectedMpesaName,
+      })
+    : detectedMpesaName;
+
+  return { order, buyerName };
 }
 
 export async function GET(req: Request) {
@@ -142,7 +170,7 @@ export async function GET(req: Request) {
   const action = (url.searchParams.get('action') || 'preview').toLowerCase();
 
   try {
-    // 1. CATALOG OF GRADES & SUBJECTS
+    // 1. CATALOG OF GRADES, SUBJECTS & TERM PRICING (+20% FOR ALL TERMS)
     if (action === 'catalog') {
       const grades = ALL_GRADE_KEYS.map((gk) => ({
         gradeKey: gk,
@@ -151,16 +179,24 @@ export async function GET(req: Request) {
       }));
       return NextResponse.json({
         grades,
+        singleTermPrices: BOOK_PRICES_KES,
+        allTermsPrices: BOOK_ALL_TERMS_PRICES_KES,
         prices: BOOK_PRICES_KES,
         titles: BOOK_SERIES_TITLES,
       });
     }
 
-    // DEV QA: FULL AUDIT OF SHORT NOTES (>10/SUB-STRAND, >=30/STRAND, ALL STRANDS) & ZERO-REPETITION QUESTIONS ACROSS ALL 210 PAIRS
+    // DEV QA: FULL AUDIT OF TERM 1, TERM 2, TERM 3 & ALL-TERMS SHORT NOTES, EXAMPLES & ZERO-REPEAT QUESTIONS
     if (
       (action === 'verify_zero_repeat' || action === 'verify_notes_and_questions') &&
       process.env.NODE_ENV !== 'production'
     ) {
+      const requestedTermParam = url.searchParams.get('term');
+      const termsToAudit: BookTermOption[] =
+        requestedTermParam !== null
+          ? [normalizeBookTerm(requestedTermParam)]
+          : [1, 2, 3, 0];
+
       let totalPairs = 0;
       let totalStrandsChecked = 0;
       let totalSubstrandsChecked = 0;
@@ -170,89 +206,117 @@ export async function GET(req: Request) {
       let missingStrandViolations = 0;
       let substrandUnder11Violations = 0;
       let strandUnder30Violations = 0;
+      let missingExampleViolations = 0;
       let duplicateNoteCount = 0;
       let totalQuestionsChecked = 0;
       let duplicateCount = 0;
       const violations: string[] = [];
 
-      for (const gk of ALL_GRADE_KEYS) {
-        for (const subj of getSubjectsForGradeKey(gk)) {
-          totalPairs++;
-          const rawSyl = collectOrderedSubTopics(gk, subj);
-          const tree0 = buildStructuredSyllabusNotesTree(gk, subj, 0);
-          const tree1 = buildStructuredSyllabusNotesTree(gk, subj, 1);
+      for (const termOpt of termsToAudit) {
+        for (const gk of ALL_GRADE_KEYS) {
+          for (const subj of getSubjectsForGradeKey(gk)) {
+            totalPairs++;
+            const rawSyl = collectOrderedSubTopics(gk, subj, termOpt);
+            const tree0 = buildStructuredSyllabusNotesTree(gk, subj, 0, termOpt);
+            const tree1 = buildStructuredSyllabusNotesTree(gk, subj, 1, termOpt);
 
-          if (tree0.strands.length !== rawSyl.strands.length) {
-            missingStrandViolations++;
-            violations.push(`Missing strands in ${gk} ${subj}`);
-          }
+            if (tree0.strands.length !== rawSyl.strands.length || tree0.strands.length === 0) {
+              missingStrandViolations++;
+              violations.push(`Missing strands in T${termOpt} ${gk} ${subj}`);
+            }
 
-          const seenNotes = new Set<string>();
-          for (const tree of [tree0, tree1]) {
-            for (const st of tree.strands) {
-              totalStrandsChecked++;
-              globalMinStrandPoints = Math.min(globalMinStrandPoints, st.totalPoints);
-              if (st.totalPoints < 30) {
-                strandUnder30Violations++;
-                if (violations.length < 20) {
-                  violations.push(
-                    `Strand <30 pts: ${gk} ${subj} ${st.strandTitle} (${st.totalPoints})`
-                  );
-                }
-              }
-              for (const sub of st.substrands) {
-                totalSubstrandsChecked++;
-                totalNotePointsChecked += sub.points.length;
-                globalMinSubPoints = Math.min(globalMinSubPoints, sub.points.length);
-                if (sub.points.length <= 10) {
-                  substrandUnder11Violations++;
+            const seenNotes = new Set<string>();
+            for (const tree of [tree0, tree1]) {
+              for (const st of tree.strands) {
+                totalStrandsChecked++;
+                globalMinStrandPoints = Math.min(globalMinStrandPoints, st.totalPoints);
+                if (st.totalPoints < 30) {
+                  strandUnder30Violations++;
                   if (violations.length < 20) {
                     violations.push(
-                      `Substrand <=10 pts: ${gk} ${subj} ${sub.substrandTitle} (${sub.points.length})`
+                      `Strand <30 pts: T${termOpt} ${gk} ${subj} ${st.strandTitle} (${st.totalPoints})`
                     );
                   }
                 }
-                for (const pt of sub.points) {
-                  const normPt = pt
-                    .replace(/^\d+\.\s*/, '')
-                    .toLowerCase()
-                    .replace(/\s+/g, ' ')
-                    .trim();
-                  if (seenNotes.has(normPt)) {
-                    duplicateNoteCount++;
+                for (const sub of st.substrands) {
+                  totalSubstrandsChecked++;
+                  totalNotePointsChecked += sub.points.length;
+                  globalMinSubPoints = Math.min(globalMinSubPoints, sub.points.length);
+                  if (sub.points.length <= 10) {
+                    substrandUnder11Violations++;
                     if (violations.length < 20) {
-                      violations.push(`Dup note in ${gk} ${subj}: ${pt.slice(0, 80)}`);
+                      violations.push(
+                        `Substrand <=10 pts: T${termOpt} ${gk} ${subj} ${sub.substrandTitle} (${sub.points.length})`
+                      );
                     }
                   }
-                  seenNotes.add(normPt);
+                  for (const pt of sub.points) {
+                    if (
+                      !pt.includes('Valid Approved Examples [') &&
+                      !pt.includes('Mifano Sanifu kutoka Vitabu Teule [')
+                    ) {
+                      missingExampleViolations++;
+                      if (violations.length < 20) {
+                        violations.push(
+                          `Missing example in T${termOpt} ${gk} ${subj}: ${pt.slice(0, 80)}`
+                        );
+                      }
+                    }
+                    const normPt = pt
+                      .replace(/^\d+\.\s*/, '')
+                      .toLowerCase()
+                      .replace(/\s+/g, ' ')
+                      .trim();
+                    if (seenNotes.has(normPt)) {
+                      duplicateNoteCount++;
+                      if (violations.length < 20) {
+                        violations.push(`Dup note in T${termOpt} ${gk} ${subj}: ${pt.slice(0, 80)}`);
+                      }
+                    }
+                    seenNotes.add(normPt);
+                  }
                 }
               }
             }
-          }
 
-          const mfQPerSub = Math.max(9, Math.ceil(205 / Math.max(1, tree0.totalSubstrands)));
-          const mfCount = tree0.totalSubstrands * mfQPerSub;
-          const guCount = Math.max(180, 200 - tree0.totalSubstrands);
-          const qMadeFamiliar = buildFullBookQuestionPool(gk, subj, mfCount, 0);
-          const qGradeUp = buildFullBookQuestionPool(gk, subj, guCount, mfCount);
-          const combined = [...qMadeFamiliar, ...qGradeUp];
-          totalQuestionsChecked += combined.length;
+            const { madeFamiliarCount, gradeUpCount } = getBookQuestionCounts(
+              tree0.totalSubstrands,
+              termOpt
+            );
+            const qMadeFamiliar = buildFullBookQuestionPool(
+              gk,
+              subj,
+              madeFamiliarCount,
+              0,
+              termOpt
+            );
+            const qGradeUp = buildFullBookQuestionPool(
+              gk,
+              subj,
+              gradeUpCount,
+              madeFamiliarCount,
+              termOpt
+            );
+            const combined = [...qMadeFamiliar, ...qGradeUp];
+            totalQuestionsChecked += combined.length;
 
-          const seenQs = new Set<string>();
-          for (const q of combined) {
-            const norm = q.prompt.toLowerCase().replace(/\s+/g, ' ').trim();
-            if (seenQs.has(norm)) {
-              duplicateCount++;
-              if (violations.length < 20) {
-                violations.push(`Dup Q in ${gk} ${subj}: ${q.prompt.slice(0, 80)}`);
+            const seenQs = new Set<string>();
+            for (const q of combined) {
+              const norm = q.prompt.toLowerCase().replace(/\s+/g, ' ').trim();
+              if (seenQs.has(norm)) {
+                duplicateCount++;
+                if (violations.length < 20) {
+                  violations.push(`Dup Q in T${termOpt} ${gk} ${subj}: ${q.prompt.slice(0, 80)}`);
+                }
               }
+              seenQs.add(norm);
             }
-            seenQs.add(norm);
           }
         }
       }
 
       return NextResponse.json({
+        termsAudited: termsToAudit,
         totalPairs,
         totalStrandsChecked,
         totalSubstrandsChecked,
@@ -262,6 +326,7 @@ export async function GET(req: Request) {
         missingStrandViolations,
         substrandUnder11Violations,
         strandUnder30Violations,
+        missingExampleViolations,
         duplicateNoteCount,
         totalQuestionsChecked,
         duplicateCount,
@@ -269,9 +334,10 @@ export async function GET(req: Request) {
       });
     }
 
-    // 2. LIVE SAMPLE PREVIEW FOR ANY GRADE + SUBJECT + BOOK BUTTON (ALL 3 BUTTONS INCLUDE FULL SHORT NOTES!)
+    // 2. LIVE SAMPLE PREVIEW FOR ANY GRADE + SUBJECT + TERM + BOOK BUTTON
     if (action === 'preview') {
       const bookType = normalizeBookType(url.searchParams.get('bookType'));
+      const term = normalizeBookTerm(url.searchParams.get('term') ?? 1);
       const gradeKey = (url.searchParams.get('gradeKey') || '7').trim();
       const validSubjects = getSubjectsForGradeKey(gradeKey);
       const requestedSubj = (url.searchParams.get('subject') || '').trim();
@@ -279,25 +345,32 @@ export async function GET(req: Request) {
         ? requestedSubj
         : validSubjects[0] || 'Mathematics';
 
-      const notesTree = buildStructuredSyllabusNotesTree(gradeKey, subject, 0);
-      const mfQPerSub = Math.max(9, Math.ceil(205 / Math.max(1, notesTree.totalSubstrands)));
-      const mfCount = notesTree.totalSubstrands * mfQPerSub;
+      const notesTree = buildStructuredSyllabusNotesTree(gradeKey, subject, 0, term);
+      const { madeFamiliarCount } = getBookQuestionCounts(
+        notesTree.totalSubstrands,
+        term
+      );
       const sampleQuestions =
         bookType === 'GRADE_UP'
-          ? buildFullBookQuestionPool(gradeKey, subject, 6, mfCount)
-          : buildFullBookQuestionPool(gradeKey, subject, 6, 0);
+          ? buildFullBookQuestionPool(gradeKey, subject, 6, madeFamiliarCount, term)
+          : buildFullBookQuestionPool(gradeKey, subject, 6, 0, term);
 
       const firstStrand = notesTree.strands[0];
       const firstSub = firstStrand?.substrands[0];
+      const priceKes = getBookPriceKes(bookType, term);
 
       return NextResponse.json({
         bookType,
         seriesTitle: BOOK_SERIES_TITLES[bookType],
+        term,
+        termLabel: formatBookTermLabel(term),
         gradeKey,
         gradeLabel: formatBookGradeLabel(gradeKey),
         subject,
         availableSubjects: validSubjects,
-        priceKes: BOOK_PRICES_KES[bookType],
+        priceKes,
+        singleTermPriceKes: getBookPriceKes(bookType, 1),
+        allTermsPriceKes: getBookPriceKes(bookType, 0),
         totalPages: bookType === 'COMPLETE_BUNDLE' ? 100 : 50,
         coursebookTitle: notesTree.coursebookTitle,
         approvedBooks: notesTree.approvedBooks,
@@ -309,6 +382,7 @@ export async function GET(req: Request) {
         minPointsPerStrand: notesTree.minPointsPerStrand,
         strands: notesTree.strands.map((s) => ({
           strand: s.strandTitle,
+          term: s.term,
           subsCount: s.substrands.length,
           totalPoints: s.totalPoints,
           subsPreview: s.substrands.slice(0, 4).map((sub) => sub.substrandTitle),
@@ -331,7 +405,7 @@ export async function GET(req: Request) {
       });
     }
 
-    // 3. INSTANT PAYMENT STATUS POLLING (AUTO-UNLOCK ON PIN ENTRY)
+    // 3. INSTANT PAYMENT STATUS POLLING (RETURNS BUYER M-PESA NAME FOR APPRECIATION FLOWER!)
     if (action === 'status') {
       const checkoutRequestId = (url.searchParams.get('checkoutRequestId') || '').trim();
       if (!checkoutRequestId) {
@@ -341,9 +415,14 @@ export async function GET(req: Request) {
         );
       }
 
-      const order = await resolveVerifiedBookOrder(checkoutRequestId);
+      const { order, buyerName } = await resolveVerifiedBookOrder(checkoutRequestId);
       if (!order) {
-        return NextResponse.json({ status: 'PENDING', amount: 0, unlockedTypes: [] });
+        return NextResponse.json({
+          status: 'PENDING',
+          amount: 0,
+          unlockedTypes: [],
+          buyerName: buyerName || null,
+        });
       }
 
       const amt = Number(order.amount) || 0;
@@ -358,14 +437,16 @@ export async function GET(req: Request) {
         status: order.status,
         amount: amt,
         receipt: order.mpesa_receipt_number || null,
+        buyerName: buyerName || null,
         unlockedTypes,
       });
     }
 
-    // 4. AUTHENTICATED SUBJECT BOOK DOWNLOAD (.PDF OR .DOCX)
+    // 4. AUTHENTICATED SUBJECT BOOK DOWNLOAD (.PDF OR .DOCX FOR TERM 1, 2, 3 OR ALL TERMS)
     if (action === 'download') {
       const checkoutRequestId = (url.searchParams.get('checkoutRequestId') || '').trim();
       const bookType = normalizeBookType(url.searchParams.get('bookType'));
+      const term = normalizeBookTerm(url.searchParams.get('term') ?? 0);
       const gradeKey = (url.searchParams.get('gradeKey') || '7').trim();
       const validSubjects = getSubjectsForGradeKey(gradeKey);
       const requestedSubj = (url.searchParams.get('subject') || '').trim();
@@ -374,7 +455,6 @@ export async function GET(req: Request) {
         : validSubjects[0] || 'Mathematics';
       const format = (url.searchParams.get('format') || 'pdf').toLowerCase();
 
-      // Admin internal verification bypass only on localhost when needed for automated PDF QA & Store Sync
       const isLocalQa =
         process.env.NODE_ENV !== 'production' &&
         checkoutRequestId === 'LOCAL_QA_VERIFY_50_PAGES';
@@ -387,8 +467,8 @@ export async function GET(req: Request) {
           );
         }
 
-        const order = await resolveVerifiedBookOrder(checkoutRequestId);
-        const requiredKes = BOOK_PRICES_KES[bookType];
+        const { order } = await resolveVerifiedBookOrder(checkoutRequestId);
+        const requiredKes = getBookPriceKes(bookType, term);
 
         if (!order || order.status !== 'COMPLETED') {
           return NextResponse.json(
@@ -403,7 +483,7 @@ export async function GET(req: Request) {
         if ((Number(order.amount) || 0) < requiredKes) {
           return NextResponse.json(
             {
-              error: `This book requires a KSh ${requiredKes} payment (received KSh ${order.amount}).`,
+              error: `This ${formatBookTermLabel(term)} book requires a KSh ${requiredKes} payment (received KSh ${order.amount}).`,
             },
             { status: 403 }
           );
@@ -412,25 +492,27 @@ export async function GET(req: Request) {
 
       const cleanGrade = formatBookGradeLabel(gradeKey).replace(/\s+/g, '_');
       const cleanSubj = subject.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const termSlug = term === 0 ? 'All_Terms_1_to_3' : `Term_${term}`;
       const seriesSlug =
         bookType === 'GRADE_UP'
-          ? 'CBC_GRADE_UP_50_Pages'
+          ? 'CBC_GRADE_UP'
           : bookType === 'MADE_FAMILIAR'
-          ? 'SUPER_LIGHT_CBC_COMPILATION_50_Pages'
-          : 'SMART_CBC_ALL_SUBJECTS_100_Pages';
+          ? 'SUPER_LIGHT_CBC_COMPILATION'
+          : 'SMART_CBC_ALL_SUBJECTS';
 
       if (format === 'docx') {
         const docxBuf = await generateCbcBookDocxBuffer({
           bookType,
           gradeKey,
           subject,
+          term,
         });
         return new NextResponse(new Uint8Array(docxBuf), {
           status: 200,
           headers: {
             'Content-Type':
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'Content-Disposition': `attachment; filename="${seriesSlug}_${cleanGrade}_${cleanSubj}.docx"`,
+            'Content-Disposition': `attachment; filename="${seriesSlug}_${cleanGrade}_${cleanSubj}_${termSlug}.docx"`,
             'Cache-Control': 'no-store',
           },
         });
@@ -438,18 +520,18 @@ export async function GET(req: Request) {
 
       let pdfBytes: Uint8Array;
       if (bookType === 'GRADE_UP') {
-        pdfBytes = await generateCbcGradeUpPdfBuffer({ gradeKey, subject });
+        pdfBytes = await generateCbcGradeUpPdfBuffer({ gradeKey, subject, term });
       } else if (bookType === 'MADE_FAMILIAR') {
-        pdfBytes = await generateMadeFamiliarPdfBuffer({ gradeKey, subject });
+        pdfBytes = await generateMadeFamiliarPdfBuffer({ gradeKey, subject, term });
       } else {
-        pdfBytes = await generateCompleteCompilationPdfBuffer({ gradeKey, subject });
+        pdfBytes = await generateCompleteCompilationPdfBuffer({ gradeKey, subject, term });
       }
 
       return new NextResponse(Buffer.from(pdfBytes), {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="${seriesSlug}_${cleanGrade}_${cleanSubj}.pdf"`,
+          'Content-Disposition': `attachment; filename="${seriesSlug}_${cleanGrade}_${cleanSubj}_${termSlug}.pdf"`,
           'Cache-Control': 'no-store',
         },
       });

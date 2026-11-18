@@ -10,13 +10,35 @@ import {
   toLocalKenyanFormat,
 } from '@/lib/mpesa';
 import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
+import {
+  extractMpesaNameFromPayload,
+  recordBuyerMpesaName,
+} from '@/lib/buyer-identity';
+import {
+  formatBookTermLabel,
+  getBookPriceKes,
+  normalizeBookTerm,
+} from '@/lib/cbc-books-engine';
 
 export async function POST(req: Request) {
   void req.headers.get('user-agent');
 
   try {
-    const { mpesaCode, phoneNumber, resourceId, serviceType, bookTitle } = await req.json();
+    const {
+      mpesaCode,
+      phoneNumber,
+      resourceId,
+      serviceType,
+      bookTitle,
+      bookTerm,
+      buyerName,
+    } = await req.json();
     const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
+    const normTerm = normalizeBookTerm(bookTerm ?? 1);
+    const termTag = formatBookTermLabel(normTerm);
+    const parsedSmsName = extractMpesaNameFromPayload(String(mpesaCode || ''));
+    const cleanBuyerName =
+      (typeof buyerName === 'string' && buyerName.trim()) || parsedSmsName || '';
 
     await recordPurchaseAttempt({
       channel: 'M-Pesa Direct Code',
@@ -76,26 +98,31 @@ export async function POST(req: Request) {
         title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
       };
     } else if (serviceType === 'BOOK_GRADE_UP') {
+      const pKes = getBookPriceKes('GRADE_UP', normTerm);
       resource = {
         id: null,
-        price: 500,
-        title: cleanBookTitle || 'CBC GRADE UP — 50-Page Book + Marking Schemes (KSh 500)',
+        price: pKes,
+        title:
+          cleanBookTitle ||
+          `CBC GRADE UP (${termTag}) — Short Notes + Questions + Marking Schemes (KSh ${pKes})`,
       };
     } else if (serviceType === 'BOOK_MADE_FAMILIAR') {
+      const pKes = getBookPriceKes('MADE_FAMILIAR', normTerm);
       resource = {
         id: null,
-        price: 750,
+        price: pKes,
         title:
           cleanBookTitle ||
-          'SUPER-LIGHT CBC COMPILATION — 50-Page Point-Form Notes + Q&A (KSh 750)',
+          `SUPER-LIGHT CBC COMPILATION (${termTag}) — Detailed Notes + Q&A (KSh ${pKes})`,
       };
     } else if (serviceType === 'BOOK_COMPLETE_BUNDLE') {
+      const pKes = getBookPriceKes('COMPLETE_BUNDLE', normTerm);
       resource = {
         id: null,
-        price: 1500,
+        price: pKes,
         title:
           cleanBookTitle ||
-          'SMART CBC ALL SUBJECTS — 100-Page Master Book + All Grade Subjects (KSh 1,500)',
+          `SMART CBC ALL SUBJECTS (${termTag}) — Master Compilation (KSh ${pKes})`,
       };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
@@ -150,6 +177,13 @@ export async function POST(req: Request) {
     }
 
     const checkoutRequestId = `MANUAL_${cleanCode}_${Date.now()}`;
+    if (cleanBuyerName) {
+      await recordBuyerMpesaName({
+        checkoutRequestId,
+        phone,
+        buyerName: cleanBuyerName,
+      });
+    }
 
     const { error: insertErr } = await supabaseAdmin.from('orders').insert({
       checkout_request_id: checkoutRequestId,

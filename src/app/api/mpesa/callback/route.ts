@@ -9,11 +9,16 @@ import { getStoredPaymentConfig } from '@/lib/payment-config';
 import { confirmWithdrawalCallback } from '@/lib/wallet';
 import { getStoredMonetizationConfig } from '@/lib/monetization';
 import { sendMetaConversionsEvent } from '@/lib/facebook-monetization';
+import {
+  extractMpesaNameFromPayload,
+  recordBuyerMpesaName,
+} from '@/lib/buyer-identity';
 
 export async function POST(req: Request) {
   try {
     const rawText = await req.text();
     const body = JSON.parse(rawText);
+    const extractedPayerName = extractMpesaNameFromPayload(body);
 
     // 1. PayHero Kenya Webhook Support (both top-level & nested response schemas)
     if (
@@ -69,6 +74,15 @@ export async function POST(req: Request) {
 
       if (candidateIds.length > 0 || externalRef) {
         if (success) {
+          if (extractedPayerName) {
+            for (const cid of candidateIds) {
+              await recordBuyerMpesaName({
+                checkoutRequestId: cid,
+                phone: payerPhone,
+                buyerName: extractedPayerName,
+              });
+            }
+          }
           if (candidateIds.length > 0) {
             await supabaseAdmin
               .from('orders')
@@ -251,6 +265,14 @@ export async function POST(req: Request) {
             payerPhone = String(item.Value);
           }
         }
+      }
+
+      if (extractedPayerName) {
+        await recordBuyerMpesaName({
+          checkoutRequestId: CheckoutRequestID,
+          phone: payerPhone,
+          buyerName: extractedPayerName,
+        });
       }
 
       await supabaseAdmin

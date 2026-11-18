@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { AdSlot, useMonetization } from '@/components/MonetizationEngine';
 import { ALL_GRADE_KEYS, formatGradeLabel } from '@/lib/material-utils';
+import PurchaseThankYouBanner from './PurchaseThankYouBanner';
 
 const STORAGE_LEARNER_PROFILE_KEY = 'cbc_gemini_qa_profile_v1';
 const STORAGE_SUB_TOKEN_KEY = 'cbc_gemini_qa_sub_token_v1';
@@ -762,6 +763,9 @@ export default function GeminiHomeworkHub({
                       {/* FULL UNLOCKED VIEW vs HALFWAY BLURRED PAYWALL VIEW */}
                       {answerUnlocked && fullAnswer ? (
                         <div className="p-5 space-y-3">
+                          {paymentStatus === 'COMPLETED' && (
+                            <PurchaseThankYouBanner buyerName={fullName} compact />
+                          )}
                           {renderFormattedAnswer(fullAnswer)}
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-700 font-bold">
                             <span className="inline-flex items-center gap-1.5">

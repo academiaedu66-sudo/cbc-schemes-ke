@@ -14,6 +14,12 @@ import {
 } from '@/lib/mpesa';
 import { formatPayHeroAuthHeader, getStoredPaymentConfig } from '@/lib/payment-config';
 import { recordPurchaseAttempt } from '@/lib/purchase-attempts';
+import { recordBuyerMpesaName } from '@/lib/buyer-identity';
+import {
+  formatBookTermLabel,
+  getBookPriceKes,
+  normalizeBookTerm,
+} from '@/lib/cbc-books-engine';
 
 export async function GET(req: Request) {
   const summary = await resolveActiveGatewaySummary();
@@ -33,8 +39,19 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, resourceId, testAmount, serviceType, bookTitle } = await req.json();
+    const {
+      phoneNumber,
+      resourceId,
+      testAmount,
+      serviceType,
+      bookTitle,
+      bookTerm,
+      buyerName,
+    } = await req.json();
     const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
+    const normTerm = normalizeBookTerm(bookTerm ?? 1);
+    const termTag = formatBookTermLabel(normTerm);
+    const cleanBuyerName = typeof buyerName === 'string' ? buyerName.trim().slice(0, 60) : '';
 
     await recordPurchaseAttempt({
       channel: 'M-Pesa STK Push',
@@ -47,11 +64,11 @@ export async function POST(req: Request) {
             : 'Admin Live STK Test',
       amountKes:
         serviceType === 'BOOK_GRADE_UP'
-          ? 500
+          ? getBookPriceKes('GRADE_UP', normTerm)
           : serviceType === 'BOOK_MADE_FAMILIAR'
-            ? 750
+            ? getBookPriceKes('MADE_FAMILIAR', normTerm)
             : serviceType === 'BOOK_COMPLETE_BUNDLE'
-              ? 1500
+              ? getBookPriceKes('COMPLETE_BUNDLE', normTerm)
               : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
@@ -103,26 +120,31 @@ export async function POST(req: Request) {
         title: 'Gemini Weekly Q&A Pass — 7 Days (KSh 20 Bob)',
       };
     } else if (serviceType === 'BOOK_GRADE_UP') {
+      const pKes = getBookPriceKes('GRADE_UP', normTerm);
       resource = {
         id: null,
-        price: 500,
-        title: cleanBookTitle || 'CBC GRADE UP — 50-Page Book + Marking Schemes (KSh 500)',
+        price: pKes,
+        title:
+          cleanBookTitle ||
+          `CBC GRADE UP (${termTag}) — Short Notes + Questions + Marking Schemes (KSh ${pKes})`,
       };
     } else if (serviceType === 'BOOK_MADE_FAMILIAR') {
+      const pKes = getBookPriceKes('MADE_FAMILIAR', normTerm);
       resource = {
         id: null,
-        price: 750,
+        price: pKes,
         title:
           cleanBookTitle ||
-          'SUPER-LIGHT CBC COMPILATION — 50-Page Point-Form Notes + Q&A (KSh 750)',
+          `SUPER-LIGHT CBC COMPILATION (${termTag}) — Detailed Notes + Q&A (KSh ${pKes})`,
       };
     } else if (serviceType === 'BOOK_COMPLETE_BUNDLE') {
+      const pKes = getBookPriceKes('COMPLETE_BUNDLE', normTerm);
       resource = {
         id: null,
-        price: 1500,
+        price: pKes,
         title:
           cleanBookTitle ||
-          'SMART CBC ALL SUBJECTS — 100-Page Master Book + All Grade Subjects (KSh 1,500)',
+          `SMART CBC ALL SUBJECTS (${termTag}) — Master Compilation (KSh ${pKes})`,
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin
@@ -239,7 +261,7 @@ export async function POST(req: Request) {
         channel_id: targetChannelId,
         provider: payheroProvider,
         external_reference: externalRef,
-        customer_name: 'CBC Teacher',
+        customer_name: cleanBuyerName || 'CBC Customer',
         callback_url: callbackUrl,
       };
       if (payheroProvider === 'sasapay') {
@@ -306,6 +328,13 @@ export async function POST(req: Request) {
       }
 
       const checkoutRequestId = `PAYHERO_${trackingRef}`;
+      if (cleanBuyerName) {
+        void recordBuyerMpesaName({
+          checkoutRequestId,
+          phone,
+          buyerName: cleanBuyerName,
+        });
+      }
 
       const { error: phInsertErr } = await supabaseAdmin.from('orders').insert({
         checkout_request_id: checkoutRequestId,

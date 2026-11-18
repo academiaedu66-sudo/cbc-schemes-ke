@@ -29,7 +29,7 @@ async function fetchAllDbResources() {
   while (true) {
     const { data, error } = await supabase
       .from('resources')
-      .select('id, file_path, title')
+      .select('id, file_path, title, price')
       .order('id', { ascending: true })
       .range(from, from + 999);
     if (error) throw error;
@@ -71,14 +71,14 @@ async function uploadWithRetry(filename, buffer) {
   return false;
 }
 
-async function generateBookBytesViaLocalApi(bookType, gradeKey, subject) {
+async function generateBookBytesViaLocalApi(bookType, gradeKey, subject, term = 0) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const url = `${LOCAL_BOOKS_API}?action=download&checkoutRequestId=LOCAL_QA_VERIFY_50_PAGES&bookType=${encodeURIComponent(
         bookType
       )}&gradeKey=${encodeURIComponent(gradeKey)}&subject=${encodeURIComponent(
         subject
-      )}&format=pdf`;
+      )}&term=${term}&format=pdf`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return Buffer.from(await res.arrayBuffer());
@@ -120,26 +120,26 @@ async function main() {
     {
       bookType: 'GRADE_UP',
       category: 'CBC GRADE UP (50-Page Books)',
-      price: 500,
+      price: 600, // +20% All Terms Together (Single Term = KSh 500)
       filePrefix: 'BOOK1_CBC_GRADE_UP_50P',
       buildTitle: (gradeLabel, subject) =>
-        `${gradeLabel} ${subject} — CBC GRADE UP (Short Notes + Questions + Marking Schemes)`,
+        `${gradeLabel} ${subject} — CBC GRADE UP (All Terms 1-3: Detailed Point-Form Notes + Valid Examples + Q&A + Marking Schemes)`,
     },
     {
       bookType: 'MADE_FAMILIAR',
       category: 'SUPER-LIGHT CBC COMPILATION (50p)',
-      price: 750,
+      price: 900, // +20% All Terms Together (Single Term = KSh 750)
       filePrefix: 'BOOK2_MADE_FAMILIAR_50P',
       buildTitle: (gradeLabel, subject) =>
-        `${gradeLabel} ${subject} — SUPER-LIGHT CBC COMPILATION (50-Page Point-Form Notes + Topical Q&A)`,
+        `${gradeLabel} ${subject} — SUPER-LIGHT CBC COMPILATION (All Terms 1-3: Detailed Point-Form Notes + Valid Examples + Immediate Q&A)`,
     },
     {
       bookType: 'COMPLETE_BUNDLE',
       category: 'SMART CBC ALL SUBJECTS (100p)',
-      price: 1500,
+      price: 1800, // +20% All Terms Together (Single Term = KSh 1,500)
       filePrefix: 'BOOK3_COMPLETE_COMPILATION_100P',
       buildTitle: (gradeLabel, subject) =>
-        `${gradeLabel} ${subject} — SMART CBC ALL SUBJECTS (100-Page Master Compilation)`,
+        `${gradeLabel} ${subject} — SMART CBC ALL SUBJECTS (All Terms 1-3: Master Compilation + Valid Examples + Marking Schemes)`,
     },
   ];
 
@@ -229,7 +229,7 @@ async function main() {
         price: t.price,
         file_path: t.filename,
       });
-    } else if (existingRow.title !== t.title) {
+    } else if (existingRow.title !== t.title || existingRow.price !== t.price) {
       toUpdate.push({
         id: existingRow.id,
         title: t.title,
