@@ -38,9 +38,8 @@ export const BOOK_PRICES_KES: Record<CbcBookType, number> = {
 
 export const BOOK_SERIES_TITLES: Record<CbcBookType, string> = {
   GRADE_UP: 'CBC GRADE UP',
-  MADE_FAMILIAR: 'COMPETENCY BASED MADE FAMILIAR',
-  COMPLETE_BUNDLE:
-    'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR',
+  MADE_FAMILIAR: 'SUPER-LIGHT CBC COMPILATION',
+  COMPLETE_BUNDLE: 'SMART CBC ALL SUBJECTS',
 };
 
 interface SyllabusBlock {
@@ -307,24 +306,308 @@ export interface BookQuestionEntry {
   explanation: string;
 }
 
+const ENGLISH_STRUCTURED_STEMS: Array<{
+  marks: number;
+  build: (t: EnrichedSubTopic, gradeLabel: string, subject: string) => {
+    prompt: string;
+    ans: string;
+    exp: string;
+  };
+}> = [
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `State and explain two core principles or rules learned under "${t.subtopicTitle}".`,
+      ans: `Any two accurate principles/rules on "${t.subtopicTitle}" clearly explained (2 x 2 = 4 marks).`,
+      exp: `Award 1 mark for naming each valid point and 1 mark for accurate explanation aligned to "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `${t.kiq || `How is "${t.subtopicTitle}" applied in everyday life in Kenya?`} Support your answer with two practical examples.`,
+      ans: `Two well-explained real-life Kenyan applications answering the prompt on "${t.subtopicTitle}" (4 marks).`,
+      exp: `Award 2 marks per clear, contextually accurate example demonstrating mastery of "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `During a practical activity on "${t.subtopicTitle}" using ${t.resources.toLowerCase()}, outline three sequential steps learners must follow.`,
+      ans: `Three logical, ordered practical steps when working with ${t.resources.toLowerCase()} on "${t.subtopicTitle}" (3 marks).`,
+      exp: `Award 1 mark for each accurate procedural step in proper sequence.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Distinguish clearly between the key concepts studied in "${t.subtopicTitle}" and give one real-world illustration.`,
+      ans: `Clear conceptual distinction on "${t.subtopicTitle}" (2 mks) + 1 accurate real-world illustration (2 mks) = 4 marks.`,
+      exp: `Ensure both sides of the distinction are stated explicitly rather than treating one side in isolation.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Identify three safety, hygiene, or accuracy precautions that must be observed when investigating "${t.subtopicTitle}".`,
+      ans: `Three valid safety, hygiene, or accuracy precautions relevant to "${t.subtopicTitle}" (3 marks).`,
+      exp: `Award 1 mark per distinct, actionable precaution using ${t.resources.toLowerCase()}.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t, gLbl) => ({
+      prompt: `A ${gLbl} classmate made a common error while attempting a task on "${t.subtopicTitle}". Identify two common mistakes learners make in this topic and state how to avoid each.`,
+      ans: `Two realistic misconceptions/errors on "${t.subtopicTitle}" (2 mks) + corrective method for each (2 mks) = 4 marks.`,
+      exp: `Diagnostic awareness prevents careless errors during assessments on "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Explain two benefits of mastering "${t.subtopicTitle}" to a learner’s family or local Kenyan community.`,
+      ans: `Two practical household, economic, or community benefits of "${t.subtopicTitle}" explained clearly (4 marks).`,
+      exp: `Connect classroom knowledge under "${t.strand}" directly to problem-solving in society.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Define three key technical terms or vocabulary items encountered when studying "${t.subtopicTitle}".`,
+      ans: `Accurate definitions of three domain terms belonging to "${t.subtopicTitle}" (3 x 1 = 3 marks).`,
+      exp: `Precise command of subject terminology is essential for full marks in structured responses.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Describe how a group of learners can improvise locally available materials in place of ${t.resources.toLowerCase()} to demonstrate "${t.subtopicTitle}".`,
+      ans: `Valid local improvisation materials identified (2 mks) + clear explanation of how they model "${t.subtopicTitle}" (2 mks).`,
+      exp: `Resourcefulness and environmental responsibility are rewarded when improvising learning aids safely.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Analyze a real-world scenario in Kenya where failure to apply proper rules of "${t.subtopicTitle}" causes a problem, and propose two solutions.`,
+      ans: `Clear problem analysis linked to "${t.subtopicTitle}" (2 mks) + two workable solutions (2 mks) = 4 marks.`,
+      exp: `Award marks for logical cause-and-effect reasoning and practical remedies.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Write a concise three-point summary checklist that a learner can use to revise "${t.subtopicTitle}" before an assessment.`,
+      ans: `Three distinct, accurate summary points capturing the essence of "${t.subtopicTitle}" (3 marks).`,
+      exp: `Each bullet must state a complete, verifiable fact or rule under "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Explain how "${t.subtopicTitle}" connects to other sub-strands within "${t.strand}" and why it must be learned in sequence.`,
+      ans: `Clear explanation of conceptual progression within "${t.strand}" involving "${t.subtopicTitle}" (4 marks).`,
+      exp: `Foundational mastery of "${t.subtopicTitle}" supports advanced tasks across "${t.strand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t, _g, subj) => ({
+      prompt: `Outline two career or enterprise opportunities in Kenya that rely directly on skills developed in "${t.subtopicTitle}" (${subj}).`,
+      ans: `Two relevant careers/enterprises named (2 mks) + clear link to skills in "${t.subtopicTitle}" (2 mks) = 4 marks.`,
+      exp: `Demonstrates practical career-pathway awareness grounded in "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `State three observable indicators that show a learner has accurately completed a practical or written task on "${t.subtopicTitle}".`,
+      ans: `Three measurable quality/accuracy indicators for "${t.subtopicTitle}" (3 marks).`,
+      exp: `Focus on precision, neatness, correct method, and verified results.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Formulate a worked example or short case study illustrating "${t.subtopicTitle}", showing both the setup and final conclusion.`,
+      ans: `Original, accurate case study / worked illustration on "${t.subtopicTitle}" (2 mks) + verified conclusion (2 mks).`,
+      exp: `Award marks for realistic data/context and logical step-by-step reasoning.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Explain two ethical, environmental, or responsible-citizenship values promoted when practising "${t.subtopicTitle}".`,
+      ans: `Two relevant values (e.g. integrity, safety, conservation, respect) explained in the context of "${t.subtopicTitle}" (4 marks).`,
+      exp: `Link each value concretely to actions taken during "${t.subtopicTitle}".`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Give three reasons why ${t.resources.toLowerCase()} are effective when studying "${t.subtopicTitle}".`,
+      ans: `Three distinct pedagogical/practical advantages of using ${t.resources.toLowerCase()} for "${t.subtopicTitle}" (3 marks).`,
+      exp: `Concrete aids enhance visual clarity, hands-on retention, and measurement accuracy.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Compare traditional and modern approaches to handling tasks related to "${t.subtopicTitle}" in Kenya.`,
+      ans: `Two valid comparison points showing traditional vs modern methods in "${t.subtopicTitle}" (2 x 2 = 4 marks).`,
+      exp: `Highlight efficiency, sustainability, cost, and accuracy across both approaches.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Outline three questions a keen learner should ask when observing a demonstration on "${t.subtopicTitle}".`,
+      ans: `Three relevant inquiry questions probing how, why, and where "${t.subtopicTitle}" works (3 marks).`,
+      exp: `Critical inquiry deepens conceptual understanding of "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Describe how digital technology or ICT tools can be used responsibly to research or present findings on "${t.subtopicTitle}".`,
+      ans: `Two responsible digital/ICT uses for researching, recording, or presenting "${t.subtopicTitle}" (4 marks).`,
+      exp: `Include data accuracy, source verification, and online safety.`,
+    }),
+  },
+];
+
+const KISWAHILI_STRUCTURED_STEMS: Array<{
+  marks: number;
+  build: (t: EnrichedSubTopic) => { prompt: string; ans: string; exp: string };
+}> = [
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Fafanua mambo mawili makuu yanayozingatiwa katika "${t.subtopicTitle}" na utoe mfano mmoja sahihi kwa kila moja.`,
+      ans: `Hoja 2 sahihi kuhusu "${t.subtopicTitle}" pamoja na mifano 2 sanifu ya Kiswahili (Alama 2 x 2 = 4).`,
+      exp: `Zingatia ufasaha wa lugha, upatanisho wa kisarufi na maelezo yanayolenga "${t.substrand}".`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `${t.kiq || `Ni kwa namna gani "${t.subtopicTitle}" hutumika katika mawasiliano ya kila siku?`} Eleza kwa hoja mbili.`,
+      ans: `Maelezo mawili yenye mantiki yanayojibu swali na kuhusisha mazingira halisi ya mwanafunzi (Alama 4).`,
+      exp: `Kila hoja iliyofafanuliwa vizuri kwa Kiswahili sanifu ituzwe alama 2.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Tunga sentensi mbili sahihi zinazodhihirisha matumizi na umilisi wa "${t.subtopicTitle}".`,
+      ans: `Sentensi 2 sahihi zisizo na makosa ya sarufi wala hijai kuhusu "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Hakiki usahihi wa muundo, alama za uakifishaji na matumizi mwafaka ya msamiati.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Eleza umuhimu wa kutumia vifaa vifuatavyo wakati wa kujifunza "${t.subtopicTitle}": ${t.resources}.`,
+      ans: `Faida 3 sahihi za kutumia (${t.resources}) katika kujifunza "${t.subtopicTitle}" (Alama 3).`,
+      exp: `Tuzo ya alama 1 kwa kila faida sahihi iliyotajwa kwa ufasaha.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Tambua makosa mawili ya kawaida ambayo wanafunzi hufanya katika "${t.subtopicTitle}" na uonyeshe jinsi ya kuyarekebisha.`,
+      ans: `Makosa 2 yaliyotambuliwa (alama 2) + marekebisho sahihi kwa kila kosa (alama 2) = Alama 4.`,
+      exp: `Kuzingatia kanuni za "${t.substrand}" huondoa utata katika maandishi na mazungumzo.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Eleza manufaa mawili ya kuzingatia stadi za "${t.subtopicTitle}" shuleni na katika jamii ya Kenya.`,
+      ans: `Manufaa 2 yaliyofafanuliwa kikamilifu kuhusu "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Husisha stadi hiyo na mawasiliano yenye adabu, umoja na ufanisi.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Andika muhtasari wa vidokezo vitatu muhimu vya kuzingatia unapojikumbusha mada ya "${t.subtopicTitle}".`,
+      ans: `Vidokezo 3 mahsusi na sahihi vinavyojumuisha kiini cha "${t.subtopicTitle}" (Alama 3).`,
+      exp: `Kila kidokezo kiwe kamili na chenye maana inayojitosheleza.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Tofautisha vipengele vikuu vinavyojitokeza katika "${t.subtopicTitle}" kwa kutoa mifano miwili mwafaka.`,
+      ans: `Tofauti iliyowekwa wazi kuhusu "${t.subtopicTitle}" (alama 2) + mifano 2 sahihi (alama 2) = Alama 4.`,
+      exp: `Tumia viunganishi vya ulinganuzi kwa usahihi.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Bainisha maadili mawili ya kijamii yanayokuzwa kupitia mada ndogo ya "${t.subtopicTitle}".`,
+      ans: `Maadili 2 (k.m. heshima, uwajibikaji, ushirikiano) yaliyofafanuliwa kulingana na "${t.subtopicTitle}" (Alama 4).`,
+      exp: `Onyesha uhusiano wa moja kwa moja kati ya maadili hayo na "${t.strand}".`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Eleza hatua tatu ambazo kikundi cha wanafunzi kitafuata kinapojadili na kuwasilisha kazi kuhusu "${t.subtopicTitle}".`,
+      ans: `Hatua 3 zenye mtiririko mzuri wa utafiti, mjadala na uwasilishaji kuhusu "${t.subtopicTitle}" (Alama 3).`,
+      exp: `Zingatia ushirikiano, utamkaji bora na matumizi ya mifano hai.`,
+    }),
+  },
+  {
+    marks: 4,
+    build: (t) => ({
+      prompt: `Andika mazungumzo mafupi ya zamu nne kati ya wanafunzi wawili yakidhihirisha matumizi sahihi ya "${t.subtopicTitle}".`,
+      ans: `Mazungumzo mafupi yenye lugha ya adabu na yanayotumia vipengele vya "${t.subtopicTitle}" kwa usahihi (Alama 4).`,
+      exp: `Tathmini uhalisia wa muktadha, uakifishaji wa dayalojia na ufasaha.`,
+    }),
+  },
+  {
+    marks: 3,
+    build: (t) => ({
+      prompt: `Fafanua maana ya istilahi au maneno matatu muhimu yanayopatikana katika "${t.subtopicTitle}".`,
+      ans: `Maana sahihi za maneno/istilahi 3 zinazohusiana na "${t.subtopicTitle}" (Alama 3).`,
+      exp: `ufafanuzi uzingatie muktadha wa "${t.substrand}".`,
+    }),
+  },
+];
+
+function normalizePromptKey(prompt: string): string {
+  return String(prompt || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /**
- * Generates a deterministic, zero-duplicate pool of `targetCount` relevant exam/exercise
- * questions systematically spanning EVERY Strand and Sub-strand in sequential order!
+ * Generates a deterministic, STRICTLY ZERO-DUPLICATE pool of exam & sub-topic questions
+ * systematically spanning EVERY Strand and Sub-strand in sequential order!
+ * Supports `startOffset` so Book 1 (CBC GRADE UP: offset 120, count 170) and
+ * Book 2 (MADE FAMILIAR: offset 0, count 120) have 0% overlap — making all 290 questions
+ * in the 100-Page COMPLETE COMPILATION 100% unique!
  */
 export function buildFullBookQuestionPool(
   gradeKey: string,
   subject: string,
-  targetCount: number
+  targetCount: number,
+  startOffset = 0
 ): BookQuestionEntry[] {
+  const totalNeeded = startOffset + targetCount;
   const gradeLabel = formatBookGradeLabel(gradeKey);
   const { subTopics } = collectOrderedSubTopics(gradeKey, subject);
   const domain = resolveDomainKey(subject);
-  const isKis = domain === 'kiswahili';
+  const isKis = domain === 'kiswahili' || domain === 'fasihi_kiswahili';
   const bank = DOMAIN_EXERCISE_BANKS[domain] || [];
   const usedPrompts = new Set<string>();
-  const out: BookQuestionEntry[] = [];
+  const masterOut: BookQuestionEntry[] = [];
 
-  for (let i = 0; i < targetCount; i++) {
+  for (let i = 0; i < totalNeeded; i++) {
     const topic = subTopics[i % Math.max(1, subTopics.length)];
     const ctx: StrandContext = {
       gradeKey,
@@ -335,14 +618,13 @@ export function buildFullBookQuestionPool(
     };
     const hay = `${topic.strand} ${topic.substrand} ${topic.subtopicTitle}`.toLowerCase();
 
-    // Alternate objective/worked exercises with structured written/application questions!
     let pickedEx: ExerciseItem | null = null;
 
     if (i % 3 !== 2) {
       if (domain === 'mathematics') {
-        for (let att = 0; att < 120; att++) {
-          const cand = generateWorkedMathematicsExercise(ctx, i * 11 + att * 17 + 3);
-          const norm = cand.q.toLowerCase();
+        for (let att = 0; att < 400; att++) {
+          const cand = generateWorkedMathematicsExercise(ctx, i * 19 + att * 31 + 7);
+          const norm = normalizePromptKey(cand.q);
           if (!usedPrompts.has(norm)) {
             pickedEx = cand;
             break;
@@ -352,16 +634,16 @@ export function buildFullBookQuestionPool(
         // 1. Strand-matched bank item
         const matched = bank.find(
           (item) =>
-            !usedPrompts.has(item.q.toLowerCase()) &&
+            !usedPrompts.has(normalizePromptKey(item.q)) &&
             item.tags.some((t) => hay.includes(t.toLowerCase()))
         );
         if (matched) pickedEx = matched;
 
-        // 2. Worked quantitative exercise for this subject
+        // 2. Worked quantitative/parametric exercise for this subject
         if (!pickedEx && i % 2 === 1) {
-          for (let att = 0; att < 80; att++) {
-            const w = generateWorkedDomainExercise(domain, ctx, i * 7 + att * 13 + 5);
-            if (w && !usedPrompts.has(w.q.toLowerCase())) {
+          for (let att = 0; att < 200; att++) {
+            const w = generateWorkedDomainExercise(domain, ctx, i * 11 + att * 17 + 5);
+            if (w && !usedPrompts.has(normalizePromptKey(w.q))) {
               pickedEx = w;
               break;
             }
@@ -370,31 +652,33 @@ export function buildFullBookQuestionPool(
 
         // 3. Remaining bank / extra / deep subject exercises
         if (!pickedEx) {
-          const anyBank = bank.find((item) => !usedPrompts.has(item.q.toLowerCase()));
+          const anyBank = bank.find(
+            (item) => !usedPrompts.has(normalizePromptKey(item.q))
+          );
           if (anyBank) pickedEx = anyBank;
         }
         if (!pickedEx) {
-          for (let p = 0; p < 100; p++) {
-            const ex = generateExtraTextbookExercise(domain, ctx, (i + p) % 100);
-            if (ex && !usedPrompts.has(ex.q.toLowerCase())) {
+          for (let p = 0; p < 160; p++) {
+            const ex = generateExtraTextbookExercise(domain, ctx, i + p);
+            if (ex && !usedPrompts.has(normalizePromptKey(ex.q))) {
               pickedEx = ex;
               break;
             }
           }
         }
         if (!pickedEx) {
-          for (let p = 0; p < 100; p++) {
-            const dp = generateDeepSubjectExercise(domain, ctx, (i + p) % 100);
-            if (dp && !usedPrompts.has(dp.q.toLowerCase())) {
+          for (let p = 0; p < 160; p++) {
+            const dp = generateDeepSubjectExercise(domain, ctx, i + p);
+            if (dp && !usedPrompts.has(normalizePromptKey(dp.q))) {
               pickedEx = dp;
               break;
             }
           }
         }
         if (!pickedEx) {
-          for (let att = 0; att < 120; att++) {
-            const w = generateWorkedDomainExercise(domain, ctx, i + att * 19);
-            if (w && !usedPrompts.has(w.q.toLowerCase())) {
+          for (let att = 0; att < 250; att++) {
+            const w = generateWorkedDomainExercise(domain, ctx, i * 13 + att * 23 + 9);
+            if (w && !usedPrompts.has(normalizePromptKey(w.q))) {
               pickedEx = w;
               break;
             }
@@ -404,10 +688,10 @@ export function buildFullBookQuestionPool(
     }
 
     if (pickedEx) {
-      usedPrompts.add(pickedEx.q.toLowerCase());
+      usedPrompts.add(normalizePromptKey(pickedEx.q));
       const corrLetter = ['A', 'B', 'C', 'D'][pickedEx.ans] || 'A';
       const corrVal = pickedEx.options[pickedEx.ans];
-      out.push({
+      masterOut.push({
         qNumber: i + 1,
         strand: topic.strand,
         substrand: topic.subtopicTitle,
@@ -420,72 +704,91 @@ export function buildFullBookQuestionPool(
       continue;
     }
 
-    // Structured Written / Practical / Application Question covering the exact Sub-topic
-    const variant = Math.floor(i / Math.max(1, subTopics.length)) % 4;
-    let structPrompt = '';
-    let structAns = '';
-    let structExp = '';
-    let marks = 4;
-
-    if (isKis) {
-      if (variant === 0) {
-        structPrompt = `Fafanua mambo mawili makuu yanayozingatiwa katika "${topic.subtopicTitle}" na utoe mfano mmoja sahihi kwa kila moja.`;
-        structAns = `Hoja 2 sahihi kuhusu "${topic.subtopicTitle}" pamoja na mifano 2 sanifu ya Kiswahili (Alama 2 x 2 = 4).`;
-        structExp = `Zingatia ufasaha wa lugha, upatanisho wa kisarufi na maelezo yanayolenga "${topic.substrand}".`;
-      } else if (variant === 1) {
-        structPrompt = `${topic.kiq || `Ni kwa namna gani "${topic.subtopicTitle}" hutumika katika mawasiliano ya kila siku?`} Eleza kwa hoja mbili.`;
-        structAns = `Maelezo mawili yenye mantiki yanayojibu swali na kuhusisha mazingira halisi ya mwanafunzi (Alama 4).`;
-        structExp = `Kila hoja iliyofafanuliwa vizuri kwa Kiswahili sanifu ituzwe alama 2.`;
-      } else if (variant === 2) {
-        structPrompt = `Tunga sentensi mbili sahihi au eleza hatua mbili za vitendo zinazodhihirisha umilisi wa "${topic.subtopicTitle}".`;
-        structAns = `Sentensi / hatua 2 sahihi zisizo na makosa ya sarufi wala hijai kuhusu "${topic.subtopicTitle}" (Alama 4).`;
-        structExp = `Hakiki usahihi wa muundo, alama za uakifishaji na matumizi mwafaka ya msamiati.`;
-      } else {
-        marks = 3;
-        structPrompt = `Eleza umuhimu wa kutumia vifaa vifuatavyo wakati wa kujifunza "${topic.subtopicTitle}": ${topic.resources}.`;
-        structAns = `Umuhimu wa vifaa (${topic.resources}): kurahisisha uelewa kwa vitendo, kukuza udadisi na kumbukumbu ya kudumu (Alama 3).`;
-        structExp = `Tuzo ya alama 1 kwa kila faida sahihi iliyotajwa (jumla alama 3).`;
+    // Structured Written / Practical / Application Question — guaranteed 100% unique!
+    if (domain === 'mathematics') {
+      let extraMath: ExerciseItem | null = null;
+      for (let att = 0; att < 500; att++) {
+        const cand = generateWorkedMathematicsExercise(
+          ctx,
+          1000 + i * 37 + att * 41
+        );
+        const candPrompt = `${cand.q} (Show all your working steps clearly).`;
+        if (
+          !usedPrompts.has(normalizePromptKey(cand.q)) &&
+          !usedPrompts.has(normalizePromptKey(candPrompt))
+        ) {
+          extraMath = cand;
+          usedPrompts.add(normalizePromptKey(cand.q));
+          usedPrompts.add(normalizePromptKey(candPrompt));
+          masterOut.push({
+            qNumber: i + 1,
+            strand: topic.strand,
+            substrand: topic.subtopicTitle,
+            prompt: candPrompt,
+            marks: 3,
+            answerText: `${cand.options[cand.ans]}`,
+            explanation: `Method & Accuracy: ${cand.exp} (Award M1 for formula/setup, M1 for substitution, A1 for accuracy).`,
+          });
+          break;
+        }
       }
-    } else if (domain === 'mathematics') {
-      const extraMath = generateWorkedMathematicsExercise(ctx, i * 29 + 101);
-      usedPrompts.add(extraMath.q.toLowerCase());
-      structPrompt = `${extraMath.q} (Show all your working steps clearly).`;
-      structAns = `${extraMath.options[extraMath.ans]}`;
-      structExp = `Method & Accuracy: ${extraMath.exp} (Award M1 for correct formula/setup, M1 for substitution, A1 for final answer).`;
-      marks = 3;
-    } else {
-      if (variant === 0) {
-        structPrompt = `State and explain two key principles, rules, or facts learned under "${topic.subtopicTitle}".`;
-        structAns = `Any two accurate domain facts/principles on "${topic.subtopicTitle}" clearly explained (2 x 2 = 4 marks).`;
-        structExp = `Award 1 mark for naming each valid point and 1 mark for accurate explanation aligned to "${topic.substrand}".`;
-      } else if (variant === 1) {
-        structPrompt = `${topic.kiq || `How is "${topic.subtopicTitle}" applied in everyday life in Kenya?`} Explain using two practical examples.`;
-        structAns = `Two well-explained real-life applications answering the question on "${topic.subtopicTitle}" (4 marks).`;
-        structExp = `Award 2 marks per clear, practical Kenyan example demonstrating mastery of "${topic.substrand}".`;
-      } else if (variant === 2) {
-        structPrompt = `During a practical / class activity on "${topic.subtopicTitle}" using ${topic.resources.toLowerCase()}, outline three key steps or precautions learners should observe.`;
-        structAns = `Three logical procedural steps / safety or accuracy precautions when working with ${topic.resources.toLowerCase()} (3 marks).`;
-        structExp = `Award 1 mark for each accurate, ordered practical step or precaution on "${topic.subtopicTitle}".`;
-        marks = 3;
-      } else {
-        structPrompt = `Distinguish clearly between the main concepts studied in "${topic.subtopicTitle}" and give one real-world illustration.`;
-        structAns = `Clear conceptual explanation / distinction on "${topic.subtopicTitle}" (2 mks) + 1 accurate example (2 mks) = 4 marks.`;
-        structExp = `Ensure key terminology under "${topic.strand}" is applied accurately.`;
+      if (extraMath) continue;
+    }
+
+    let placedStructured = false;
+    const stems = isKis ? KISWAHILI_STRUCTURED_STEMS : ENGLISH_STRUCTURED_STEMS;
+    const basePass = Math.floor(i / Math.max(1, subTopics.length));
+
+    for (let shift = 0; shift < stems.length * Math.max(1, subTopics.length); shift++) {
+      const tCand = subTopics[(i + shift) % Math.max(1, subTopics.length)];
+      const stemIdx = (basePass + shift) % stems.length;
+      const built = isKis
+        ? KISWAHILI_STRUCTURED_STEMS[stemIdx].build(tCand)
+        : ENGLISH_STRUCTURED_STEMS[stemIdx].build(tCand, gradeLabel, subject);
+      const mks = stems[stemIdx].marks;
+      const norm = normalizePromptKey(built.prompt);
+      if (!usedPrompts.has(norm)) {
+        usedPrompts.add(norm);
+        masterOut.push({
+          qNumber: i + 1,
+          strand: tCand.strand,
+          substrand: tCand.subtopicTitle,
+          prompt: built.prompt,
+          marks: mks,
+          answerText: built.ans,
+          explanation: built.exp,
+        });
+        placedStructured = true;
+        break;
       }
     }
 
-    out.push({
-      qNumber: i + 1,
-      strand: topic.strand,
-      substrand: topic.subtopicTitle,
-      prompt: structPrompt,
-      marks,
-      answerText: structAns,
-      explanation: structExp,
-    });
+    if (!placedStructured) {
+      // Ultimate guaranteed-unique fallback scoped to exact strand + sub-topic + scenario index
+      const uniquePrompt = isKis
+        ? `Kwa kurejelea mada ya "${topic.strand}" (${topic.subtopicTitle}), jadili hoja tatu tofauti zinazoonyesha umilisi wa kipengele cha ${i + 1} katika muktadha wa shule na jamii.`
+        : `With direct reference to "${topic.strand}" (${topic.subtopicTitle}), explain three distinct points demonstrating practical mastery in Case Scenario #${i + 1}.`;
+      usedPrompts.add(normalizePromptKey(uniquePrompt));
+      masterOut.push({
+        qNumber: i + 1,
+        strand: topic.strand,
+        substrand: topic.subtopicTitle,
+        prompt: uniquePrompt,
+        marks: 3,
+        answerText: isKis
+          ? `Hoja 3 sahihi na zenye mifano kuhusu "${topic.subtopicTitle}" (Alama 3).`
+          : `Three distinct, well-explained points on "${topic.subtopicTitle}" (3 marks).`,
+        explanation: isKis
+          ? `Tuzo ya alama 1 kwa kila hoja sahihi.`
+          : `Award 1 mark per distinct, accurate point.`,
+      });
+    }
   }
 
-  return out;
+  return masterOut.slice(startOffset, startOffset + targetCount).map((entry, idx) => ({
+    ...entry,
+    qNumber: idx + 1,
+  }));
 }
 
 // ============================================================================
@@ -598,7 +901,8 @@ export async function generateCbcGradeUpPdfBuffer(params: {
           .map((b) => `${b.series} (${b.publisher})`)
           .join('; ')
       : coursebookTitle;
-  const questions = buildFullBookQuestionPool(gradeKey, subject, 170); // 34 pages * 5 Qs/page = 170 Qs
+  // Offset 120 ensures CBC GRADE UP (170 Qs) has ZERO overlap with MADE FAMILIAR (first 120 Qs)!
+  const questions = buildFullBookQuestionPool(gradeKey, subject, 170, 120); // 34 pages * 5 Qs/page = 170 Qs
 
   const pdfDoc = await PDFDocument.create();
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -916,8 +1220,16 @@ export async function generateMadeFamiliarPdfBuffer(params: {
   subject: string;
   pageOffset?: number;
   grandTotalPages?: number;
+  headerOverrideTitle?: string;
 }): Promise<Uint8Array> {
-  const { gradeKey, subject, pageOffset = 0, grandTotalPages = 50 } = params;
+  const {
+    gradeKey,
+    subject,
+    pageOffset = 0,
+    grandTotalPages = 50,
+    headerOverrideTitle,
+  } = params;
+  const runningBookTitle = headerOverrideTitle || 'SUPER-LIGHT CBC COMPILATION';
   const gradeLabel = formatBookGradeLabel(gradeKey);
   const gradeSubject = `${gradeLabel} ${subject}`;
   const sylSubject = resolveSyllabusSubject(subject, gradeKey);
@@ -949,7 +1261,7 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     page: cover,
     boldFont,
     regFont,
-    bookTitle: 'COMPETENCY BASED MADE FAMILIAR',
+    bookTitle: runningBookTitle,
     gradeSubjectLabel: gradeSubject,
     pageNumber: 1 + pageOffset,
     totalPages: grandTotalPages,
@@ -970,17 +1282,17 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     font: boldFont,
     color: rgb(0.98, 0.82, 0.25),
   });
-  cover.drawText('COMPETENCY BASED', {
+  cover.drawText(headerOverrideTitle ? 'SMART CBC ALL SUBJECTS' : 'SUPER-LIGHT CBC', {
     x: 58,
     y: 710,
     size: 27,
     font: boldFont,
     color: rgb(1, 1, 1),
   });
-  cover.drawText('MADE FAMILIAR', {
+  cover.drawText(headerOverrideTitle ? 'MASTER COMPILATION (PART 1)' : 'COMPILATION', {
     x: 58,
     y: 680,
-    size: 27,
+    size: 25,
     font: boldFont,
     color: rgb(0.65, 0.95, 0.82),
   });
@@ -1043,7 +1355,7 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     borderColor: rgb(0.1, 0.24, 0.54),
     borderWidth: 1,
   });
-  cover.drawText('INSIDE THIS 50-PAGE "COMPETENCY BASED MADE FAMILIAR" BOOK:', {
+  cover.drawText('INSIDE THIS 50-PAGE "SUPER-LIGHT CBC COMPILATION" BOOK:', {
     x: 58,
     y: 140,
     size: 9.6,
@@ -1082,7 +1394,7 @@ export async function generateMadeFamiliarPdfBuffer(params: {
       page,
       boldFont,
       regFont,
-      bookTitle: 'COMPETENCY BASED MADE FAMILIAR',
+      bookTitle: runningBookTitle,
       gradeSubjectLabel: `${gradeSubject} (Notes & Sub-Topic Qs)`,
       pageNumber: pageNum + pageOffset,
       totalPages: grandTotalPages,
@@ -1090,10 +1402,18 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     });
 
     const unit = subTopics[nIdx % Math.max(1, subTopics.length)];
-    const passTag =
-      nIdx < subTopics.length
-        ? 'Core Mastery Notes'
-        : 'Deep Application & Exam Synthesis Notes';
+    const passIdx = Math.floor(nIdx / Math.max(1, subTopics.length));
+    const passLensLabels = [
+      'Core Concepts, Definitions & Rules',
+      'Practical Investigation, Apparatus & Procedure',
+      'Worked Illustrations & Real-Life Application',
+      'Case Synthesis & Common Assessment Watchpoints',
+    ];
+    const passTag = passLensLabels[passIdx % passLensLabels.length];
+    const subHeaderTitle =
+      passIdx === 0
+        ? unit.subtopicTitle
+        : `${unit.subtopicTitle} — ${passTag}`;
     const domainNotes = buildDomainLessonNotes({
       grade: gradeArg,
       subject: sylSubject,
@@ -1123,21 +1443,21 @@ export async function generateMadeFamiliarPdfBuffer(params: {
       borderWidth: 0.9,
     });
     page.drawText(
-      toPdfSafe(`STRAND: ${unit.strand}  (Term ${unit.term})`).slice(0, 84),
+      toPdfSafe(`STRAND: ${unit.strand}  (Term ${unit.term} * ${passTag})`).slice(0, 84),
       {
         x: 50,
         y: 762,
-        size: 8.8,
+        size: 8.6,
         font: boldFont,
         color: rgb(0.1, 0.24, 0.54),
       }
     );
     page.drawText(
-      toPdfSafe(`SUB-TOPIC ${nIdx + 1}: ${unit.subtopicTitle}`).slice(0, 84),
+      toPdfSafe(`SUB-TOPIC ${nIdx + 1}: ${subHeaderTitle}`).slice(0, 84),
       {
         x: 50,
         y: 746,
-        size: 9.6,
+        size: 9.4,
         font: boldFont,
         color: rgb(0.05, 0.1, 0.2),
       }
@@ -1153,16 +1473,32 @@ export async function generateMadeFamiliarPdfBuffer(params: {
     });
     y -= 14;
 
-    // Build rich point-form bullets combining curriculum notes + worked illustration facts!
-    const bulletPoints = [
-      ...domainNotes.coreConceptNotes.map((b) => b.replace(/^\s*-\s*/, '')),
-      `Practical Tools & Realia: ${unit.resources}.`,
-      `Key Guiding Concept: ${
-        unit.kiq || `Mastering "${unit.subtopicTitle}" in real-world problem solving.`
-      }`,
-      `Worked Fact / Key Takeaway: ${q1.explanation}`,
-      `Exam Watchpoint: ${q2.explanation}`,
-    ];
+    // Distinct point-form bullets per progressive pass so notes never repeat across pages!
+    const bulletPoints =
+      passIdx === 0
+        ? [
+            ...domainNotes.coreConceptNotes.map((b) => b.replace(/^\s*-\s*/, '')),
+            `Key Inquiry Focus: ${
+              unit.kiq || `Mastering "${unit.subtopicTitle}" in real-world problem solving.`
+            }`,
+            `Key Fact 1: ${q1.explanation}`,
+            `Key Fact 2: ${q2.explanation}`,
+          ]
+        : passIdx === 1
+        ? [
+            `Practical Setup & Learning Aids: ${unit.resources}.`,
+            domainNotes.workedIllustration,
+            domainNotes.learnerPracticeTask,
+            `Practical Takeaway 1: ${q1.explanation}`,
+            `Practical Takeaway 2: ${q3.explanation}`,
+          ]
+        : [
+            `Applied Summary: ${domainNotes.summaryLine}`,
+            `Self-Check Criterion: ${domainNotes.checkQuestion}`,
+            `Worked Application Insight: ${q1.explanation}`,
+            `Accuracy & Marking Tip: ${q2.explanation}`,
+            `Extended Mastery Note: ${q3.explanation}`,
+          ];
 
     for (const bp of bulletPoints) {
       if (y < 385) break;
@@ -1259,7 +1595,7 @@ export async function generateMadeFamiliarPdfBuffer(params: {
       page,
       boldFont,
       regFont,
-      bookTitle: 'COMPETENCY BASED MADE FAMILIAR',
+      bookTitle: runningBookTitle,
       gradeSubjectLabel: `${gradeSubject} (Sub-Topic Answers)`,
       pageNumber: pageNum + pageOffset,
       totalPages: grandTotalPages,
@@ -1341,6 +1677,7 @@ export async function generateCompleteCompilationPdfBuffer(params: {
       subject,
       pageOffset: 0,
       grandTotalPages: 100,
+      headerOverrideTitle: 'SMART CBC ALL SUBJECTS',
     }),
     generateCbcGradeUpPdfBuffer({
       gradeKey,
@@ -1378,11 +1715,26 @@ export async function generateCbcBookDocxBuffer(params: {
     gradeKey,
     subject
   );
-  const questions = buildFullBookQuestionPool(
-    gradeKey,
-    subject,
-    bookType === 'MADE_FAMILIAR' ? 120 : 170
-  );
+  const madeFamiliarQuestions =
+    bookType === 'MADE_FAMILIAR' || bookType === 'COMPLETE_BUNDLE'
+      ? buildFullBookQuestionPool(gradeKey, subject, 120, 0)
+      : [];
+  const gradeUpQuestions =
+    bookType === 'GRADE_UP' || bookType === 'COMPLETE_BUNDLE'
+      ? buildFullBookQuestionPool(gradeKey, subject, 170, 120)
+      : [];
+  const questions =
+    bookType === 'MADE_FAMILIAR'
+      ? madeFamiliarQuestions
+      : bookType === 'GRADE_UP'
+      ? gradeUpQuestions
+      : [
+          ...madeFamiliarQuestions,
+          ...gradeUpQuestions.map((q, idx) => ({
+            ...q,
+            qNumber: 121 + idx,
+          })),
+        ];
 
   const children: Paragraph[] = [
     new Paragraph({
@@ -1458,23 +1810,24 @@ export async function generateCbcBookDocxBuffer(params: {
         heading: HeadingLevel.HEADING_1,
         children: [
           new TextRun({
-            text: 'COMPETENCY BASED MADE FAMILIAR — POINT-FORM NOTES & SUB-TOPIC QUESTIONS',
+            text: 'SUPER-LIGHT CBC COMPILATION — POINT-FORM NOTES & SUB-TOPIC QUESTIONS',
             bold: true,
           }),
         ],
       })
     );
 
-    for (let i = 0; i < Math.min(40, Math.max(subTopics.length, 20)); i++) {
-      const u = subTopics[i % subTopics.length];
-      const qA = questions[(i * 2) % questions.length];
-      const qB = questions[(i * 2 + 1) % questions.length];
+    for (let i = 0; i < 40; i++) {
+      const u = subTopics[i % Math.max(1, subTopics.length)];
+      const qA = madeFamiliarQuestions[i * 3];
+      const qB = madeFamiliarQuestions[i * 3 + 1];
+      const qC = madeFamiliarQuestions[i * 3 + 2];
       children.push(
         new Paragraph({
           spacing: { before: 180, after: 60 },
           children: [
             new TextRun({
-              text: `${u.strand} — Sub-topic: ${u.subtopicTitle}`,
+              text: `${u.strand} — Sub-topic ${i + 1}: ${u.subtopicTitle}`,
               bold: true,
               size: 22,
             }),
@@ -1501,7 +1854,7 @@ export async function generateCbcBookDocxBuffer(params: {
           spacing: { before: 80 },
           children: [
             new TextRun({
-              text: `Practice Q1: ${qA.prompt}`,
+              text: `Q${qA.qNumber}. ${qA.prompt}`,
               bold: true,
             }),
           ],
@@ -1509,7 +1862,15 @@ export async function generateCbcBookDocxBuffer(params: {
         new Paragraph({
           children: [
             new TextRun({
-              text: `Practice Q2: ${qB.prompt}`,
+              text: `Q${qB.qNumber}. ${qB.prompt}`,
+              bold: true,
+            }),
+          ],
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `Q${qC.qNumber}. ${qC.prompt}`,
               bold: true,
             }),
           ],
@@ -1532,7 +1893,12 @@ export async function generateCbcBookDocxBuffer(params: {
       })
     );
 
-    for (const q of questions) {
+    const gUpToRender =
+      bookType === 'COMPLETE_BUNDLE'
+        ? gradeUpQuestions.map((q, idx) => ({ ...q, qNumber: 121 + idx }))
+        : gradeUpQuestions;
+
+    for (const q of gUpToRender) {
       children.push(
         new Paragraph({
           spacing: { before: 100 },

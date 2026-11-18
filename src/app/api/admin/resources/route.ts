@@ -19,41 +19,46 @@ function sanitizeStorageFilename(name: string): string {
 }
 
 async function fetchAllResourcesAdmin() {
-  const all = [];
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabaseAdmin
-      .from('resources')
-      .select('*')
-      .order('grade', { ascending: true })
-      .order('term', { ascending: true })
-      .order('id', { ascending: true })
-      .range(from, from + 999);
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-    all.push(...data);
-    if (data.length < 1000) break;
-    from += 1000;
-  }
-  return all;
+  const { count } = await supabaseAdmin
+    .from('resources')
+    .select('id', { count: 'exact', head: true });
+  const total = Math.max(count || 7000, 1000);
+  const offsets: number[] = [];
+  for (let from = 0; from < total; from += 1000) offsets.push(from);
+
+  const chunks = await Promise.all(
+    offsets.map(async (from) => {
+      const { data, error } = await supabaseAdmin
+        .from('resources')
+        .select('id, title, grade, level, category, subject, term, format, price, file_path, created_at')
+        .order('grade', { ascending: true })
+        .order('term', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + 999);
+      if (error) throw error;
+      return data || [];
+    })
+  );
+  return chunks.flat();
 }
 
 async function fetchAllStorageNames() {
   const names = new Set<string>();
-  let offset = 0;
-  while (true) {
-    const { data, error } = await supabaseAdmin.storage
-      .from(BUCKET_NAME)
-      .list('', { limit: 1000, offset });
-    if (error) throw error;
-    if (!data || data.length === 0) break;
+  const batchOffsets = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
+  const results = await Promise.all(
+    batchOffsets.map((offset) =>
+      supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .list('', { limit: 1000, offset })
+    )
+  );
+  for (const { data } of results) {
+    if (!data) continue;
     for (const f of data) {
-      if (f.name !== '_meta' && f.name !== '.emptyFolderPlaceholder') {
+      if (f.name !== '_meta' && f.name !== '_system' && f.name !== '.emptyFolderPlaceholder') {
         names.add(f.name);
       }
     }
-    if (data.length < 1000) break;
-    offset += 1000;
   }
   return names;
 }

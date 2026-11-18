@@ -57,17 +57,17 @@ export async function GET(req: NextRequest) {
   } else if (service === 'BOOK_2') {
     badgeTop = 'BUTTON 2 • 50-PAGE NOTES + Q&A BOOK';
     headline =
-      'COMPETENCY BASED MADE FAMILIAR — Point-Form Notes + Topical Questions!';
+      'SUPER-LIGHT CBC COMPILATION — Point-Form Notes + Topical Questions!';
     subheadline =
       'Short Point-Form Notes Covering Every Strand & Sub-strand + Immediate Practice Questions!';
     priceTag = 'KSH 750 • PROMPT BUY';
   } else if (service === 'BOOK_3') {
-    badgeTop = 'BUTTON 3 • 100-PAGE COMPLETE COMPILATION';
+    badgeTop = 'BUTTON 3 • 100-PAGE ALL-IN-ONE PACK';
     headline =
-      'CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (All-in-One Master Pack)!';
+      'SMART CBC ALL SUBJECTS — Complete 100-Page Compilation + Full Grade Pack!';
     subheadline =
-      '100-Page Compiled Book + Full Grade Subject Access + Complete Marking Schemes!';
-    priceTag = 'KSH 1,500 • COMPLETE PACK';
+      'Combines SUPER-LIGHT CBC COMPILATION + CBC GRADE UP + Full Grade Subject Access!';
+    priceTag = 'KSH 1,500 • SMART PACK';
   } else if (materialId && materialId !== 'AUTO' && materialId !== 'PORTAL') {
     const uuidMatch = materialId.match(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i

@@ -206,8 +206,8 @@ const BOOK_BUTTONS_META: Array<{
     buttonNum: 2,
     serviceType: 'BOOK_MADE_FAMILIAR',
     priceKes: 750,
-    pagesLabel: '50-Page Notes + Q&A Book',
-    title: 'COMPETENCY BASED MADE FAMILIAR',
+    pagesLabel: '50-Page Notes + Q&A Compilation',
+    title: 'SUPER-LIGHT CBC COMPILATION',
     subtitle:
       'Short Point-Form Notes Covering Everything in Each Strand & Sub-strand + Immediate Topical Questions After Every Sub-topic',
     bullets: [
@@ -227,13 +227,13 @@ const BOOK_BUTTONS_META: Array<{
     buttonNum: 3,
     serviceType: 'BOOK_COMPLETE_BUNDLE',
     priceKes: 1500,
-    pagesLabel: '100-Page Master Compilation + Full Grade Pack',
-    title: 'COMPLETE COMPILATION (ALL-IN-ONE)',
+    pagesLabel: '100-Page Master Book + All Subjects',
+    title: 'SMART CBC ALL SUBJECTS',
     subtitle:
-      'Everything Compiled Together: COMPETENCY BASED MADE FAMILIAR (50 Pages) + CBC GRADE UP (50 Pages) + All Marking Schemes!',
+      'Everything Compiled Together: SUPER-LIGHT CBC COMPILATION (50 Pages) + CBC GRADE UP (50 Pages) + All Subjects in Grade!',
     bullets: [
-      'Compiles BOTH 50-Page Books into one 100-Page Master Edition',
-      'Unlocks separate downloads for Book 1 (50p), Book 2 (50p) & Compiled (100p)',
+      'Compiles BOTH 50-Page Books into one 100-Page Zero-Repeat Master Book',
+      'Unlocks separate downloads for CBC GRADE UP (50p) & SUPER-LIGHT (50p)',
       'Switch across ALL subjects in your selected Grade at zero extra cost!',
       'Best Value Prompt Buy — Instant M-Pesa STK Auto-Download (.PDF + .DOCX)',
     ],
@@ -751,8 +751,8 @@ export default function CbcBooksHub({
                             {b.type === 'GRADE_UP'
                               ? 'CBC GRADE UP (50p)'
                               : b.type === 'MADE_FAMILIAR'
-                              ? 'MADE FAMILIAR (50p)'
-                              : 'COMPILE ALL (100p)'}
+                              ? 'SUPER-LIGHT CBC COMPILATION'
+                              : 'SMART CBC ALL SUBJECTS'}
                           </div>
                         </button>
                       );
@@ -983,7 +983,7 @@ export default function CbcBooksHub({
                               )}
                               className="py-2 px-2.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] text-center transition"
                             >
-                              ↓ MADE FAMILIAR (50p PDF)
+                              ↓ SUPER-LIGHT CBC (50p PDF)
                             </a>
                           </div>
                         )}

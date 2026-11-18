@@ -1284,6 +1284,100 @@ export default function AdminDashboardPage() {
 
         {/* 2. Live Catalog Inventory (Grouped by Material Area) */}
         <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          {/* Quick Admin Store Showcase for the 3 Official 50-Page & 100-Page Book Series + KICD Approved Pathways */}
+          <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 text-white p-4 sm:p-5 border border-emerald-500/40 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full">
+                  LIVE IN ADMIN STORE • KICD APPROVED COURSE MATERIALS SYNCED
+                </span>
+                <h3 className="text-sm sm:text-base font-black mt-1">
+                  50-Page &amp; 100-Page CBC Subject Books + All 37 Approved Senior Pathway Subjects
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchInventory(password)}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Refresh Store ({inventory.length.toLocaleString()} Total)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchFilter('');
+                  setAdminCategoryFilter('CBC GRADE UP (50-Page Books)');
+                  setAdminVisibleCount(100);
+                }}
+                className="p-3 rounded-xl bg-emerald-800/70 hover:bg-emerald-700/80 border border-emerald-400/50 text-left transition cursor-pointer"
+              >
+                <div className="text-[10px] font-black uppercase text-amber-300">
+                  BUTTON 1 BOOKS • KES 500
+                </div>
+                <div className="text-sm font-black">CBC GRADE UP (50 Pages)</div>
+                <div className="text-[11px] text-emerald-100 mt-0.5">
+                  {
+                    inventory.filter(
+                      (r) => normalizeCategory(r.category) === 'CBC GRADE UP (50-Page Books)'
+                    ).length
+                  }{' '}
+                  Subject Books in Store → Click to View
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchFilter('');
+                  setAdminCategoryFilter('SUPER-LIGHT CBC COMPILATION (50p)');
+                  setAdminVisibleCount(100);
+                }}
+                className="p-3 rounded-xl bg-indigo-800/70 hover:bg-indigo-700/80 border border-sky-400/50 text-left transition cursor-pointer"
+              >
+                <div className="text-[10px] font-black uppercase text-sky-300">
+                  BUTTON 2 BOOKS • KES 750
+                </div>
+                <div className="text-sm font-black">SUPER-LIGHT CBC COMPILATION</div>
+                <div className="text-[11px] text-sky-100 mt-0.5">
+                  {
+                    inventory.filter(
+                      (r) =>
+                        normalizeCategory(r.category) === 'SUPER-LIGHT CBC COMPILATION (50p)'
+                    ).length
+                  }{' '}
+                  Subject Books in Store → Click to View
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchFilter('');
+                  setAdminCategoryFilter('SMART CBC ALL SUBJECTS (100p)');
+                  setAdminVisibleCount(100);
+                }}
+                className="p-3 rounded-xl bg-purple-900/70 hover:bg-purple-800/80 border border-amber-400/60 text-left transition cursor-pointer"
+              >
+                <div className="text-[10px] font-black uppercase text-amber-300">
+                  BUTTON 3 COMPILATION • KES 1,500
+                </div>
+                <div className="text-sm font-black">SMART CBC ALL SUBJECTS (100p)</div>
+                <div className="text-[11px] text-amber-100 mt-0.5">
+                  {
+                    inventory.filter(
+                      (r) => normalizeCategory(r.category) === 'SMART CBC ALL SUBJECTS (100p)'
+                    ).length
+                  }{' '}
+                  Master Books in Store → Click to View
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-black text-slate-900 uppercase">

@@ -37,8 +37,8 @@ const HOME_FAQS = [
     a: 'Yes. Parents and learners can book subject-matched holiday or personal teachers (PP1–Grade 12, home or online), and qualified CBC teachers can register in our Priority Queue to get matched with students across all 47 counties in Kenya.',
   },
   {
-    q: 'Are the 50-Page "CBC GRADE UP" and "COMPETENCY BASED MADE FAMILIAR" books aligned with Official Approved CBC Course Materials?',
-    a: 'Yes! Every 50-page CBC GRADE UP book (KSh 500), 50-page COMPETENCY BASED MADE FAMILIAR point-form notes & topical Q&A book (KSh 750), and 100-page Complete Compilation (KSh 1,500) is built directly from the Official Approved CBC Course Materials across PP1, PP2, Grades 1–9, and all 37 Senior School (Grades 10–12) STEM, Social Sciences, and Arts & Sports Science Pathway subjects, complete with end-of-book marking schemes.',
+    q: 'Are the 50-Page "CBC GRADE UP", "SUPER-LIGHT CBC COMPILATION", and "SMART CBC ALL SUBJECTS" books aligned with Official Approved CBC Course Materials?',
+    a: 'Yes! Every 50-page CBC GRADE UP book (KSh 500), 50-page SUPER-LIGHT CBC COMPILATION point-form notes & topical Q&A book (KSh 750), and 100-page SMART CBC ALL SUBJECTS compilation (KSh 1,500) is built directly from the Official Approved CBC Course Materials across PP1, PP2, Grades 1–9, and all 37 Senior School (Grades 10–12) STEM, Social Sciences, and Arts & Sports Science Pathway subjects, complete with end-of-book marking schemes and zero question repetition.',
   },
 ];
 

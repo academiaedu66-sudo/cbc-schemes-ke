@@ -156,6 +156,43 @@ export async function GET(req: Request) {
       });
     }
 
+    // DEV QA: STRICT ZERO-REPETITION AUDIT ACROSS ALL 210 (GRADE, SUBJECT) PAIRS (60,900 QUESTIONS)
+    if (action === 'verify_zero_repeat' && process.env.NODE_ENV !== 'production') {
+      let totalPairs = 0;
+      let totalQuestionsChecked = 0;
+      let duplicateCount = 0;
+      const duplicatesFound: string[] = [];
+
+      for (const gk of ALL_GRADE_KEYS) {
+        for (const subj of getSubjectsForGradeKey(gk)) {
+          totalPairs++;
+          const qMadeFamiliar = buildFullBookQuestionPool(gk, subj, 120, 0);
+          const qGradeUp = buildFullBookQuestionPool(gk, subj, 170, 120);
+          const combined = [...qMadeFamiliar, ...qGradeUp];
+          totalQuestionsChecked += combined.length;
+
+          const seen = new Set<string>();
+          for (const q of combined) {
+            const norm = q.prompt.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (seen.has(norm)) {
+              duplicateCount++;
+              if (duplicatesFound.length < 15) {
+                duplicatesFound.push(`${gk} ${subj}: ${q.prompt.slice(0, 90)}`);
+              }
+            }
+            seen.add(norm);
+          }
+        }
+      }
+
+      return NextResponse.json({
+        totalPairs,
+        totalQuestionsChecked,
+        duplicateCount,
+        duplicatesFound,
+      });
+    }
+
     // 2. LIVE SAMPLE PREVIEW FOR ANY GRADE + SUBJECT + BOOK BUTTON
     if (action === 'preview') {
       const bookType = normalizeBookType(url.searchParams.get('bookType'));
@@ -312,8 +349,8 @@ export async function GET(req: Request) {
         bookType === 'GRADE_UP'
           ? 'CBC_GRADE_UP_50_Pages'
           : bookType === 'MADE_FAMILIAR'
-          ? 'COMPETENCY_BASED_MADE_FAMILIAR_50_Pages'
-          : 'COMPLETE_COMPILATION_CBC_GRADE_UP_AND_MADE_FAMILIAR_100_Pages';
+          ? 'SUPER_LIGHT_CBC_COMPILATION_50_Pages'
+          : 'SMART_CBC_ALL_SUBJECTS_100_Pages';
 
       if (format === 'docx') {
         const docxBuf = await generateCbcBookDocxBuffer({

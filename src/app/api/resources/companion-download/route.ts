@@ -29,6 +29,7 @@ import {
   getApprovedCoursebook,
   buildDomainLessonNotes,
 } from '../../../../../scripts/cbc-syllabus-data.mjs';
+import { generateCbcBookDocxBuffer } from '@/lib/cbc-books-engine';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -824,6 +825,35 @@ export async function GET(request: NextRequest) {
     }
 
     // Target format === 'docx'
+    const normCat = normalizeCategory(resource.category);
+    if (
+      normCat === 'CBC GRADE UP (50-Page Books)' ||
+      normCat === 'SUPER-LIGHT CBC COMPILATION (50p)' ||
+      normCat === 'SMART CBC ALL SUBJECTS (100p)'
+    ) {
+      const gKey = getResourceGradeKey(resource);
+      const bookType =
+        normCat === 'SUPER-LIGHT CBC COMPILATION (50p)'
+          ? 'MADE_FAMILIAR'
+          : normCat === 'SMART CBC ALL SUBJECTS (100p)'
+          ? 'COMPLETE_BUNDLE'
+          : 'GRADE_UP';
+      const bookDocx = await generateCbcBookDocxBuffer({
+        bookType,
+        gradeKey: gKey,
+        subject: resource.subject || 'Mathematics',
+      });
+      return new NextResponse(new Uint8Array(bookDocx), {
+        status: 200,
+        headers: {
+          'Content-Type':
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'Content-Disposition': `attachment; filename="${safeBaseName}_Editable.docx"`,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     if (resource.file_path && resource.file_path.toLowerCase().endsWith('.docx')) {
       const { data: signed } = await supabaseAdmin.storage
         .from(BUCKET_NAME)

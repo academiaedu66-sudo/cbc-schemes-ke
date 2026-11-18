@@ -114,7 +114,7 @@ export async function POST(req: Request) {
         price: 750,
         title:
           cleanBookTitle ||
-          'COMPETENCY BASED MADE FAMILIAR — 50-Page Point-Form Notes + Q&A (KSh 750)',
+          'SUPER-LIGHT CBC COMPILATION — 50-Page Point-Form Notes + Q&A (KSh 750)',
       };
     } else if (serviceType === 'BOOK_COMPLETE_BUNDLE') {
       resource = {
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
         price: 1500,
         title:
           cleanBookTitle ||
-          'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (KSh 1,500)',
+          'SMART CBC ALL SUBJECTS — 100-Page Master Book + All Grade Subjects (KSh 1,500)',
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

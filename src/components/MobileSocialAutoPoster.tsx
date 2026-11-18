@@ -446,10 +446,10 @@ export default function MobileSocialAutoPoster({
             📘 BUTTON 1 BOOK: CBC GRADE UP (50 Pages + Marking Schemes — KSh 500)
           </option>
           <option value="SERVICE_BOOK_2">
-            📗 BUTTON 2 BOOK: COMPETENCY BASED MADE FAMILIAR (50 Pages Notes + Q&amp;A — KSh 750)
+            📗 BUTTON 2 BOOK: SUPER-LIGHT CBC COMPILATION (50 Pages Notes + Q&amp;A — KSh 750)
           </option>
           <option value="SERVICE_BOOK_3">
-            🏆 BUTTON 3 COMPILATION: CBC GRADE UP + MADE FAMILIAR (100 Pages — KSh 1,500)
+            🏆 BUTTON 3 COMPILATION: SMART CBC ALL SUBJECTS (100 Pages — KSh 1,500)
           </option>
           <option value="SERVICE_GAMING">
             🎮 GAMING ARENA AD: Play All 21 CBC Subjects &amp; Earn Cash

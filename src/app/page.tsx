@@ -152,37 +152,37 @@ export default function HomePage() {
       });
   }, []);
 
-  // Fetch all pages of real materials from Supabase (>1,000 rows safe)
+  // Fetch all pages of real materials from Supabase (>1,000 rows safe, parallelized)
   useEffect(() => {
     async function fetchAllResources() {
       setIsLoading(true);
       const byId = new Map<string, ResourceItem>();
-      let from = 0;
+      const offsets = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000];
 
-      while (true) {
-        const { data, error } = await supabase
-          .from('resources')
-          .select('*')
-          .order('grade', { ascending: true })
-          .order('term', { ascending: true })
-          .order('id', { ascending: true })
-          .range(from, from + 999);
+      const pages = await Promise.all(
+        offsets.map((from) =>
+          supabase
+            .from('resources')
+            .select('id, title, grade, level, category, subject, term, format, price, file_path')
+            .order('grade', { ascending: true })
+            .order('term', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, from + 999)
+        )
+      );
 
+      for (const { data, error } of pages) {
         if (error) {
           console.error('Failed to load items from Supabase:', error.message);
-          break;
+          continue;
         }
-        if (!data || data.length === 0) break;
-
+        if (!data) continue;
         for (const item of data as ResourceItem[]) {
           byId.set(item.id, {
             ...item,
             category: normalizeCategory(item.category),
           });
         }
-
-        if (data.length < 1000) break;
-        from += 1000;
       }
 
       setResources(Array.from(byId.values()));
@@ -599,7 +599,7 @@ export default function HomePage() {
               className="bg-sky-400 hover:bg-sky-300 text-slate-950 border-2 border-white/70 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-indigo-950" />
-              <span>2. MADE FAMILIAR (KSh 750)</span>
+              <span>2. SUPER-LIGHT CBC COMPILATION (KSh 750)</span>
             </button>
             <button
               type="button"
@@ -614,7 +614,7 @@ export default function HomePage() {
               className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border-2 border-amber-500 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-purple-900" />
-              <span>3. COMPILE ALL BOOKS (KSh 1,500)</span>
+              <span>3. SMART CBC ALL SUBJECTS (KSh 1,500)</span>
             </button>
             <button
               type="button"

@@ -374,41 +374,41 @@ export async function executeMultiPlatformBroadcast(params: {
     }
   } else if (selKey === 'SERVICE_BOOK_2') {
     targetTitle =
-      'COMPETENCY BASED MADE FAMILIAR — 50-Page Point-Form Notes + Q&A (KSh 750)';
+      'SUPER-LIGHT CBC COMPILATION — 50-Page Point-Form Notes + Q&A (KSh 750)';
     targetUrl = 'https://www.cbcmaterials.shop/?book=2';
     posterQuery = 'service=BOOK_2';
     reelComment =
-      `📗 GET "COMPETENCY BASED MADE FAMILIAR" (50-Page Notes + Q&A — KSh 750):\n` +
+      `📗 GET "SUPER-LIGHT CBC COMPILATION" (50-Page Notes + Q&A — KSh 750):\n` +
       `https://www.cbcmaterials.shop/?book=2 \n` +
       `💬 WhatsApp: https://wa.me/254705759072`;
     if (!feedCaption) {
       feedCaption =
-        `📗 NEW 50-PAGE REVISION BOOK: "COMPETENCY BASED MADE FAMILIAR" (PP1 – GRADE 12)!\n` +
+        `📗 NEW 50-PAGE REVISION BOOK: "SUPER-LIGHT CBC COMPILATION" (PP1 – GRADE 12)!\n` +
         `✅ Short Point-Form Notes covering EVERYTHING in each Strand & Sub-strand!\n` +
         `✅ Every sub-topic followed immediately by relevant practice questions + Answers!\n` +
         `✅ Only KSh 750 via Instant M-Pesa STK Prompt (PDF + Editable DOCX)!\n\n` +
         `👉 Click Here to Download Immediately:\nhttps://www.cbcmaterials.shop/?book=2 \n\n` +
         `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
-        `#MadeFamiliar #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
+        `#SuperLightCBC #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_BOOK_3') {
     targetTitle =
-      'COMPLETE COMPILATION: CBC GRADE UP + COMPETENCY BASED MADE FAMILIAR (KSh 1,500)';
+      'SMART CBC ALL SUBJECTS — 100-Page Master Book + All Subjects in Grade (KSh 1,500)';
     targetUrl = 'https://www.cbcmaterials.shop/?book=3';
     posterQuery = 'service=BOOK_3';
     reelComment =
-      `📚 GET COMPLETE 100-PAGE BOOKS COMPILATION (KSh 1,500):\n` +
+      `📚 GET "SMART CBC ALL SUBJECTS" (100-Page Master Book — KSh 1,500):\n` +
       `https://www.cbcmaterials.shop/?book=3 \n` +
       `💬 WhatsApp: https://wa.me/254705759072`;
     if (!feedCaption) {
       feedCaption =
-        `🏆 COMPLETE ALL-IN-ONE COMPILATION (100 PAGES + FULL GRADE PACK — KSh 1,500)!\n` +
-        `✅ Combines BOTH 50-Page Books: "COMPETENCY BASED MADE FAMILIAR" + "CBC GRADE UP"!\n` +
+        `🏆 SMART CBC ALL SUBJECTS (100 PAGES + FULL GRADE SUBJECT ACCESS — KSh 1,500)!\n` +
+        `✅ Combines BOTH 50-Page Books: "SUPER-LIGHT CBC COMPILATION" + "CBC GRADE UP"!\n` +
         `✅ Point-Form Notes + Sub-topic Questions + 170 Exam Questions + Full Marking Schemes!\n` +
         `✅ Instant M-Pesa STK Prompt Auto-Download on WWW.CBCMATERIALS.SHOP!\n\n` +
-        `👉 Click Here to Get Everything Compiled:\nhttps://www.cbcmaterials.shop/?book=3 \n\n` +
+        `👉 Click Here to Get Smart CBC All Subjects:\nhttps://www.cbcmaterials.shop/?book=3 \n\n` +
         `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
-        `#CBCKenya #CBCGradeUp #MadeFamiliar #KPSEA2026 #KJSEA2026`;
+        `#SmartCBC #CBCGradeUp #CBCKenya #KPSEA2026 #KJSEA2026`;
     }
   } else if (selKey === 'SERVICE_PORTAL') {
     targetTitle = '3,400+ 2026 CBC Schemes, Notes, Lesson Plans & KPSEA/KJSEA Exams';

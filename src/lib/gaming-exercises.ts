@@ -743,6 +743,170 @@ export function generateWorkedDomainExercise(
     };
   }
 
+  // TECHNICAL STUDIES (ELECTRICITY, BUILDING, AVIATION, WOODWORK, METALWORK, POWER MECHANICS, MEDIA)
+  if (domain === 'technical_engineering') {
+    const mode = v % 4;
+    const q = Math.floor(v / 4);
+    if (mode === 0) {
+      const current = 2 + (q % 18);
+      const resist = 4 + (Math.floor(q / 18) % 19);
+      const powerW = current * current * resist;
+      const p = packChoices(
+        `${powerW} W`,
+        [`${current * resist} W`, `${current + resist} W`, `${powerW * 2} W`],
+        v
+      );
+      return {
+        q: `An electrical workshop load of resistance ${resist} Ohm carries a steady current of ${current} A. Calculate the electrical power dissipated (P = I²R).`,
+        options: p.options,
+        ans: p.ans,
+        exp: `Power P = I² × R = ${current}² × ${resist} = ${powerW} Watts.`,
+        tags: ['electricity', 'power', 'circuit'],
+      };
+    }
+    if (mode === 1) {
+      const cementBags = 2 + (q % 20);
+      const sandBags = cementBags * 2;
+      const ballastBags = cementBags * 4;
+      const p = packChoices(
+        `${sandBags} wheelbarrows of sand and ${ballastBags} wheelbarrows of ballast`,
+        [
+          `${cementBags} wheelbarrows of sand and ${cementBags} wheelbarrows of ballast`,
+          `${ballastBags} wheelbarrows of sand and ${sandBags} wheelbarrows of ballast`,
+          `${sandBags + 3} wheelbarrows of sand and ${ballastBags + 5} wheelbarrows of ballast`,
+        ],
+        v
+      );
+      return {
+        q: `Using a structural concrete batching mix ratio of 1:2:4 (cement : sand : ballast), how much sand and ballast should be batched with ${cementBags} wheelbarrows of cement?`,
+        options: p.options,
+        ans: p.ans,
+        exp: `For a 1:2:4 mix with ${cementBags} parts cement: Sand = 2 × ${cementBags} = ${sandBags}; Ballast = 4 × ${cementBags} = ${ballastBags}.`,
+        tags: ['building', 'concrete', 'construction'],
+      };
+    }
+    if (mode === 2) {
+      const driverTeeth = 12 + 2 * (q % 15);
+      const ratio = 2 + (Math.floor(q / 15) % 6);
+      const drivenTeeth = driverTeeth * ratio;
+      const p = packChoices(
+        `${ratio}:1`,
+        [`1:${ratio * 2}`, `${drivenTeeth}:1`, `${driverTeeth + drivenTeeth}:1`],
+        v
+      );
+      return {
+        q: `In a power mechanics / machine drive, a driving gear with ${driverTeeth} teeth meshes with a driven gear having ${drivenTeeth} teeth. Calculate the gear ratio (Driven : Driver).`,
+        options: p.options,
+        ans: p.ans,
+        exp: `Gear ratio = Driven teeth ÷ Driver teeth = ${drivenTeeth} ÷ ${driverTeeth} = ${ratio}:1.`,
+        tags: ['mechanics', 'gear', 'machine'],
+      };
+    }
+    const groundSpeedKnots = 90 + 10 * (q % 18);
+    const hours = 2 + (Math.floor(q / 18) % 6);
+    const distNm = groundSpeedKnots * hours;
+    const p = packChoices(
+      `${distNm} nautical miles`,
+      [`${distNm + 45} nautical miles`, `${groundSpeedKnots + hours} nautical miles`, `${Math.round(distNm / 2)} nautical miles`],
+      v
+    );
+    return {
+      q: `An training aircraft maintains a steady ground speed of ${groundSpeedKnots} knots for ${hours} hours during a cross-country navigation flight. Calculate the distance covered in nautical miles.`,
+      options: p.options,
+      ans: p.ans,
+      exp: `1 knot = 1 nautical mile per hour, so Distance = ${groundSpeedKnots} × ${hours} = ${distNm} nautical miles.`,
+      tags: ['aviation', 'navigation', 'flight'],
+    };
+  }
+
+  // HOME SCIENCE WORKED NUTRITION & GARMENT CALCULATIONS
+  if (domain === 'homescience') {
+    const carbG = 20 + 5 * (v % 18);
+    const protG = 10 + 2 * (Math.floor(v / 18) % 14);
+    const fatG = 5 + (Math.floor(v / 11) % 12);
+    const kcal = carbG * 4 + protG * 4 + fatG * 9;
+    const p = packChoices(
+      `${kcal} kcal`,
+      [`${(carbG + protG + fatG) * 4} kcal`, `${kcal + 95} kcal`, `${(carbG + protG + fatG) * 9} kcal`],
+      v
+    );
+    return {
+      q: `A balanced lunch portion provides ${carbG} g of carbohydrates, ${protG} g of protein, and ${fatG} g of fat. Given 4 kcal/g for carbohydrates and protein and 9 kcal/g for fat, calculate the total energy value.`,
+      options: p.options,
+      ans: p.ans,
+      exp: `Energy = (${carbG} × 4) + (${protG} × 4) + (${fatG} × 9) = ${carbG * 4} + ${protG * 4} + ${fatG * 9} = ${kcal} kcal.`,
+      tags: ['nutrition', 'foods', 'homescience'],
+    };
+  }
+
+  // FRENCH / GERMAN / ARABIC NUMBER & TIME EXPRESSIONS
+  if (domain === 'french') {
+    const frNums: Array<[number, string]> = [
+      [11, 'onze'], [12, 'douze'], [13, 'treize'], [14, 'quatorze'], [15, 'quinze'],
+      [16, 'seize'], [17, 'dix-sept'], [18, 'dix-huit'], [19, 'dix-neuf'], [20, 'vingt'],
+      [21, 'vingt et un'], [25, 'vingt-cinq'], [30, 'trente'], [35, 'trente-cinq'],
+      [40, 'quarante'], [45, 'quarante-cinq'], [50, 'cinquante'], [60, 'soixante'],
+      [70, 'soixante-dix'], [80, 'quatre-vingts'], [90, 'quatre-vingt-dix'], [100, 'cent'],
+    ];
+    const idx = v % frNums.length;
+    const [num, word] = frNums[idx];
+    const d1 = frNums[(idx + 1) % frNums.length][1];
+    const d2 = frNums[(idx + 3) % frNums.length][1];
+    const d3 = frNums[(idx + 5) % frNums.length][1];
+    const p = packChoices(word, [d1, d2, d3], v);
+    return {
+      q: `How is the number ${num} written correctly in French?`,
+      options: p.options,
+      ans: p.ans,
+      exp: `In French, the cardinal number ${num} is written "${word}".`,
+      tags: ['nombres', 'french'],
+    };
+  }
+
+  if (domain === 'german') {
+    const deNums: Array<[number, string]> = [
+      [11, 'elf'], [12, 'zwölf'], [13, 'dreizehn'], [14, 'vierzehn'], [15, 'fünfzehn'],
+      [16, 'sechzehn'], [17, 'siebzehn'], [18, 'achtzehn'], [19, 'neunzehn'], [20, 'zwanzig'],
+      [21, 'einundzwanzig'], [24, 'vierundzwanzig'], [30, 'dreißig'], [40, 'vierzig'],
+      [50, 'fünfzig'], [60, 'sechzig'], [70, 'siebzig'], [80, 'achtzig'], [90, 'neunzig'], [100, 'hundert'],
+    ];
+    const idx = v % deNums.length;
+    const [num, word] = deNums[idx];
+    const d1 = deNums[(idx + 1) % deNums.length][1];
+    const d2 = deNums[(idx + 3) % deNums.length][1];
+    const d3 = deNums[(idx + 5) % deNums.length][1];
+    const p = packChoices(word, [d1, d2, d3], v);
+    return {
+      q: `How is the number ${num} written in German?`,
+      options: p.options,
+      ans: p.ans,
+      exp: `In German, the number ${num} is "${word}".`,
+      tags: ['zahlen', 'german'],
+    };
+  }
+
+  if (domain === 'arabic') {
+    const arNums: Array<[number, string]> = [
+      [1, 'Wahid'], [2, 'Ithnan'], [3, 'Thalathah'], [4, 'Arba’ah'], [5, 'Khamsah'],
+      [6, 'Sittah'], [7, 'Sab’ah'], [8, 'Thamaniyah'], [9, 'Tis’ah'], [10, 'Asharah'],
+      [11, 'Ahada ashara'], [12, 'Ithna ashara'], [20, 'Ishrun'], [30, 'Thalathun'],
+      [40, 'Arba’un'], [50, 'Khamsun'], [100, 'Mi’ah'], [1000, 'Alf'],
+    ];
+    const idx = v % arNums.length;
+    const [num, word] = arNums[idx];
+    const d1 = arNums[(idx + 1) % arNums.length][1];
+    const d2 = arNums[(idx + 3) % arNums.length][1];
+    const d3 = arNums[(idx + 5) % arNums.length][1];
+    const p = packChoices(word, [d1, d2, d3], v);
+    return {
+      q: `Which transliterated Arabic numeral word represents the number ${num}?`,
+      options: p.options,
+      ans: p.ans,
+      exp: `In Arabic numerals, ${num} is "${word}".`,
+      tags: ['numbers', 'arabic'],
+    };
+  }
+
   return null;
 }
 

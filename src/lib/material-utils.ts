@@ -1,4 +1,7 @@
 export type MaterialCategory =
+  | 'CBC GRADE UP (50-Page Books)'
+  | 'SUPER-LIGHT CBC COMPILATION (50p)'
+  | 'SMART CBC ALL SUBJECTS (100p)'
   | 'Schemes of Work'
   | 'Lesson Plans'
   | "Teachers' Notes"
@@ -48,6 +51,9 @@ export interface ParsedMaterialMetadata {
 }
 
 export const MATERIAL_CATEGORIES: MaterialCategory[] = [
+  'CBC GRADE UP (50-Page Books)',
+  'SUPER-LIGHT CBC COMPILATION (50p)',
+  'SMART CBC ALL SUBJECTS (100p)',
   'Schemes of Work',
   'Lesson Plans',
   "Teachers' Notes",
@@ -57,6 +63,9 @@ export const MATERIAL_CATEGORIES: MaterialCategory[] = [
 ];
 
 export const DEFAULT_PRICES: Record<MaterialCategory, number> = {
+  'CBC GRADE UP (50-Page Books)': 500,
+  'SUPER-LIGHT CBC COMPILATION (50p)': 750,
+  'SMART CBC ALL SUBJECTS (100p)': 1500,
   'Schemes of Work': 50,
   'Lesson Plans': 70,
   "Teachers' Notes": 100,
@@ -232,6 +241,20 @@ export function getTermTotalWeeks(term?: number | null): number {
 export function normalizeCategory(raw?: string | null): MaterialCategory {
   if (!raw) return 'Schemes of Work';
   const lower = raw.toLowerCase();
+  if (
+    lower.includes('smart cbc') ||
+    lower.includes('100p') ||
+    lower.includes('100-page') ||
+    lower.includes('complete books compilation')
+  ) {
+    return 'SMART CBC ALL SUBJECTS (100p)';
+  }
+  if (lower.includes('super-light') || lower.includes('made familiar')) {
+    return 'SUPER-LIGHT CBC COMPILATION (50p)';
+  }
+  if (lower.includes('grade up')) {
+    return 'CBC GRADE UP (50-Page Books)';
+  }
   if (lower.includes('record') && lower.includes('work')) return 'Records of Work';
   if (lower.includes('holiday') || lower.includes('curriculum design') || lower.includes('designs')) {
     return 'Holiday Assignments & Designs';
