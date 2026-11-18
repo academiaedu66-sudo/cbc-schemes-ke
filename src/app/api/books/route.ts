@@ -26,6 +26,11 @@ import {
   type BookTermOption,
   type CbcBookType,
 } from '@/lib/cbc-books-engine';
+import {
+  buildJamoKenyattaKjseaExam,
+  generateJamoKjseaDocxBuffer,
+  generateJamoKjseaPdfBuffer,
+} from '@/lib/jamo-kjsea-exam';
 
 const ALL_GRADE_KEYS = [
   'PP1',
@@ -104,12 +109,12 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
         if (st === 'SUCCESS' || st === 'COMPLETED') {
           const receipt = String(
             phJson?.provider_reference ||
-              phJson?.third_party_reference ||
-              reference
+            phJson?.third_party_reference ||
+            reference
           ).slice(0, 40);
           const amt = Math.max(
-            500,
-            Number(phJson?.amount) || Number(order?.amount) || 500
+            10,
+            Number(phJson?.amount) || Number(order?.amount) || 50
           );
           const phPhone = String(
             phJson?.phone_number || order?.phone_number || '254700000000'
@@ -156,10 +161,10 @@ async function resolveVerifiedBookOrder(checkoutRequestId: string) {
 
   const buyerName = order
     ? await resolveBuyerMpesaName({
-        checkoutRequestId,
-        phone: order.phone_number,
-        fallbackName: detectedMpesaName,
-      })
+      checkoutRequestId,
+      phone: order.phone_number,
+      fallbackName: detectedMpesaName,
+    })
     : detectedMpesaName;
 
   return { order, buyerName };
@@ -334,6 +339,214 @@ export async function GET(req: Request) {
       });
     }
 
+    // DEV QA & INTERNAL BUILDER FOR "JAMO KENYATTA KJSEA EXAM" (20 QUESTIONS, 2 HOURS, ALL STRANDS, 0% REPEAT)
+    if (action === 'verify_jamo_kjsea' && process.env.NODE_ENV !== 'production') {
+      let totalExams = 0;
+      let missingStrands = 0;
+      let duplicateQuestions = 0;
+      let englishLeakInKiswahili = 0;
+      const sampleIssues: string[] = [];
+
+      for (const gk of ALL_GRADE_KEYS) {
+        for (const subj of getSubjectsForGradeKey(gk)) {
+          totalExams++;
+          const exam = buildJamoKenyattaKjseaExam(gk, subj);
+          const seen = new Set<string>();
+          const coveredStrands = new Set<string>();
+
+          for (const q of exam.sectionA) {
+            coveredStrands.add(q.strand);
+            const k = q.prompt.toLowerCase().trim();
+            if (seen.has(k)) {
+              duplicateQuestions++;
+              sampleIssues.push(`Dup MCQ in ${gk} ${subj}: ${q.prompt.slice(0, 70)}`);
+            }
+            seen.add(k);
+          }
+          for (const sq of exam.sectionB) {
+            coveredStrands.add(sq.strand);
+            for (const p of [sq.partAPrompt, sq.partBPrompt]) {
+              const k = p.toLowerCase().trim();
+              if (seen.has(k)) {
+                duplicateQuestions++;
+                sampleIssues.push(`Dup Struct in ${gk} ${subj}: ${p.slice(0, 70)}`);
+              }
+              seen.add(k);
+            }
+            if (
+              exam.isKiswahili &&
+              /\b(state and explain|distinguish clearly|outline four|candidates make)\b/i.test(
+                `${sq.partAPrompt} ${sq.partBPrompt}`
+              )
+            ) {
+              englishLeakInKiswahili++;
+              sampleIssues.push(`English leak in ${gk} ${subj}`);
+            }
+          }
+
+          for (const st of exam.strandsCovered) {
+            if (!coveredStrands.has(st)) {
+              missingStrands++;
+              sampleIssues.push(`Strand not covered in ${gk} ${subj}: ${st}`);
+            }
+          }
+        }
+      }
+
+      return NextResponse.json({
+        totalExams,
+        questionsPerExam: 20,
+        duration: '2 HOURS',
+        missingStrands,
+        duplicateQuestions,
+        englishLeakInKiswahili,
+        sampleIssues: sampleIssues.slice(0, 20),
+      });
+    }
+
+    if (action === 'jamo_kjsea_download' && process.env.NODE_ENV !== 'production') {
+      const gradeKey = (url.searchParams.get('gradeKey') || '9').trim();
+      const subject = (url.searchParams.get('subject') || 'Mathematics').trim();
+      const format = (url.searchParams.get('format') || 'pdf').toLowerCase();
+      const mode =
+        (url.searchParams.get('mode') || 'PAPER').toUpperCase() === 'MARKING_SCHEME'
+          ? 'MARKING_SCHEME'
+          : 'PAPER';
+      if (format === 'docx') {
+        const docxBuf = await generateJamoKjseaDocxBuffer({ gradeKey, subject, mode });
+        return new NextResponse(new Uint8Array(docxBuf), {
+          status: 200,
+          headers: {
+            'Content-Type':
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          },
+        });
+      }
+      const pdfBytes = await generateJamoKjseaPdfBuffer({ gradeKey, subject, mode });
+      return new NextResponse(Buffer.from(pdfBytes), {
+        status: 200,
+        headers: { 'Content-Type': 'application/pdf' },
+      });
+    }
+
+    // LIVE PREVIEW FOR "NATIONAL KJSEA EXAMINATION (ALL GRADES)" BUTTON
+    if (action === 'kjsea_preview') {
+      const gradeKey = (url.searchParams.get('gradeKey') || '9').trim();
+      const validSubjects = getSubjectsForGradeKey(gradeKey);
+      const requestedSubj = (url.searchParams.get('subject') || '').trim();
+      const subject = validSubjects.includes(requestedSubj)
+        ? requestedSubj
+        : validSubjects[0] || 'Mathematics';
+
+      const exam = buildJamoKenyattaKjseaExam(gradeKey, subject);
+      return NextResponse.json({
+        examTitle: exam.examTitle,
+        paperCode: exam.paperCode,
+        durationLabel: exam.durationLabel,
+        gradeKey: exam.gradeKey,
+        gradeLabel: exam.gradeLabel,
+        kiswahiliGradeLabel: exam.kiswahiliGradeLabel,
+        subject: exam.subject,
+        availableSubjects: validSubjects,
+        isKiswahili: exam.isKiswahili,
+        strandsCovered: exam.strandsCovered,
+        totalQuestions: exam.totalQuestions,
+        totalMarks: exam.totalMarks,
+        paperPriceKes: 50,
+        markingSchemePriceKes: 50,
+        sampleMcq: exam.sectionA.slice(0, 2).map((q) => ({
+          qNumber: q.qNumber,
+          strand: q.strand,
+          prompt: q.prompt,
+          options: q.options,
+          marks: q.marks,
+        })),
+        sampleStructured: exam.sectionB.slice(0, 1).map((sq) => ({
+          qNumber: sq.qNumber,
+          strand: sq.strand,
+          substrand: sq.substrand,
+          partAPrompt: sq.partAPrompt,
+          partAMarks: sq.partAMarks,
+          partBPrompt: sq.partBPrompt,
+          partBMarks: sq.partBMarks,
+          totalMarks: sq.totalMarks,
+        })),
+      });
+    }
+
+    // AUTHENTICATED DOWNLOAD FOR "NATIONAL KJSEA EXAMINATION (ALL GRADES)" (PAPER KSH 50 | MARKING SCHEME KSH 50)
+    if (action === 'kjsea_authenticated_download') {
+      const checkoutRequestId = (url.searchParams.get('checkoutRequestId') || '').trim();
+      const gradeKey = (url.searchParams.get('gradeKey') || '9').trim();
+      const validSubjects = getSubjectsForGradeKey(gradeKey);
+      const requestedSubj = (url.searchParams.get('subject') || '').trim();
+      const subject = validSubjects.includes(requestedSubj)
+        ? requestedSubj
+        : validSubjects[0] || 'Mathematics';
+      const format = (url.searchParams.get('format') || 'pdf').toLowerCase();
+      const mode =
+        (url.searchParams.get('mode') || 'PAPER').toUpperCase() === 'MARKING_SCHEME'
+          ? 'MARKING_SCHEME'
+          : 'PAPER';
+
+      if (!checkoutRequestId) {
+        return NextResponse.json(
+          { error: 'M-Pesa payment verification is required to download.' },
+          { status: 402 }
+        );
+      }
+
+      const { order } = await resolveVerifiedBookOrder(checkoutRequestId);
+      if (!order || order.status !== 'COMPLETED') {
+        return NextResponse.json(
+          {
+            error:
+              'Your KSh 50 M-Pesa payment is not yet confirmed. Please enter your M-Pesa PIN on your phone first.',
+          },
+          { status: 402 }
+        );
+      }
+
+      if ((Number(order.amount) || 0) < 50) {
+        return NextResponse.json(
+          {
+            error: `This ${mode === 'MARKING_SCHEME' ? 'Marking Scheme' : 'Question Paper'} requires a KSh 50 payment (received KSh ${order.amount}).`,
+          },
+          { status: 403 }
+        );
+      }
+
+      const cleanGrade = formatBookGradeLabel(gradeKey).replace(/\s+/g, '_');
+      const cleanSubj = subject.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const docSlug =
+        mode === 'MARKING_SCHEME'
+          ? 'KENYA_NATIONAL_KJSEA_TEST_MARKING_SCHEME'
+          : 'KENYA_NATIONAL_KJSEA_TEST_QUESTION_PAPER';
+
+      if (format === 'docx') {
+        const docxBuf = await generateJamoKjseaDocxBuffer({ gradeKey, subject, mode });
+        return new NextResponse(new Uint8Array(docxBuf), {
+          status: 200,
+          headers: {
+            'Content-Type':
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition': `attachment; filename="${docSlug}_${cleanGrade}_${cleanSubj}.docx"`,
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+
+      const pdfBytes = await generateJamoKjseaPdfBuffer({ gradeKey, subject, mode });
+      return new NextResponse(Buffer.from(pdfBytes), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${docSlug}_${cleanGrade}_${cleanSubj}.pdf"`,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     // 2. LIVE SAMPLE PREVIEW FOR ANY GRADE + SUBJECT + TERM + BOOK BUTTON
     if (action === 'preview') {
       const bookType = normalizeBookType(url.searchParams.get('bookType'));
@@ -497,8 +710,8 @@ export async function GET(req: Request) {
         bookType === 'GRADE_UP'
           ? 'CBC_GRADE_UP'
           : bookType === 'MADE_FAMILIAR'
-          ? 'SUPER_LIGHT_CBC_COMPILATION'
-          : 'SMART_CBC_ALL_SUBJECTS';
+            ? 'SUPER_LIGHT_CBC_COMPILATION'
+            : 'SMART_CBC_ALL_SUBJECTS';
 
       if (format === 'docx') {
         const docxBuf = await generateCbcBookDocxBuffer({

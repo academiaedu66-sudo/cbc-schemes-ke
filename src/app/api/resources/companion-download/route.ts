@@ -30,6 +30,7 @@ import {
   buildDomainLessonNotes,
 } from '../../../../../scripts/cbc-syllabus-data.mjs';
 import { generateCbcBookDocxBuffer, normalizeBookTerm } from '@/lib/cbc-books-engine';
+import { generateJamoKjseaDocxBuffer } from '@/lib/jamo-kjsea-exam';
 
 const BUCKET_NAME = 'cbc-materials';
 
@@ -840,6 +841,32 @@ export async function GET(request: NextRequest) {
     }
 
     // Target format === 'docx'
+    if (
+      String(resource.title || '').toUpperCase().includes('KENYA NATIONAL KJSEA TEST') ||
+      String(resource.title || '').toUpperCase().includes('JAMO KENYATTA KJSEA EXAM') ||
+      String(resource.file_path || '').toUpperCase().includes('JAMO_KENYATTA_KJSEA_EXAM') ||
+      String(resource.file_path || '').toUpperCase().includes('KENYA_NATIONAL_KJSEA_MARKING_SCHEME')
+    ) {
+      const gKey = getResourceGradeKey(resource);
+      const isMarkingScheme = /MARKING[_\s]SCHEME|MWONGOZO WA KUSAHIHISHA/i.test(
+        `${resource.title || ''} ${resource.file_path || ''}`
+      );
+      const kjseaDocx = await generateJamoKjseaDocxBuffer({
+        gradeKey: gKey,
+        subject: resource.subject || 'Mathematics',
+        mode: isMarkingScheme ? 'MARKING_SCHEME' : 'PAPER',
+      });
+      return new NextResponse(new Uint8Array(kjseaDocx), {
+        status: 200,
+        headers: {
+          'Content-Type':
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'Content-Disposition': `attachment; filename="${safeBaseName}_Editable.docx"`,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     const normCat = normalizeCategory(resource.category);
     if (
       normCat === 'CBC GRADE UP (50-Page Books)' ||

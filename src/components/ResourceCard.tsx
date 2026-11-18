@@ -45,31 +45,40 @@ export default function ResourceCard({
   );
 
   const lowerTitle = resource.title.toLowerCase();
-  const examTag = lowerTitle.includes("opener")
-    ? "Opener Exam"
-    : lowerTitle.includes("mid-term")
-    ? "Mid-Term Exam"
-    : lowerTitle.includes("kpsea") &&
-      (lowerTitle.includes("past") ||
-        lowerTitle.includes("trial") ||
-        lowerTitle.includes("mock"))
-    ? "KPSEA National"
-    : lowerTitle.includes("kjsea") &&
-      (lowerTitle.includes("past") ||
-        lowerTitle.includes("trial") ||
-        lowerTitle.includes("mock"))
-    ? "KJSEA National"
-    : null;
+  const isKjseaMarkingScheme =
+    (lowerTitle.includes("kenya national kjsea test") ||
+      lowerTitle.includes("jamo kenyatta")) &&
+    (lowerTitle.includes("marking scheme") ||
+      lowerTitle.includes("mwongozo wa kusahihisha"));
+  const examTag = isKjseaMarkingScheme
+    ? "KJSEA MARKING SCHEME • KSh 50"
+    : lowerTitle.includes("kenya national kjsea test") ||
+      lowerTitle.includes("jamo kenyatta")
+      ? "KENYA NATIONAL KJSEA • 2 HRS • KSh 50"
+      : lowerTitle.includes("opener")
+        ? "Opener Exam"
+        : lowerTitle.includes("mid-term")
+          ? "Mid-Term Exam"
+          : lowerTitle.includes("kpsea") &&
+            (lowerTitle.includes("past") ||
+              lowerTitle.includes("trial") ||
+              lowerTitle.includes("mock"))
+            ? "KPSEA National"
+            : lowerTitle.includes("kjsea") &&
+              (lowerTitle.includes("past") ||
+                lowerTitle.includes("trial") ||
+                lowerTitle.includes("mock"))
+              ? "KJSEA National"
+              : null;
 
   return (
     <div className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-300 hover:shadow-md transition">
       {/* Dual-Format File Badge Icon */}
       <div
-        className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center font-extrabold leading-tight text-white shrink-0 ${
-          isDocx
-            ? "bg-gradient-to-br from-blue-600 to-emerald-600"
-            : "bg-gradient-to-br from-red-600 to-blue-700"
-        }`}
+        className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center font-extrabold leading-tight text-white shrink-0 ${isDocx
+          ? "bg-gradient-to-br from-blue-600 to-emerald-600"
+          : "bg-gradient-to-br from-red-600 to-blue-700"
+          }`}
       >
         <span className="text-[10px]">{isDocx ? "DOCX" : "PDF"}</span>
         <span className="text-[8px] opacity-90 border-t border-white/30 pt-0.5 mt-0.5">
@@ -88,11 +97,10 @@ export default function ResourceCard({
 
         <div className="flex flex-wrap items-center gap-1.5 mb-3 text-[11px] font-medium text-slate-600">
           <span
-            className={`px-2 py-0.5 rounded font-bold ${
-              isPP
-                ? "bg-purple-50 text-purple-800 border border-purple-200/80"
-                : "bg-emerald-50 text-emerald-800"
-            }`}
+            className={`px-2 py-0.5 rounded font-bold ${isPP
+              ? "bg-purple-50 text-purple-800 border border-purple-200/80"
+              : "bg-emerald-50 text-emerald-800"
+              }`}
           >
             {gradeBadge}
           </span>

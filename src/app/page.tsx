@@ -22,6 +22,7 @@ import {
   Landmark,
   Briefcase,
   Bot,
+  Award,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -40,6 +41,7 @@ import GeminiHomeworkHub from '@/components/GeminiHomeworkHub';
 import CbcBooksHub, {
   type ExternalBookModalLaunch,
 } from '@/components/CbcBooksHub';
+import NationalKjseaHub from '@/components/NationalKjseaHub';
 import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
@@ -61,6 +63,10 @@ import {
 } from '@/lib/material-utils';
 
 const EXAM_FILTER_OPTIONS: Array<{ key: ExamSubFilter; label: string }> = [
+  {
+    key: 'JAMO_KJSEA',
+    label: '★ NATIONAL KJSEA EXAMINATION (ALL GRADES • KSh 50)',
+  },
   { key: 'ALL', label: 'All Assessments' },
   { key: 'OPENER', label: 'Opener Exams' },
   { key: 'MIDTERM', label: 'Mid-Term Exams' },
@@ -108,6 +114,7 @@ export default function HomePage() {
   const [tscOpenTick, setTscOpenTick] = useState(0);
   const [sideHustlesOpenTick, setSideHustlesOpenTick] = useState(0);
   const [geminiOpenTick, setGeminiOpenTick] = useState(0);
+  const [kjseaModalTick, setKjseaModalTick] = useState(0);
   const [gameLaunch, setGameLaunch] = useState<ExternalGameLaunch | null>(null);
   const [bookLaunch, setBookLaunch] = useState<ExternalBookModalLaunch | null>(null);
 
@@ -305,6 +312,10 @@ export default function HomePage() {
         return matchGrade && matchSubj && matchTerm && matchSearch;
       })
       .sort((a, b) => {
+        // Put KENYA NATIONAL KJSEA TEST papers first within Revision Papers & Exams!
+        const aJamo = a.title.toUpperCase().includes('KENYA NATIONAL KJSEA TEST') ? 0 : 1;
+        const bJamo = b.title.toUpperCase().includes('KENYA NATIONAL KJSEA TEST') ? 0 : 1;
+        if (aJamo !== bJamo) return aJamo - bJamo;
         // Keep Holiday Assignments (term 1-3) grouped together and Curriculum Designs (term 0) grouped together
         const aIsDesign = a.term === 0 ? 1 : 0;
         const bIsDesign = b.term === 0 ? 1 : 0;
@@ -314,6 +325,10 @@ export default function HomePage() {
         if (rankA !== rankB) return rankA - rankB;
         const subjCmp = (a.subject || '').localeCompare(b.subject || '');
         if (subjCmp !== 0) return subjCmp;
+        // Keep Question Paper immediately before its Marking Scheme
+        const aIsMs = /MARKING SCHEME|MWONGOZO WA KUSAHIHISHA/i.test(a.title) ? 1 : 0;
+        const bIsMs = /MARKING SCHEME|MWONGOZO WA KUSAHIHISHA/i.test(b.title) ? 1 : 0;
+        if (aIsMs !== bIsMs) return aIsMs - bIsMs;
         return (a.term || 0) - (b.term || 0);
       });
   }, [resources, selectedGrade, selectedSubject, selectedTerm, searchQuery]);
@@ -624,6 +639,14 @@ export default function HomePage() {
             </button>
             <button
               type="button"
+              onClick={() => setKjseaModalTick((c) => c + 1)}
+              className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white border-2 border-amber-300 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <Award className="w-4 h-4 text-amber-200" />
+              <span>NATIONAL KJSEA EXAMINATION (ALL GRADES)</span>
+            </button>
+            <button
+              type="button"
               onClick={() => jumpToCurriculumMaterials('All')}
               className="bg-white hover:bg-amber-50 text-emerald-950 border-2 border-amber-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
@@ -769,6 +792,26 @@ export default function HomePage() {
           externalLaunch={bookLaunch}
           merchantLocalPhone={merchantLocalPhone}
           whatsappPhone={whatsappPhone}
+        />
+
+        {/* DEDICATED BUTTON & INTERACTIVE HUB: NATIONAL KJSEA EXAMINATION (ALL GRADES) */}
+        <NationalKjseaHub
+          externalOpenTick={kjseaModalTick}
+          initialGradeKey={selectedGrade !== 'All' ? selectedGrade : '9'}
+          initialSubject={selectedSubject !== 'All' ? selectedSubject : undefined}
+          merchantLocalPhone={merchantLocalPhone}
+          whatsappPhone={whatsappPhone}
+          onOpenCatalogCategory={() => {
+            trackInteraction('jamo_kjsea_banner_click');
+            setSelectedCategory('NATIONAL KJSEA EXAMINATION (ALL GRADES)');
+            setExamSubFilter('ALL');
+            setSelectedGrade('All');
+            setSelectedSubject('All');
+            setSelectedTerm('All');
+            document
+              .getElementById('curriculum-materials-section')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
 
         {/* TOP FEATURE 1: PERSONAL & HOLIDAY TUITION (STUDENT KSh 1,000 | TEACHER KSh 500 -> WHATSAPP 0705759072) */}
@@ -949,6 +992,9 @@ export default function HomePage() {
                 className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Areas (Grouped Together)</option>
+                <option value="NATIONAL KJSEA EXAMINATION (ALL GRADES)">
+                  NATIONAL KJSEA EXAMINATION (ALL GRADES)
+                </option>
                 <option value="Schemes of Work">Schemes of Work</option>
                 <option value="Lesson Plans">CBC Lesson Plans</option>
                 <option value="Teachers' Notes">Teachers&apos; &amp; Lesson Notes</option>
@@ -1042,14 +1088,25 @@ export default function HomePage() {
             </span>
             {EXAM_FILTER_OPTIONS.map((opt) => {
               const active =
-                selectedCategory === 'Revision Papers & Exams' &&
-                examSubFilter === opt.key;
+                opt.key === 'JAMO_KJSEA'
+                  ? selectedCategory === 'NATIONAL KJSEA EXAMINATION (ALL GRADES)'
+                  : selectedCategory === 'Revision Papers & Exams' &&
+                    examSubFilter === opt.key;
               return (
                 <button
                   key={opt.key}
                   type="button"
                   onClick={() => {
                     trackInteraction('exam_filter_select');
+                    if (opt.key === 'JAMO_KJSEA') {
+                      setSelectedCategory(
+                        selectedCategory === 'NATIONAL KJSEA EXAMINATION (ALL GRADES)'
+                          ? 'All'
+                          : 'NATIONAL KJSEA EXAMINATION (ALL GRADES)'
+                      );
+                      setExamSubFilter('ALL');
+                      return;
+                    }
                     if (opt.key === 'ALL' && selectedCategory !== 'Revision Papers & Exams') {
                       setSelectedCategory('Revision Papers & Exams');
                       setExamSubFilter('ALL');

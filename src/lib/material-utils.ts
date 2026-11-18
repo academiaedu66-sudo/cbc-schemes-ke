@@ -2,6 +2,7 @@ export type MaterialCategory =
   | 'CBC GRADE UP (50-Page Books)'
   | 'SUPER-LIGHT CBC COMPILATION (50p)'
   | 'SMART CBC ALL SUBJECTS (100p)'
+  | 'NATIONAL KJSEA EXAMINATION (ALL GRADES)'
   | 'Schemes of Work'
   | 'Lesson Plans'
   | "Teachers' Notes"
@@ -13,6 +14,7 @@ export type MaterialFormat = 'DOCX' | 'PDF';
 
 export type ExamSubFilter =
   | 'ALL'
+  | 'JAMO_KJSEA'
   | 'OPENER'
   | 'MIDTERM'
   | 'ENDTERM'
@@ -54,6 +56,7 @@ export const MATERIAL_CATEGORIES: MaterialCategory[] = [
   'CBC GRADE UP (50-Page Books)',
   'SUPER-LIGHT CBC COMPILATION (50p)',
   'SMART CBC ALL SUBJECTS (100p)',
+  'NATIONAL KJSEA EXAMINATION (ALL GRADES)',
   'Schemes of Work',
   'Lesson Plans',
   "Teachers' Notes",
@@ -66,6 +69,7 @@ export const DEFAULT_PRICES: Record<MaterialCategory, number> = {
   'CBC GRADE UP (50-Page Books)': 500,
   'SUPER-LIGHT CBC COMPILATION (50p)': 750,
   'SMART CBC ALL SUBJECTS (100p)': 1500,
+  'NATIONAL KJSEA EXAMINATION (ALL GRADES)': 50,
   'Schemes of Work': 50,
   'Lesson Plans': 70,
   "Teachers' Notes": 100,
@@ -143,11 +147,24 @@ export function matchesExamSubFilter(
   filter: ExamSubFilter
 ): boolean {
   if (filter === 'ALL') return true;
-  if (normalizeCategory(item.category) !== 'Revision Papers & Exams') return false;
+  const normCat = normalizeCategory(item.category);
+  if (
+    normCat !== 'Revision Papers & Exams' &&
+    normCat !== 'NATIONAL KJSEA EXAMINATION (ALL GRADES)'
+  ) {
+    return false;
+  }
   const hay = `${item.title || ''} ${item.file_path || ''}`.toLowerCase();
   const gKey = getResourceGradeKey(item);
 
   switch (filter) {
+    case 'JAMO_KJSEA':
+      return (
+        normCat === 'NATIONAL KJSEA EXAMINATION (ALL GRADES)' ||
+        hay.includes('kenya national kjsea test') ||
+        hay.includes('jamo kenyatta') ||
+        hay.includes('jamo_kenyatta')
+      );
     case 'OPENER':
       return hay.includes('opener');
     case 'MIDTERM':
@@ -254,6 +271,12 @@ export function normalizeCategory(raw?: string | null): MaterialCategory {
   }
   if (lower.includes('grade up')) {
     return 'CBC GRADE UP (50-Page Books)';
+  }
+  if (
+    lower.includes('national kjsea examination') ||
+    lower.includes('kenya national kjsea test')
+  ) {
+    return 'NATIONAL KJSEA EXAMINATION (ALL GRADES)';
   }
   if (lower.includes('record') && lower.includes('work')) return 'Records of Work';
   if (lower.includes('holiday') || lower.includes('curriculum design') || lower.includes('designs')) {
@@ -741,12 +764,12 @@ export function getKicdApprovedTextbook(
   const band = isPP
     ? 'preprimary'
     : gNum <= 3
-    ? 'lower'
-    : gNum <= 6
-    ? 'upper'
-    : gNum <= 9
-    ? 'jss'
-    : 'senior';
+      ? 'lower'
+      : gNum <= 6
+        ? 'upper'
+        : gNum <= 9
+          ? 'jss'
+          : 'senior';
   const subj = String(subject || '');
   const list = KICD_ORANGE_BOOK_MAP[band][subj] || [
     { series: `KLB Approved ${subj || 'CBC'}`, publisher: 'Kenya Literature Bureau (KLB)' },

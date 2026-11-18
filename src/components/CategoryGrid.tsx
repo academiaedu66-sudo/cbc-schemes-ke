@@ -66,6 +66,22 @@ export const MATERIAL_AREAS: MaterialAreaConfig[] = [
     ],
   },
   {
+    id: "area-national-kjsea",
+    title: "NATIONAL KJSEA EXAMINATION (ALL GRADES)",
+    shortTitle: "NATIONAL KJSEA EXAMINATION (ALL GRADES)",
+    subtitle: "KENYA NATIONAL KJSEA TEST across PP1–Grade 12: 20 Zero-Repeat Questions covering ALL Strands (2 Hours, KNEC Cover) + Separate Marking Schemes",
+    filterCategory: "NATIONAL KJSEA EXAMINATION (ALL GRADES)",
+    color: "#be123c",
+    bg: "#fff1f2",
+    borderColor: "#fb7185",
+    badgeText: "EXAM: KES 50 • MARKING SCHEME: KES 50",
+    points: [
+      "KENYA NATIONAL KJSEA TEST (20 Qs • 2 Hours • KNEC Cover)",
+      "Exam Paper: KSh 50 • Official Marking Scheme: KSh 50",
+      "All Grades (PP1–G12) + Pure Kiswahili Sanifu Papers",
+    ],
+  },
+  {
     id: "area-schemes",
     title: "SCHEMES OF WORK",
     shortTitle: "Schemes of Work",

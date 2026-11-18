@@ -124,6 +124,22 @@ export async function POST(req: Request) {
           cleanBookTitle ||
           `SMART CBC ALL SUBJECTS (${termTag}) — Master Compilation (KSh ${pKes})`,
       };
+    } else if (serviceType === 'KJSEA_NATIONAL_PAPER') {
+      resource = {
+        id: null,
+        price: 50,
+        title:
+          cleanBookTitle ||
+          'KENYA NATIONAL KJSEA TEST — Question Paper (20 Questions • 2 Hours • KSh 50)',
+      };
+    } else if (serviceType === 'KJSEA_NATIONAL_MARKING_SCHEME') {
+      resource = {
+        id: null,
+        price: 50,
+        title:
+          cleanBookTitle ||
+          'KENYA NATIONAL KJSEA TEST — Official Marking Scheme (100 Marks • KSh 50)',
+      };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
         .from('resources')
