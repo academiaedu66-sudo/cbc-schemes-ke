@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { Heart, Music2, Sparkles } from "lucide-react";
-import LuxuryWelcomeSong from "./LuxuryWelcomeSong";
+import {
+  COMPULSORY_WELCOME_SONG_DONE_KEY,
+  isSearchCrawlerBot,
+} from "./LuxuryWelcomeSong";
 
 export default function WelcomeAnimation() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
-  const [songReplayTick, setSongReplayTick] = useState(0);
 
   const dismissSplash = useCallback(() => {
     setIsFadingOut(true);
@@ -22,6 +24,29 @@ export default function WelcomeAnimation() {
     setShowSplash(true);
     setReplayKey((k) => k + 1);
   };
+
+  const triggerSongReplay = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("cbc-replay-welcome-song"));
+    }
+  };
+
+  // For returning visitors who already completed the compulsory 1-minute welcome song,
+  // show the brief 3.6s welcome splash. First-time visitors immediately see the full-screen
+  // 1-Minute 5-Star Concierge Compulsory Welcome Song Gate instead!
+  useEffect(() => {
+    if (typeof window === "undefined" || isSearchCrawlerBot()) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const forcedSong = params.get("autoplay_song") === "1";
+      const completedCompulsorySong = localStorage.getItem(
+        COMPULSORY_WELCOME_SONG_DONE_KEY
+      );
+      if (completedCompulsorySong && !forcedSong) {
+        setShowSplash(true);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!showSplash) return;
@@ -65,7 +90,7 @@ export default function WelcomeAnimation() {
           <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse shrink-0" />
           <button
             type="button"
-            onClick={() => setSongReplayTick((t) => t + 1)}
+            onClick={triggerSongReplay}
             title="Play 1-Minute 5-Star Concierge Welcome Song"
             className="ml-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/40 text-[10px] font-extrabold uppercase tracking-wider text-amber-200 transition cursor-pointer"
           >
@@ -75,10 +100,7 @@ export default function WelcomeAnimation() {
         </div>
       </div>
 
-      {/* 1-Minute 5-Star Hotel Welcome Song (Auto-starts on first website interaction) */}
-      <LuxuryWelcomeSong externalReplayTick={songReplayTick} />
-
-      {/* Full-Screen Entry Welcome Animation */}
+      {/* Brief Entry Welcome Splash (For Returning Visitors Who Already Listened to the 1-Min Song) */}
       {showSplash && (
         <div
           key={replayKey}
@@ -109,7 +131,7 @@ export default function WelcomeAnimation() {
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 border border-emerald-300/30 backdrop-blur-md shadow-lg animate-welcome-pop">
               <Heart className="w-5 h-5 text-rose-400 fill-rose-400 animate-welcome-heartbeat" />
               <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-200">
-                Warm Welcome
+                Warm Welcome Back
               </span>
               <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
             </div>

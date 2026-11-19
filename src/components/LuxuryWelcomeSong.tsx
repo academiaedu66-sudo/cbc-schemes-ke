@@ -1,9 +1,21 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Music2, Pause, Play, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import {
+  Heart,
+  Lock,
+  Music2,
+  Pause,
+  Play,
+  Sparkles,
+  Unlock,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
 
-const FIRST_INTERACTION_STORAGE_KEY = 'cbc_luxury_hotel_song_played_v2';
+export const COMPULSORY_WELCOME_SONG_DONE_KEY =
+  'cbc_compulsory_welcome_song_done_v3';
 const SONG_DURATION_SECONDS = 60;
 
 const LYRIC_STANZAS: Array<{ from: number; to: number; line: string }> = [
@@ -29,10 +41,30 @@ const LYRIC_STANZAS: Array<{ from: number; to: number; line: string }> = [
   },
   {
     from: 49.5,
-    to: 60.5,
+    to: 61.0,
     line: '♪ Be alive… you are deeply special. Welcome to CBC Materials Kenya.',
   },
 ];
+
+const EQUALIZER_BAR_HEIGHTS = [
+  38, 64, 86, 52, 95, 70, 44, 88, 100, 66, 82, 48, 92, 60, 40,
+];
+
+export function isSearchCrawlerBot(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  if (navigator.webdriver) return true;
+  const ua = navigator.userAgent || '';
+  return /bot|googlebot|bingbot|yandex|baiduspider|duckduckbot|slurp|crawler|spider|lighthouse|chrome-lighthouse|pagespeed|inspect|headless/i.test(
+    ua
+  );
+}
+
+type GateMode =
+  | 'IDLE'
+  | 'COMPULSORY_WAITING_GESTURE'
+  | 'COMPULSORY_PLAYING'
+  | 'COMPULSORY_UNLOCKING'
+  | 'OPTIONAL_PILL';
 
 export default function LuxuryWelcomeSong({
   externalReplayTick = 0,
@@ -40,165 +72,376 @@ export default function LuxuryWelcomeSong({
   externalReplayTick?: number;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startedOnceRef = useRef(false);
+  const activePlaybackTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  const compulsoryActiveRef = useRef(false);
+  const completedCompulsoryRef = useRef(false);
+  const playInFlightRef = useRef(false);
+  const maxReachedTimeRef = useRef(0);
+  const wallClockPlayedSecRef = useRef(0);
 
+  const [gateMode, setGateMode] = useState<GateMode>('IDLE');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [showPlayerPill, setShowPlayerPill] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
 
-  const stopSongCleanly = useCallback(() => {
+  const clearTimers = useCallback(() => {
+    if (activePlaybackTimerRef.current) {
+      clearInterval(activePlaybackTimerRef.current);
+      activePlaybackTimerRef.current = null;
+    }
+  }, []);
+
+  const completeCompulsoryGate = useCallback(() => {
+    if (completedCompulsoryRef.current) return;
+    completedCompulsoryRef.current = true;
+    compulsoryActiveRef.current = false;
+    clearTimers();
+
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
     }
-    if (stopTimeoutRef.current) {
-      clearTimeout(stopTimeoutRef.current);
-      stopTimeoutRef.current = null;
+
+    setIsPlaying(false);
+    setElapsedSec(SONG_DURATION_SECONDS);
+
+    try {
+      localStorage.setItem(
+        COMPULSORY_WELCOME_SONG_DONE_KEY,
+        new Date().toISOString()
+      );
+    } catch {}
+
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cbc-compulsory-song-completed'));
+    }
+
+    setGateMode('COMPULSORY_UNLOCKING');
+    setTimeout(() => {
+      setGateMode('IDLE');
+    }, 650);
+  }, [clearTimers]);
+
+  const stopOptionalSong = useCallback(() => {
+    clearTimers();
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
     }
     setIsPlaying(false);
-  }, []);
+    setGateMode('IDLE');
+  }, [clearTimers]);
 
-  const startOneMinuteLuxurySong = useCallback(
-    async (markVisited = true) => {
-      try {
-        let audio = audioRef.current;
-        if (!audio) {
-          audio = new Audio('/audio/luxury-hotel-welcome.mp3');
-          audio.preload = 'auto';
-          audio.loop = false;
-          audioRef.current = audio;
+  const ensureAudioInstance = useCallback(() => {
+    let audio = audioRef.current;
+    if (!audio) {
+      audio = new Audio('/audio/luxury-hotel-welcome.mp3');
+      audio.preload = 'auto';
+      audio.loop = false;
+      audio.volume = 0.82;
+      audio.muted = false;
+      audioRef.current = audio;
 
-          audio.addEventListener('timeupdate', () => {
-            if (!audio) return;
-            const cur = Math.min(SONG_DURATION_SECONDS, audio.currentTime || 0);
-            setElapsedSec(cur);
-            if (cur >= SONG_DURATION_SECONDS) {
-              stopSongCleanly();
-              setShowPlayerPill(false);
-            }
-          });
-
-          audio.addEventListener('ended', () => {
-            setIsPlaying(false);
-            setElapsedSec(SONG_DURATION_SECONDS);
-            setTimeout(() => setShowPlayerPill(false), 1200);
-          });
+      audio.addEventListener('timeupdate', () => {
+        if (!audio) return;
+        const cur = Math.min(SONG_DURATION_SECONDS, audio.currentTime || 0);
+        if (cur > maxReachedTimeRef.current) {
+          maxReachedTimeRef.current = cur;
         }
+        setElapsedSec((prev) => (cur > prev || !compulsoryActiveRef.current ? cur : prev));
 
-        audio.currentTime = 0;
-        audio.volume = 0.56;
-        audio.muted = false;
-        setIsMuted(false);
-        setElapsedSec(0);
-
-        await audio.play();
-        setIsPlaying(true);
-        setShowPlayerPill(true);
-
-        if (markVisited) {
-          try {
-            localStorage.setItem(
-              FIRST_INTERACTION_STORAGE_KEY,
-              new Date().toISOString()
-            );
-          } catch {}
+        if (cur >= SONG_DURATION_SECONDS - 0.35) {
+          if (compulsoryActiveRef.current) {
+            completeCompulsoryGate();
+          } else {
+            stopOptionalSong();
+          }
         }
+      });
 
-        if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
-        stopTimeoutRef.current = setTimeout(() => {
-          stopSongCleanly();
-          setShowPlayerPill(false);
-        }, (SONG_DURATION_SECONDS + 0.5) * 1000);
-      } catch {
-        // Browser still waiting for an explicit user gesture; listener stays armed
-        startedOnceRef.current = false;
-      }
+      audio.addEventListener('seeking', () => {
+        if (!audio || !compulsoryActiveRef.current) return;
+        // Prevent skipping ahead during the compulsory 1-minute welcome song
+        if (audio.currentTime > maxReachedTimeRef.current + 1.25) {
+          audio.currentTime = maxReachedTimeRef.current;
+        }
+      });
+
+      audio.addEventListener('ratechange', () => {
+        if (!audio || !compulsoryActiveRef.current) return;
+        if (audio.playbackRate !== 1) {
+          audio.playbackRate = 1;
+        }
+      });
+
+      audio.addEventListener('volumechange', () => {
+        if (!audio || !compulsoryActiveRef.current) return;
+        if (audio.muted) audio.muted = false;
+        if (audio.volume < 0.7) audio.volume = 0.82;
+      });
+
+      audio.addEventListener('pause', () => {
+        if (!audio) return;
+        // Keep playing uninterrupted if paused prematurely during compulsory mode
+        if (
+          compulsoryActiveRef.current &&
+          !completedCompulsoryRef.current &&
+          audio.currentTime > 0 &&
+          audio.currentTime < SONG_DURATION_SECONDS - 0.5 &&
+          typeof document !== 'undefined' &&
+          !document.hidden
+        ) {
+          audio.play().catch(() => {});
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        if (compulsoryActiveRef.current) {
+          completeCompulsoryGate();
+        } else {
+          setIsPlaying(false);
+          setElapsedSec(SONG_DURATION_SECONDS);
+          setTimeout(() => setGateMode('IDLE'), 1000);
+        }
+      });
+    }
+    return audio;
+  }, [completeCompulsoryGate, stopOptionalSong]);
+
+  const startWallClockTicker = useCallback(
+    (isCompulsory: boolean) => {
+      clearTimers();
+      activePlaybackTimerRef.current = setInterval(() => {
+        const audio = audioRef.current;
+        if (!audio || audio.paused) return;
+        wallClockPlayedSecRef.current += 0.5;
+        const effectiveSec = Math.min(
+          SONG_DURATION_SECONDS,
+          Math.max(audio.currentTime || 0, wallClockPlayedSecRef.current)
+        );
+        setElapsedSec(effectiveSec);
+
+        if (effectiveSec >= SONG_DURATION_SECONDS) {
+          if (isCompulsory) {
+            completeCompulsoryGate();
+          } else {
+            stopOptionalSong();
+          }
+        }
+      }, 500);
     },
-    [stopSongCleanly]
+    [clearTimers, completeCompulsoryGate, stopOptionalSong]
   );
 
-  // Start singing for 1 minute when a visitor interacts with the website for the VERY FIRST TIME
-  // (or when arriving from a WhatsApp Status ad with ?autoplay_song=1)
+  const attemptCompulsoryPlay = useCallback(async (): Promise<boolean> => {
+    if (completedCompulsoryRef.current) return true;
+    const existing = audioRef.current;
+    if (existing && !existing.paused && existing.currentTime > 0) {
+      setIsPlaying(true);
+      setGateMode('COMPULSORY_PLAYING');
+      return true;
+    }
+    if (playInFlightRef.current) return false;
+    playInFlightRef.current = true;
+
+    try {
+      const audio = ensureAudioInstance();
+      audio.volume = 0.82;
+      audio.muted = false;
+      audio.playbackRate = 1;
+      setIsMuted(false);
+
+      await audio.play();
+      playInFlightRef.current = false;
+      setIsPlaying(true);
+      setGateMode('COMPULSORY_PLAYING');
+      startWallClockTicker(true);
+      return true;
+    } catch {
+      playInFlightRef.current = false;
+      setIsPlaying(false);
+      setGateMode('COMPULSORY_WAITING_GESTURE');
+      return false;
+    }
+  }, [ensureAudioInstance, startWallClockTicker]);
+
+  const startOptionalReplay = useCallback(async () => {
+    if (compulsoryActiveRef.current) {
+      void attemptCompulsoryPlay();
+      return;
+    }
+    try {
+      const audio = ensureAudioInstance();
+      maxReachedTimeRef.current = 0;
+      wallClockPlayedSecRef.current = 0;
+      audio.currentTime = 0;
+      audio.volume = 0.75;
+      audio.muted = false;
+      setIsMuted(false);
+      setElapsedSec(0);
+      setGateMode('OPTIONAL_PILL');
+
+      await audio.play();
+      setIsPlaying(true);
+      startWallClockTicker(false);
+    } catch {
+      setIsPlaying(false);
+    }
+  }, [attemptCompulsoryPlay, ensureAudioInstance, startWallClockTicker]);
+
+  // Compulsory 1-Minute Welcome Song on First Site Visit / Interaction
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const path = window.location.pathname || '';
+    if (path.startsWith('/admin') || path.startsWith('/mobile-admin')) {
+      setIsAdminRoute(true);
+      return;
+    }
+    if (isSearchCrawlerBot()) return;
 
-    let shouldArmFirstTime = false;
+    let mustListenCompulsorily = false;
     try {
       const params = new URLSearchParams(window.location.search);
-      const forcedFromStatus = params.get('autoplay_song') === '1';
-      const alreadyPlayed = localStorage.getItem(FIRST_INTERACTION_STORAGE_KEY);
-      shouldArmFirstTime = forcedFromStatus || !alreadyPlayed;
+      const forcedAutoplay = params.get('autoplay_song') === '1';
+      const alreadyCompleted = localStorage.getItem(
+        COMPULSORY_WELCOME_SONG_DONE_KEY
+      );
+      mustListenCompulsorily = forcedAutoplay || !alreadyCompleted;
     } catch {
-      shouldArmFirstTime = true;
+      mustListenCompulsorily = true;
     }
 
-    if (!shouldArmFirstTime) return;
+    if (!mustListenCompulsorily) return;
 
-    const events: Array<keyof WindowEventMap> = [
+    compulsoryActiveRef.current = true;
+    completedCompulsoryRef.current = false;
+    maxReachedTimeRef.current = 0;
+    wallClockPlayedSecRef.current = 0;
+    setElapsedSec(0);
+    setGateMode('COMPULSORY_WAITING_GESTURE');
+
+    // Lock background browsing & scrolling until the 1-minute song finishes
+    document.body.style.overflow = 'hidden';
+
+    // Preload audio & attempt immediate autoplay right away
+    ensureAudioInstance();
+
+    // Valid browser user-activation events ONLY (scroll/mousemove cannot unlock WebAudio/HTMLAudio)
+    const activationEvents: Array<keyof WindowEventMap> = [
       'pointerdown',
-      'click',
       'touchstart',
+      'mousedown',
+      'click',
       'keydown',
-      'scroll',
     ];
 
-    const handleFirstInteraction = () => {
-      if (startedOnceRef.current) return;
-      startedOnceRef.current = true;
-      void startOneMinuteLuxurySong(true);
-      cleanupListeners();
-    };
-
-    const cleanupListeners = () => {
-      for (const ev of events) {
-        window.removeEventListener(ev, handleFirstInteraction, { capture: true });
+    const removeGestureListeners = () => {
+      for (const ev of activationEvents) {
+        window.removeEventListener(ev, onFirstUserActivation, { capture: true });
       }
     };
 
-    // Show the 1:00 timer pill right away and attempt immediate start now;
-    // if the browser requires a gesture first, start on the very first interaction!
-    setShowPlayerPill(true);
-    startedOnceRef.current = true;
-    startOneMinuteLuxurySong(true).catch(() => {
-      startedOnceRef.current = false;
-    });
+    const onFirstUserActivation = (e: Event) => {
+      if (
+        e.type === 'keydown' &&
+        e instanceof KeyboardEvent &&
+        (e.key === ' ' ||
+          e.key === 'ArrowDown' ||
+          e.key === 'PageDown' ||
+          e.key === 'Escape')
+      ) {
+        e.preventDefault();
+      }
+      if (!compulsoryActiveRef.current || completedCompulsoryRef.current) {
+        removeGestureListeners();
+        return;
+      }
+      void attemptCompulsoryPlay().then((started) => {
+        if (started) {
+          removeGestureListeners();
+        }
+      });
+    };
 
-    for (const ev of events) {
-      window.addEventListener(ev, handleFirstInteraction, {
+    for (const ev of activationEvents) {
+      window.addEventListener(ev, onFirstUserActivation, {
         capture: true,
-        passive: true,
+        passive: false,
       });
     }
 
-    return () => {
-      cleanupListeners();
-    };
-  }, [startOneMinuteLuxurySong]);
+    // Attempt zero-click autoplay immediately on mount; if browser waits for interaction,
+    // listeners remain armed and fire on the very first touch/click/key anywhere!
+    void attemptCompulsoryPlay().then((startedImmediately) => {
+      if (startedImmediately) {
+        removeGestureListeners();
+      }
+    });
 
-  // Allow manual replay from the top ribbon
+    // Resume automatically when returning to visible tab
+    const onVisibilityChange = () => {
+      if (
+        !document.hidden &&
+        compulsoryActiveRef.current &&
+        !completedCompulsoryRef.current
+      ) {
+        void attemptCompulsoryPlay();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      removeGestureListeners();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      if (!completedCompulsoryRef.current) {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [attemptCompulsoryPlay, ensureAudioInstance]);
+
+  // Listen for manual replay from the top ribbon (either prop or global custom event)
   useEffect(() => {
     if (externalReplayTick > 0) {
-      startedOnceRef.current = true;
-      void startOneMinuteLuxurySong(true);
+      void startOptionalReplay();
     }
-  }, [externalReplayTick, startOneMinuteLuxurySong]);
+  }, [externalReplayTick, startOptionalReplay]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onCustomReplay = () => {
+      void startOptionalReplay();
+    };
+    window.addEventListener('cbc-replay-welcome-song', onCustomReplay);
+    return () => {
+      window.removeEventListener('cbc-replay-welcome-song', onCustomReplay);
+    };
+  }, [startOptionalReplay]);
 
   useEffect(() => {
     return () => {
-      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
+      clearTimers();
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
     };
-  }, []);
+  }, [clearTimers]);
 
-  const togglePlayPause = () => {
+  const toggleOptionalPlayPause = () => {
+    if (compulsoryActiveRef.current) return;
     const audio = audioRef.current;
     if (!audio) {
-      void startOneMinuteLuxurySong(true);
+      void startOptionalReplay();
       return;
     }
     if (audio.paused) {
@@ -210,14 +453,15 @@ export default function LuxuryWelcomeSong({
     }
   };
 
-  const toggleMute = () => {
+  const toggleOptionalMute = () => {
+    if (compulsoryActiveRef.current) return;
     const audio = audioRef.current;
     if (!audio) return;
     audio.muted = !audio.muted;
     setIsMuted(audio.muted);
   };
 
-  if (!showPlayerPill) return null;
+  if (isAdminRoute || gateMode === 'IDLE') return null;
 
   const activeLyric =
     LYRIC_STANZAS.find((s) => elapsedSec >= s.from && elapsedSec < s.to)?.line ||
@@ -231,6 +475,180 @@ export default function LuxuryWelcomeSong({
     return `${m}:${String(sec).padStart(2, '0')}`;
   };
 
+  // ============================================================================
+  // COMPULSORY FULL-SCREEN 1-MINUTE 5-STAR HOTEL CONCIERGE LOUNGE GATE
+  // ============================================================================
+  if (
+    gateMode === 'COMPULSORY_WAITING_GESTURE' ||
+    gateMode === 'COMPULSORY_PLAYING' ||
+    gateMode === 'COMPULSORY_UNLOCKING'
+  ) {
+    const isUnlocking = gateMode === 'COMPULSORY_UNLOCKING';
+    const waitingForFirstTouch =
+      gateMode === 'COMPULSORY_WAITING_GESTURE' && !isPlaying;
+
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="5-Star Concierge Compulsory 1-Minute Welcome Song"
+        onPointerDown={() => {
+          if (waitingForFirstTouch) void attemptCompulsoryPlay();
+        }}
+        onClick={() => {
+          if (waitingForFirstTouch) void attemptCompulsoryPlay();
+        }}
+        className={`fixed inset-0 z-[130] flex items-center justify-center px-5 py-8 overflow-hidden select-none transition-all duration-700 ${
+          isUnlocking
+            ? 'opacity-0 scale-105 pointer-events-none'
+            : 'opacity-100 scale-100'
+        } ${waitingForFirstTouch ? 'cursor-pointer' : 'cursor-default'}`}
+        style={{
+          background:
+            'radial-gradient(circle at 50% 28%, #065f46 0%, #022c22 48%, #020617 100%)',
+        }}
+      >
+        {/* Luxury Ambient Gold & Emerald Orbs */}
+        <div className="absolute -top-28 -left-24 w-96 h-96 rounded-full bg-amber-400/20 blur-3xl animate-welcome-float pointer-events-none" />
+        <div
+          className="absolute -bottom-32 -right-24 w-[28rem] h-[28rem] rounded-full bg-emerald-400/20 blur-3xl animate-welcome-float pointer-events-none"
+          style={{ animationDelay: '1.4s' }}
+        />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-amber-300/10 blur-3xl animate-pulse pointer-events-none" />
+
+        {/* Center Luxury Concierge Lounge Card */}
+        <div className="relative max-w-2xl w-full rounded-3xl bg-slate-950/75 border border-amber-300/40 shadow-[0_25px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 text-center space-y-6">
+          {/* Top 5-Star Concierge Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/40 shadow-md">
+            <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-amber-200">
+              5-Star Concierge Welcome Lounge
+            </span>
+            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+          </div>
+
+          {/* Signature Centerpiece Statement */}
+          <div className="space-y-2">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+              <span className="block bg-gradient-to-r from-white via-amber-200 to-emerald-300 bg-clip-text text-transparent animate-welcome-shimmer">
+                BE ALIVE,
+              </span>
+              <span className="block mt-1 bg-gradient-to-r from-emerald-300 via-amber-300 to-white bg-clip-text text-transparent animate-welcome-shimmer">
+                YOU ARE SPECIAL
+              </span>
+            </h2>
+            <p className="text-xs sm:text-sm text-emerald-100/85 font-medium max-w-lg mx-auto">
+              Welcome to CBCMaterials Kenya — Please enjoy our soft 1-minute
+              5-Star Welcome Song before browsing Grade 1–12 resources.
+            </p>
+          </div>
+
+          {/* Animated 15-Bar Golden Soundwave Equalizer */}
+          <div
+            aria-hidden="true"
+            className="flex items-end justify-center gap-1.5 h-12 py-1"
+          >
+            {EQUALIZER_BAR_HEIGHTS.map((baseH, idx) => {
+              const dynamicHeight = isPlaying
+                ? Math.max(
+                    22,
+                    Math.min(
+                      100,
+                      Math.round(
+                        baseH *
+                          (0.55 +
+                            0.45 *
+                              Math.abs(
+                                Math.sin(elapsedSec * 3.4 + idx * 0.65)
+                              ))
+                      )
+                    )
+                  )
+                : Math.round(baseH * 0.35);
+              return (
+                <span
+                  key={idx}
+                  className={`w-1.5 sm:w-2 rounded-full transition-all duration-200 ${
+                    isPlaying
+                      ? 'bg-gradient-to-t from-emerald-400 via-amber-300 to-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
+                      : 'bg-amber-300/45 animate-pulse'
+                  }`}
+                  style={{
+                    height: `${dynamicHeight}%`,
+                    animationDelay: `${idx * 90}ms`,
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Synchronized Glowing Lyric Box */}
+          <div className="rounded-2xl bg-white/5 border border-emerald-300/25 px-5 py-4 min-h-[4.5rem] flex items-center justify-center">
+            <p className="text-sm sm:text-lg font-semibold italic text-amber-100 leading-relaxed">
+              {isUnlocking
+                ? '✨ Thank you for listening — Welcome inside CBCMaterials Kenya!'
+                : activeLyric}
+            </p>
+          </div>
+
+          {/* Immediate Start CTA (if browser requires initial touch) OR Compulsory Countdown Progress */}
+          {waitingForFirstTouch ? (
+            <div className="space-y-3 pt-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void attemptCompulsoryPlay();
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-emerald-300 text-slate-950 font-black text-sm sm:text-base tracking-wide shadow-[0_0_35px_rgba(251,191,36,0.55)] hover:brightness-105 active:scale-[0.99] transition cursor-pointer animate-bounce"
+              >
+                <Volume2 className="w-5 h-5 shrink-0" />
+                <span>Tap Anywhere to Start Your 1-Minute Welcome Song</span>
+              </button>
+              <p className="text-[11px] sm:text-xs font-semibold text-amber-200/85">
+                Auto-plays on your very first touch • Compulsory 1:00 welcome
+                experience before browsing
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-1">
+              <div className="w-full h-3 rounded-full bg-white/15 overflow-hidden p-0.5 border border-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-300 via-emerald-300 to-teal-300 transition-all duration-300"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 text-amber-200">
+                  {isUnlocking ? (
+                    <>
+                      <Unlock className="w-3.5 h-3.5 text-emerald-300" />
+                      <span>Welcome Song Complete — Entering Website…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-300" />
+                      <span>
+                        Compulsory Welcome Song • Browsing unlocks in {remSec}s
+                      </span>
+                    </>
+                  )}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 tabular-nums">
+                  {fmtTime(elapsedSec)} / 1:00
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // OPTIONAL FLOATING PLAYER PILL (For Returning Visitors Clicking "1-Min Song")
+  // ============================================================================
   return (
     <div
       role="region"
@@ -253,7 +671,7 @@ export default function LuxuryWelcomeSong({
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            onClick={togglePlayPause}
+            onClick={toggleOptionalPlayPause}
             title={isPlaying ? 'Pause welcome song' : 'Resume welcome song'}
             className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-amber-200 transition cursor-pointer"
           >
@@ -265,7 +683,7 @@ export default function LuxuryWelcomeSong({
           </button>
           <button
             type="button"
-            onClick={toggleMute}
+            onClick={toggleOptionalMute}
             title={isMuted ? 'Unmute' : 'Mute'}
             className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-emerald-200 transition cursor-pointer"
           >
@@ -277,10 +695,7 @@ export default function LuxuryWelcomeSong({
           </button>
           <button
             type="button"
-            onClick={() => {
-              stopSongCleanly();
-              setShowPlayerPill(false);
-            }}
+            onClick={stopOptionalSong}
             title="Dismiss song"
             className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 transition cursor-pointer"
           >
