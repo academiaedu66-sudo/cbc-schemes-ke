@@ -85,16 +85,19 @@ export function slugToGradeInfo(slug: string): GradeSeoInfo | null {
     label,
     levelName,
     examFocus,
-    headline: `2026 ${label} CBC Schemes of Work, Lesson Plans, Notes & Revision Exams`,
-    metaDescription: `Download 2026 KICD-rationalized ${label} (${levelName}) CBC Schemes of Work, Lesson Plans, Teachers' Notes, Records of Work, Holiday Assignments, and ${examFocus} in Editable Word (.DOCX) and Print-Ready (.PDF) in Kenya.`,
+    headline: `2026 ${label} CBC Schemes of Work, Teachers Notes, KNEC KJSEA Exams & Tutors`,
+    metaDescription: `Official CBCMaterials Kenya (${SITE_URL}) — Download ${label} (${levelName}) 2026 KICD Rationalized Schemes of Work, Teachers' Notes, Lesson Plans, TSC Records of Work, National KJSEA Tests, ${examFocus}, and book Verified ${label} Tuition Tutors in Editable Word (.DOCX) & PDF.`,
     keywords: [
       `2026 ${label} Schemes of Work Kenya`,
-      `${label} CBC Notes PDF Download`,
+      `${label} CBC Teachers Notes PDF Download`,
       `${label} Lesson Plans Word DOCX`,
-      `${label} Term 1 Term 2 Term 3 Exams and Marking Schemes`,
+      `${label} KNEC Examinations and Marking Schemes`,
+      `${label} Kenya National KJSEA Test`,
+      `${label} CBCMaterials download`,
       `${label} Holiday Assignments 2026`,
       `KICD ${label} Curriculum Designs`,
       `${label} Records of Work TSC TPAD`,
+      `${label} Home Tuition and CBC Tutors Kenya`,
     ],
   };
 }
@@ -201,23 +204,28 @@ export async function getCachedAllSitemapResources(): Promise<
   'use cache';
   cacheLife('hours');
 
-  const all: Array<{ id: string; created_at: string | null }> = [];
-  let from = 0;
-
-  while (true) {
-    const { data, error } = await supabaseAdmin
-      .from('resources')
-      .select('id, created_at')
-      .order('id', { ascending: true })
-      .range(from, from + 999);
-
-    if (error || !data || data.length === 0) break;
-    all.push(...(data as Array<{ id: string; created_at: string | null }>));
-    if (data.length < 1000) break;
-    from += 1000;
+  try {
+    const offsets = [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000];
+    const pages = await Promise.all(
+      offsets.map((from) =>
+        supabaseAdmin
+          .from('resources')
+          .select('id, created_at')
+          .order('id', { ascending: true })
+          .range(from, from + 999)
+          .abortSignal(AbortSignal.timeout(10000))
+      )
+    );
+    const all: Array<{ id: string; created_at: string | null }> = [];
+    for (const p of pages) {
+      if (p.data && p.data.length > 0) {
+        all.push(...(p.data as Array<{ id: string; created_at: string | null }>));
+      }
+    }
+    return all;
+  } catch {
+    return [];
   }
-
-  return all;
 }
 
 export function buildMaterialRichDescription(item: SeoResourceRow): string {

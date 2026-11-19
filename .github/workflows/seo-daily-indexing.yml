@@ -1,0 +1,19 @@
+name: Daily Search Engine Sitemap & IndexNow Submission
+
+on:
+  schedule:
+    - cron: '15 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  submit-seo-urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Warm Sitemap & Submit Priority CBCMaterials URLs to IndexNow
+        run: |
+          curl -fsSL "https://www.cbcmaterials.shop/sitemap.xml" > /dev/null
+          node scripts/ping-search-engines-seo.mjs

@@ -7,14 +7,22 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: [
           '/',
+          '/topics/',
           '/grades/',
           '/materials/',
+          '/status-ad/',
+          '/opensearch.xml',
           '/ads.txt',
           '/advertise',
           '/privacy-policy',
           '/terms',
         ],
         disallow: ['/admin', '/mobile-admin', '/monetization', '/api/admin/'],
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: ['/', '/topics/', '/grades/', '/materials/', '/opensearch.xml'],
+        disallow: ['/admin', '/mobile-admin', '/api/admin/'],
       },
       {
         userAgent: 'Mediapartners-Google',

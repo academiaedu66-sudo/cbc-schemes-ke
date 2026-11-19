@@ -4,6 +4,7 @@ import {
   getCachedAllSitemapResources,
   SITE_URL,
 } from '@/lib/seo-catalog';
+import { SEO_TOPIC_PILLARS } from '@/lib/seo-topics';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const nowIso = new Date().toISOString();
@@ -17,6 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 1.0,
     },
+    ...SEO_TOPIC_PILLARS.map((tp) => ({
+      url: `${SITE_URL}/topics/${tp.slug}`,
+      lastModified: nowIso,
+      changeFrequency: 'daily' as const,
+      priority: 0.98,
+    })),
     ...gradeHubs.map((g) => ({
       url: `${SITE_URL}/grades/${g.slug}`,
       lastModified: nowIso,

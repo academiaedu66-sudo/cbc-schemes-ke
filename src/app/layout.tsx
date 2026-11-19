@@ -17,16 +17,18 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.cbcmaterials.shop"),
   title: {
     default:
-      "CBC Materials Kenya (2026) | PP1–Grade 12 Schemes of Work, Notes, Lesson Plans & KPSEA/KJSEA Exams",
-    template: "%s | CBC Materials Kenya (cbcmaterials.shop)",
+      "CBCMaterials Kenya (2026) | CBC Schemes of Work, Teachers Notes, KNEC KJSEA & KPSEA Examinations, TSC & Tuition Tutors",
+    template: "%s | CBCMaterials Kenya (cbcmaterials.shop)",
   },
   description:
-    "Official Kenya CBC Resource Hub (cbcmaterials.shop) — Download 3,400+ KICD-rationalized 2026 CBC Schemes of Work, Lesson Plans, Teachers' Notes, Records of Work, Holiday Assignments, and KPSEA, KJSEA & Senior School Exams in Editable Word (.DOCX) and Print-Ready (.PDF) from PP1 to Grade 12.",
-  applicationName: "CBC Kenya Resource Hub",
+    "Official CBCMaterials Kenya Portal (www.cbcmaterials.shop) — Download 6,534+ KICD-rationalized 2026 CBC Schemes of Work, Teachers' Notes, Lesson Plans, Records of Work, KNEC KJSEA & KPSEA Examinations + Marking Schemes, Revision Books, All TSC Services, and Verified Home & Online Tuition Tutors (PP1–Grade 12).",
+  applicationName: "CBCMaterials Kenya",
   category: "education",
-  authors: [{ name: "CBC Kenya Resource Hub", url: "https://www.cbcmaterials.shop" }],
-  creator: "CBC Kenya Resource Hub",
-  publisher: "CBC Kenya Resource Hub",
+  authors: [
+    { name: "CBCMaterials Kenya (CBC Kenya Resource Hub)", url: "https://www.cbcmaterials.shop" },
+  ],
+  creator: "CBCMaterials Kenya",
+  publisher: "CBCMaterials Kenya",
   alternates: {
     canonical: "https://www.cbcmaterials.shop",
     languages: {
@@ -46,38 +48,61 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
-    "CBC materials Kenya",
+    "CBC",
+    "CBC Kenya",
+    "CBCMATERIALS",
+    "cbcmaterials",
     "cbcmaterials.shop",
+    "CBC Materials Kenya",
+    "Schemes of Work",
     "2026 CBC Schemes of Work Kenya",
-    "KICD Rationalized Schemes of Work 2026",
-    "CBC Lesson Plans Editable Word DOCX",
+    "KICD Rationalized Schemes of Work Editable Word DOCX PDF",
+    "Teachers Notes",
     "CBC Teachers Notes PDF Download",
-    "PP1 PP2 CBC Schemes and Activity Sheets",
-    "Grade 1 2 3 Lower Primary CBC Notes and Exams",
-    "Grade 4 5 6 KPSEA Trial Papers and Marking Schemes 2026",
-    "Grade 7 8 9 Junior School KJSEA Revision Papers 2026",
-    "Grade 10 11 12 Senior School CBC Schemes and Notes",
-    "CBC Holiday Assignments Term 1 Term 2 Term 3",
+    "CBC Lesson Notes PP1 to Grade 12",
+    "Short Point Form CBC Notes with Examples",
+    "KNEC",
+    "KNEC Examinations",
+    "Examinations Kenya",
+    "Kenya National KJSEA Test",
+    "National KJSEA Examination All Grades",
+    "KJSEA Past Papers Trials and Marking Schemes 2026",
+    "KPSEA Grade 6 Exams and Marking Schemes 2026",
+    "KEYA Grade 3 Assessments",
+    "Opener Mid-Term End-Term CBC Exams and Marking Schemes",
+    "TSC",
+    "Teachers Service Commission Kenya",
+    "TSC TPAD 2 Appraisal Records of Work",
+    "TSC T-Pay Payslips and Wealth Declaration",
+    "Tuition",
+    "Tutors",
+    "CBC Tuition Kenya",
+    "Home Tuition and Online Tutors Kenya",
+    "Holiday Tuition Teachers Nairobi Mombasa Kisumu Nakuru Eldoret All 47 Counties",
+    "Private CBC Tutors PP1 to Grade 12",
+    "CBC Lesson Plans Editable Word",
     "KICD Curriculum Designs PDF",
-    "TSC TPAD 2 Records of Work Kenya",
-    "Holiday Tuition Teachers Kenya",
+    "Senior School Grade 10 11 12 Pathways Schemes and Notes",
+    "CBC Grade Up Book",
+    "Super-Light CBC Compilation",
+    "Smart CBC All Subjects",
   ],
   openGraph: {
     title:
-      "CBC Materials Kenya (2026) | 3,400+ Editable Word & PDF Schemes, Notes & KPSEA/KJSEA Exams",
+      "CBCMaterials Kenya (2026) | 6,534+ CBC Schemes of Work, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC & Tuition Tutors",
     description:
-      "Download 2026 KICD-rationalized Schemes of Work, Lesson Plans, Notes, Holiday Assignments & KPSEA/KJSEA Trial Exams (PP1–Grade 12) instantly via M-Pesa.",
+      "Download 6,534+ KICD-rationalized 2026 Schemes of Work, Teachers' Notes, Lesson Plans, KNEC KJSEA & KPSEA Examinations + Marking Schemes, TSC Tools & Verified Tuition Tutors (PP1–Grade 12) on cbcmaterials.shop.",
     url: "https://www.cbcmaterials.shop",
-    siteName: "CBC Kenya Resource Hub",
+    siteName: "CBCMaterials Kenya (cbcmaterials.shop)",
     locale: "en_KE",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title:
-      "CBC Materials Kenya (2026) | PP1–Grade 12 Schemes, Notes & KPSEA/KJSEA Exams",
+      "CBCMaterials Kenya (2026) | Schemes of Work, Teachers Notes, KNEC Exams, TSC & Tutors",
     description:
-      "3,400+ Editable Word (.DOCX) + Print-Ready (.PDF) KICD-rationalized CBC teaching & revision materials in Kenya.",
+      "6,534+ Editable Word (.DOCX) + Print-Ready (.PDF) CBC Schemes, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC Services & Verified Tutors in Kenya.",
   },
   other: {
     "geo.region": "KE",
@@ -92,6 +117,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link
+          rel="search"
+          type="application/opensearchdescription+xml"
+          title="CBCMaterials Kenya Search"
+          href="/opensearch.xml"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <MonetizationProvider>{children}</MonetizationProvider>
       </body>

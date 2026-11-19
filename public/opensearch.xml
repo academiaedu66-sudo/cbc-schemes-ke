@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>CBCMaterials Kenya</ShortName>
+  <LongName>CBC Materials Kenya — Schemes of Work, Teachers Notes, KNEC KJSEA KPSEA Exams, TSC &amp; Tuition Tutors</LongName>
+  <Description>Search 6,534+ KICD CBC Schemes of Work, Teachers Notes, Lesson Plans, KNEC KJSEA &amp; KPSEA Examinations, TSC Services, and Verified Tuition Tutors in Kenya.</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <OutputEncoding>UTF-8</OutputEncoding>
+  <Language>en-KE</Language>
+  <Image width="16" height="16" type="image/x-icon">https://www.cbcmaterials.shop/favicon.ico</Image>
+  <Url type="text/html" method="get" template="https://www.cbcmaterials.shop/?q={searchTerms}" />
+</OpenSearchDescription>

@@ -41,10 +41,10 @@ export default function SiteFooter() {
             <span>CBC Kenya Resource Hub</span>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed max-w-md">
-            Kenya&apos;s trusted KICD-aligned curriculum portal (cbcmaterials.shop) providing
-            Editable Word (.DOCX) and Print-Ready (.PDF) Schemes of Work, Lesson Plans,
-            Lesson Notes, Records of Work, Opener/Mid/End-Term Assessments, and KPSEA &amp;
-            KJSEA Trial Papers for PP1, PP2, and Grades 1–12.
+            Kenya&apos;s #1 KICD-aligned CBCMaterials portal (www.cbcmaterials.shop) providing
+            6,534+ Editable Word (.DOCX) and Print-Ready (.PDF) CBC Schemes of Work, Lesson Plans,
+            Teachers&apos; Notes, Records of Work, National KJSEA &amp; KPSEA Examinations + Marking
+            Schemes, All TSC Services, and Verified Home &amp; Online Tuition Tutors (PP1–Grade 12).
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
             <span className="inline-flex items-center gap-1.5 bg-slate-800 text-emerald-300 px-3 py-1.5 rounded-lg font-semibold">
@@ -153,8 +153,33 @@ export default function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/topics/schemes-of-work" className="text-slate-300 hover:text-emerald-300 font-semibold transition">
+                2026 CBC Schemes of Work
+              </Link>
+            </li>
+            <li>
+              <Link href="/topics/teachers-notes" className="text-slate-300 hover:text-emerald-300 font-semibold transition">
+                CBC Teachers&apos; &amp; Short Notes
+              </Link>
+            </li>
+            <li>
+              <Link href="/topics/knec-examinations" className="text-slate-300 hover:text-emerald-300 font-semibold transition">
+                KNEC, KJSEA &amp; KPSEA Examinations
+              </Link>
+            </li>
+            <li>
+              <Link href="/topics/tsc-services" className="text-slate-300 hover:text-emerald-300 font-semibold transition">
+                TSC Services, TPAD &amp; T-Pay
+              </Link>
+            </li>
+            <li>
+              <Link href="/topics/tuition-and-tutors" className="text-slate-300 hover:text-emerald-300 font-semibold transition">
+                CBC Tuition &amp; Private Tutors Kenya
+              </Link>
+            </li>
+            <li>
               <a href="/sitemap.xml" className="text-slate-400 hover:text-white transition">
-                XML Sitemap (3,400+ CBC Files)
+                XML Sitemap (6,534+ CBC Files)
               </a>
             </li>
             <li>
