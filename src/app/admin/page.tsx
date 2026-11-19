@@ -37,6 +37,7 @@ import {
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
+import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
@@ -836,6 +837,9 @@ export default function AdminDashboardPage() {
 
         {/* CONNECTED WHATSAPP (0728595160) HOURLY STATUS AUTO-POSTER FOR ALL 18 WEBSITE BUTTONS */}
         <WhatsAppStatusAutoPanel password={password} />
+
+        {/* OMNICHANNEL SOCIAL VIDEO & GOOGLE PAGE-1 RANKER (TIKTOK, YOUTUBE SHORTS, FACEBOOK & X) */}
+        <OmnichannelSocialSeoPanel password={password} />
 
         {/* SITE MONETIZATION, AD NETWORKS & CLICK / VIEW EARNINGS STUDIO */}
         <AdminMonetizationPanel password={password} />

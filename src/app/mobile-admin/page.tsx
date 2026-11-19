@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import MobileSocialAutoPoster from '@/components/MobileSocialAutoPoster';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
+import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import {
   Activity,
   ArrowUpRight,
@@ -2541,6 +2542,11 @@ export default function MobileAdminAppPage() {
         {activeTab === 'TRAFFIC' && (
           <div className="space-y-4">
             <WhatsAppStatusAutoPanel
+              password={password}
+              adminEmail={email}
+              darkTheme
+            />
+            <OmnichannelSocialSeoPanel
               password={password}
               adminEmail={email}
               darkTheme

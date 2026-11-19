@@ -5,6 +5,7 @@ import {
   SITE_URL,
 } from '@/lib/seo-catalog';
 import { SEO_TOPIC_PILLARS } from '@/lib/seo-topics';
+import { WEBSITE_BUTTONS_FOR_DAILY_STATUS } from '@/lib/whatsapp-status-autoposter';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const nowIso = new Date().toISOString();
@@ -18,11 +19,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 1.0,
     },
+    {
+      url: `${SITE_URL}/videos`,
+      lastModified: nowIso,
+      changeFrequency: 'daily',
+      priority: 0.97,
+    },
     ...SEO_TOPIC_PILLARS.map((tp) => ({
       url: `${SITE_URL}/topics/${tp.slug}`,
       lastModified: nowIso,
       changeFrequency: 'daily' as const,
       priority: 0.98,
+    })),
+    ...WEBSITE_BUTTONS_FOR_DAILY_STATUS.map((btn) => ({
+      url: `${SITE_URL}/videos/${btn.buttonId}`,
+      lastModified: nowIso,
+      changeFrequency: 'daily' as const,
+      priority: 0.94,
+    })),
+    ...WEBSITE_BUTTONS_FOR_DAILY_STATUS.map((btn) => ({
+      url: `${SITE_URL}/status-ad/${btn.buttonId}`,
+      lastModified: nowIso,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
     })),
     ...gradeHubs.map((g) => ({
       url: `${SITE_URL}/grades/${g.slug}`,

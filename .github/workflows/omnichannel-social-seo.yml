@@ -1,0 +1,17 @@
+name: Omnichannel Social & Video SEO Auto-Ranker (TikTok, YouTube, Facebook, X)
+
+on:
+  schedule:
+    # Runs every 2 hours so all 18 website buttons rotate across Social APIs, VideoObject hubs & IndexNow
+    - cron: '18 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  omnichannel-social-seo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Live Omnichannel Social & Video SEO Ranker
+        run: |
+          curl -fsSL "https://www.cbcmaterials.shop/api/social/omnichannel-autopost?cron=omnichannel" | head -c 1200
+          echo ""
+          curl -fsSL "https://www.cbcmaterials.shop/social-feed.xml" | head -c 400

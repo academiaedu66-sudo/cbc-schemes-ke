@@ -124,6 +124,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           title="CBCMaterials Kenya Search"
           href="/opensearch.xml"
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="CBCMaterials Kenya Official Social & Video SEO Feed"
+          href="/social-feed.xml"
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <MonetizationProvider>{children}</MonetizationProvider>

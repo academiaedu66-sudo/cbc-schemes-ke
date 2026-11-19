@@ -91,6 +91,49 @@ export default function SiteFooter() {
               <MessageCircle className="w-4 h-4" />
               WhatsApp: 0705759072
             </a>
+            <a
+              href="https://www.tiktok.com/@cbcmaterials.shop"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('tiktok_footer_click')}
+              className="inline-flex items-center gap-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              <span className="text-[10px] font-black bg-pink-600 text-white px-1.5 py-0.5 rounded">
+                TT
+              </span>
+              <span>TikTok</span>
+            </a>
+            <a
+              href="https://www.youtube.com/@cbcmaterials"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('youtube_footer_click')}
+              className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              <span className="text-[10px] font-black bg-white text-red-600 px-1.5 py-0.5 rounded">
+                YT
+              </span>
+              <span>YouTube Shorts</span>
+            </a>
+            <a
+              href="https://x.com/cbcmaterials_ke"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackInteraction('x_twitter_footer_click')}
+              className="inline-flex items-center gap-1.5 bg-black hover:bg-slate-800 border border-slate-700 text-white px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              <span className="text-[10px] font-black bg-slate-800 text-white px-1.5 py-0.5 rounded">
+                X
+              </span>
+              <span>X (Twitter)</span>
+            </a>
+            <Link
+              href="/videos"
+              onClick={() => trackInteraction('videos_hub_footer_click')}
+              className="inline-flex items-center gap-1.5 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-200 px-3 py-1.5 rounded-lg font-semibold transition"
+            >
+              <span>18 Social Videos</span>
+            </Link>
             {extraSocials.map((soc) => (
               <a
                 key={soc.id}

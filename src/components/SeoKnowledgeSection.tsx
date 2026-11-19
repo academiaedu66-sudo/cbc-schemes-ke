@@ -78,6 +78,9 @@ export default function SeoKnowledgeSection() {
       sameAs: [
         'https://www.facebook.com/profile.php?id=61591027359399',
         'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
+        'https://www.tiktok.com/@cbcmaterials.shop',
+        'https://www.youtube.com/@cbcmaterials',
+        'https://x.com/cbcmaterials_ke',
         'https://wa.me/254728595160',
       ],
       knowsAbout: [
