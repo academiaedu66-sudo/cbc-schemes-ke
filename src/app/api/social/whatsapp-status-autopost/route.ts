@@ -54,7 +54,33 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // 2. Local Linked-Device Daemon Queue Poll (for scripts/whatsapp-0728595160-status-daemon.mjs)
+  // 2. Public Read-Only Live Countdown Timer Status
+  if (searchParams.get('status') === 'timer') {
+    const ledger = await getWhatsAppStatusLedger();
+    const nowMs = Date.now();
+    const { dateEat } = getEatDateAndHour(new Date(nowMs));
+    const postedTodaySet = new Set(ledger.postedByDateEat[dateEat] || []);
+    const lastIso = ledger.history[0]?.postedAtIso || new Date(nowMs).toISOString();
+    const nextMs = new Date(lastIso).getTime() + 60 * 60 * 1000;
+    const secondsRemaining = Math.max(0, Math.floor((nextMs - nowMs) / 1000));
+    const nextSpec = WEBSITE_BUTTONS_FOR_DAILY_STATUS.find(
+      (b) => !postedTodaySet.has(b.buttonId)
+    );
+    return NextResponse.json({
+      ok: true,
+      enabled: ledger.enabled,
+      whatsappNumberLocal: CONNECTED_WHATSAPP_STATUS_LOCAL,
+      lastPostedAtIso: lastIso,
+      nextPostAtIso: new Date(nextMs).toISOString(),
+      secondsRemaining,
+      postedTodayCount: postedTodaySet.size,
+      totalButtons: WEBSITE_BUTTONS_FOR_DAILY_STATUS.length,
+      lastButtonLabel: ledger.history[0]?.buttonLabel || null,
+      nextButtonLabel: nextSpec?.buttonLabel || 'All 18 Posted Today',
+    });
+  }
+
+  // 3. Local Linked-Device Daemon Queue Poll (for scripts/whatsapp-0728595160-status-daemon.mjs)
   const daemonKey = searchParams.get('daemonKey') || '';
   const adminPw = (process.env.ADMIN_PASSWORD || '').trim();
   if (daemonKey && adminPw && daemonKey === adminPw) {
@@ -83,6 +109,11 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  const lastPostedAtIso = ledger.history[0]?.postedAtIso || now.toISOString();
+  const nextPostAtIso = new Date(
+    new Date(lastPostedAtIso).getTime() + 60 * 60 * 1000
+  ).toISOString();
+
   return NextResponse.json({
     ok: true,
     whatsappNumberLocal: CONNECTED_WHATSAPP_STATUS_LOCAL,
@@ -91,6 +122,8 @@ export async function GET(req: NextRequest) {
     hourEat,
     enabled: ledger.enabled,
     intervalMinutes: 60,
+    lastPostedAtIso,
+    nextPostAtIso,
     postedTodayCount: postedTodaySet.size,
     totalButtons: WEBSITE_BUTTONS_FOR_DAILY_STATUS.length,
     hasWhapiToken: Boolean(ledger.whapiApiToken),

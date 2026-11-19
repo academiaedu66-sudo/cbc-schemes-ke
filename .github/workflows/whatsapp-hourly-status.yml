@@ -2,8 +2,8 @@ name: Hourly WhatsApp Status Auto-Poster (0728595160)
 
 on:
   schedule:
-    # Fires every 1 hour, 24/7 daily so each of the 18 website buttons gets 1 unique Status ad daily!
-    - cron: '0 * * * *'
+    # Anchored starting NOW (:32 of every hour, 24/7 daily) so each of the 18 website buttons gets 1 unique Status ad daily!
+    - cron: '32 * * * *'
   workflow_dispatch:
 
 jobs:

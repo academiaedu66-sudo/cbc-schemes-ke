@@ -68,6 +68,8 @@ export default function WhatsAppStatusAutoPanel({
   const [whatsappLocal, setWhatsappLocal] = useState('0728595160');
   const [postedTodayCount, setPostedTodayCount] = useState(0);
   const [totalButtons, setTotalButtons] = useState(18);
+  const [nextPostAtMs, setNextPostAtMs] = useState<number>(() => Date.now() + 3600_000);
+  const [secondsLeft, setSecondsLeft] = useState<number>(3600);
   const [hasWhapi, setHasWhapi] = useState(false);
   const [hasGreenApi, setHasGreenApi] = useState(false);
   const [hasEvolution, setHasEvolution] = useState(false);
@@ -105,6 +107,13 @@ export default function WhatsAppStatusAutoPanel({
         setWhatsappLocal(data.whatsappNumberLocal || '0728595160');
         setPostedTodayCount(Number(data.postedTodayCount) || 0);
         setTotalButtons(Number(data.totalButtons) || 18);
+        if (data.nextPostAtIso) {
+          const targetMs = new Date(data.nextPostAtIso).getTime();
+          if (Number.isFinite(targetMs)) {
+            setNextPostAtMs(targetMs);
+            setSecondsLeft(Math.max(0, Math.floor((targetMs - Date.now()) / 1000)));
+          }
+        }
         setHasWhapi(Boolean(data.hasWhapiToken));
         setHasGreenApi(Boolean(data.hasGreenApi));
         setHasEvolution(Boolean(data.hasEvolutionApi));
@@ -123,6 +132,22 @@ export default function WhatsAppStatusAutoPanel({
   useEffect(() => {
     void fetchStatusState();
   }, [fetchStatusState]);
+
+  // Live 1-second ticking countdown timer; auto-fires next hourly button when timer hits 00:00
+  useEffect(() => {
+    if (!enabled) return;
+    const tick = setInterval(() => {
+      const rem = Math.max(0, Math.floor((nextPostAtMs - Date.now()) / 1000));
+      setSecondsLeft(rem);
+      if (rem === 0) {
+        setNextPostAtMs(Date.now() + 3600_000);
+        fetch('/api/social/whatsapp-status-autopost?cron=hourly')
+          .then(() => fetchStatusState())
+          .catch(() => {});
+      }
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [enabled, nextPostAtMs, fetchStatusState]);
 
   useEffect(() => {
     return () => {
@@ -347,6 +372,14 @@ export default function WhatsAppStatusAutoPanel({
                 <Clock className="w-3.5 h-3.5" />
                 Today&apos;s Coverage: {postedTodayCount} / {totalButtons} Buttons
               </span>
+              {enabled && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-black tabular-nums">
+                  <Clock className="w-3.5 h-3.5 animate-pulse" />
+                  Next Status Ad in{' '}
+                  {String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:
+                  {String(secondsLeft % 60).padStart(2, '0')}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

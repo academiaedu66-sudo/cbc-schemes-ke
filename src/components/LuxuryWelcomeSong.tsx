@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Music2, Pause, Play, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 
-const FIRST_INTERACTION_STORAGE_KEY = 'cbc_luxury_hotel_song_played_v1';
+const FIRST_INTERACTION_STORAGE_KEY = 'cbc_luxury_hotel_song_played_v2';
 const SONG_DURATION_SECONDS = 60;
 
 const LYRIC_STANZAS: Array<{ from: number; to: number; line: string }> = [
@@ -137,6 +137,14 @@ export default function LuxuryWelcomeSong({
 
     if (!shouldArmFirstTime) return;
 
+    const events: Array<keyof WindowEventMap> = [
+      'pointerdown',
+      'click',
+      'touchstart',
+      'keydown',
+      'scroll',
+    ];
+
     const handleFirstInteraction = () => {
       if (startedOnceRef.current) return;
       startedOnceRef.current = true;
@@ -144,18 +152,19 @@ export default function LuxuryWelcomeSong({
       cleanupListeners();
     };
 
-    const events: Array<keyof WindowEventMap> = [
-      'pointerdown',
-      'click',
-      'touchstart',
-      'keydown',
-    ];
-
     const cleanupListeners = () => {
       for (const ev of events) {
         window.removeEventListener(ev, handleFirstInteraction, { capture: true });
       }
     };
+
+    // Show the 1:00 timer pill right away and attempt immediate start now;
+    // if the browser requires a gesture first, start on the very first interaction!
+    setShowPlayerPill(true);
+    startedOnceRef.current = true;
+    startOneMinuteLuxurySong(true).catch(() => {
+      startedOnceRef.current = false;
+    });
 
     for (const ev of events) {
       window.addEventListener(ev, handleFirstInteraction, {
