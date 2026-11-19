@@ -1,0 +1,16 @@
+name: Hourly WhatsApp Status Auto-Poster (0728595160)
+
+on:
+  schedule:
+    # Fires every 1 hour, 24/7 daily so each of the 18 website buttons gets 1 unique Status ad daily!
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  post-hourly-whatsapp-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Next Website Button Ad on WhatsApp Status (0728595160)
+        run: |
+          curl -fsSL "https://www.cbcmaterials.shop/api/social/whatsapp-status-autopost?cron=hourly" \
+            -H "Accept: application/json"

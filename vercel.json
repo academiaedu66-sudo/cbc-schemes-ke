@@ -3,6 +3,10 @@
     {
       "path": "/api/social/facebook-autopost",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/social/whatsapp-status-autopost",
+      "schedule": "0 4 * * *"
     }
   ]
 }

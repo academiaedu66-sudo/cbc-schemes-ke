@@ -1,6 +1,11 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import {
+  buildDailyButtonStatusAd,
+  CONNECTED_WHATSAPP_STATUS_LOCAL,
+  WEBSITE_BUTTONS_FOR_DAILY_STATUS,
+} from '@/lib/whatsapp-status-autoposter';
 
 function getGradeBadge(grade: number, title: string): string {
   const up = title.toUpperCase();
@@ -19,55 +24,26 @@ export async function GET(req: NextRequest) {
   const width = isVertical ? 1080 : 1200;
   const height = isVertical ? 1920 : 630;
 
-  let badgeTop = 'PP1 – GRADE 12 • 3,400+ FILES';
+  let badgeTop = 'PP1 – GRADE 12 • 6,534+ FILES';
   let headline =
-    '2026 CBC Schemes of Work, Lesson Plans, Notes & KPSEA / KJSEA Exams';
+    '2026 CBC Schemes of Work, Lesson Plans, Notes & NATIONAL KJSEA TESTS';
   let subheadline =
     'Editable Word (.DOCX) + Print-Ready (.PDF) • Unlocks in 1 Second via M-Pesa!';
   let priceTag = 'FROM KES 50 • INSTANT DOWNLOAD';
-  let linkDisplay = 'www.cbcmaterials.shop';
+  const linkDisplay = 'www.cbcmaterials.shop';
 
-  if (service === 'GAMING') {
-    badgeTop = 'CBC SUBJECT GAMING ARENA • ALL 21 SUBJECTS';
-    headline =
-      'Play End-of-Strand CBC Subject Quizzes (PP1 – Grade 12) & Earn Cash Rewards!';
-    subheadline =
-      '1 Correct Answer = 1 Point • 1,000 Points = KSh 5 • Activate 20-Min Pass for Only KSh 10!';
-    priceTag = 'ONLY KSH 10 TO PLAY!';
-  } else if (service === 'TUITION') {
-    badgeTop = 'PERSONAL & HOLIDAY TUITION • ALL 47 COUNTIES';
-    headline =
-      'Book Verified CBC Home or Online Tuition Teachers (PP1 – Grade 12)';
-    subheadline =
-      'Parents matched instantly with top teachers • Qualified CBC Teachers can also register (KSh 500 Priority Queue)!';
-    priceTag = 'HOME & ONLINE TUITION';
-  } else if (service === 'GEMINI') {
-    badgeTop = 'ASK GEMINI AI HOMEWORK & REVISION HUB';
-    headline =
-      'Step-by-Step Worked Homework Answers for Every CBC Subject (PP1 – Grade 12)';
-    subheadline =
-      'Instant worked solutions for Mathematics, Sciences, English, Kiswahili & Humanities!';
-    priceTag = 'KSH 20 WEEKLY PASS';
-  } else if (service === 'BOOK_1') {
-    badgeTop = 'BUTTON 1 • 50-PAGE BOOK PER SUBJECT';
-    headline = 'CBC GRADE UP — All Strands & Sub-strands Questions + Marking Schemes!';
-    subheadline =
-      '50-Page Exam & Topical Revision Book for Every Subject (PP1 – Grade 12) • PDF + DOCX!';
-    priceTag = 'KSH 500 • PROMPT BUY';
-  } else if (service === 'BOOK_2') {
-    badgeTop = 'BUTTON 2 • 50-PAGE NOTES + Q&A BOOK';
-    headline =
-      'SUPER-LIGHT CBC COMPILATION — Point-Form Notes + Topical Questions!';
-    subheadline =
-      'Short Point-Form Notes Covering Every Strand & Sub-strand + Immediate Practice Questions!';
-    priceTag = 'KSH 750 • PROMPT BUY';
-  } else if (service === 'BOOK_3') {
-    badgeTop = 'BUTTON 3 • 100-PAGE ALL-IN-ONE PACK';
-    headline =
-      'SMART CBC ALL SUBJECTS — Complete 100-Page Compilation + Full Grade Pack!';
-    subheadline =
-      'Combines SUPER-LIGHT CBC COMPILATION + CBC GRADE UP + Full Grade Subject Access!';
-    priceTag = 'KSH 1,500 • SMART PACK';
+  const matchedButtonSpec = service
+    ? WEBSITE_BUTTONS_FOR_DAILY_STATUS.find(
+        (b) => b.posterServiceCode.toUpperCase() === service
+      )
+    : undefined;
+
+  if (matchedButtonSpec) {
+    const built = buildDailyButtonStatusAd(matchedButtonSpec);
+    badgeTop = `BUTTON ${built.orderIndex}/18 • ${built.buttonLabel}`;
+    headline = built.headline;
+    subheadline = built.subheadline;
+    priceTag = built.priceBadge;
   } else if (materialId && materialId !== 'AUTO' && materialId !== 'PORTAL') {
     const uuidMatch = materialId.match(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
@@ -218,7 +194,7 @@ export async function GET(req: NextRequest) {
             </div>
             <div
               style={{
-                background: '#1877F2',
+                background: '#059669',
                 color: '#ffffff',
                 borderRadius: '16px',
                 padding: '14px 24px',
@@ -226,7 +202,7 @@ export async function GET(req: NextRequest) {
                 fontWeight: 900,
               }}
             >
-              WhatsApp: 0705 759 072
+              WhatsApp: {CONNECTED_WHATSAPP_STATUS_LOCAL} • Soft Song Inside
             </div>
           </div>
         </div>
@@ -416,7 +392,7 @@ export async function GET(req: NextRequest) {
               color: '#0f172a',
             }}
           >
-            WhatsApp Direct: 0705 759 072 • Instant M-Pesa Auto-Open
+            WhatsApp Status: {CONNECTED_WHATSAPP_STATUS_LOCAL} • Soft Lounge Song Included
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import MobileSocialAutoPoster from '@/components/MobileSocialAutoPoster';
+import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import {
   Activity,
   ArrowUpRight,
@@ -2400,6 +2401,11 @@ export default function MobileAdminAppPage() {
         {/* ================================================================= */}
         {activeTab === 'TRAFFIC' && (
           <div className="space-y-4">
+            <WhatsAppStatusAutoPanel
+              password={password}
+              adminEmail={email}
+              darkTheme
+            />
             <div className="bg-slate-900 border border-amber-400/40 rounded-3xl p-5 space-y-1">
               <span className="text-[10px] font-black uppercase text-amber-300">
                 Monetization Coin Earned (Clicks + Views + Interactions)

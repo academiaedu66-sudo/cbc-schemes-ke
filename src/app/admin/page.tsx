@@ -36,6 +36,7 @@ import {
 } from '@/lib/material-utils';
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
+import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
 import AdminTwoFactorGate, {
@@ -828,6 +829,9 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* CONNECTED WHATSAPP (0728595160) HOURLY STATUS AUTO-POSTER FOR ALL 18 WEBSITE BUTTONS */}
+        <WhatsAppStatusAutoPanel password={password} />
 
         {/* SITE MONETIZATION, AD NETWORKS & CLICK / VIEW EARNINGS STUDIO */}
         <AdminMonetizationPanel password={password} />

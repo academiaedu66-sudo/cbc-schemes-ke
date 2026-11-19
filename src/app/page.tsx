@@ -540,16 +540,57 @@ export default function HomePage() {
     submittedReceipt || extractCodeClient(mpesaCode) || mpesaCode.trim().toUpperCase()
   );
 
-  // Support Google Sitelinks Searchbox (?q=...) & SEO Hub deep-links (?grade=, ?subject=, ?buy=, ?preview=)
+  // Support Google Sitelinks Searchbox (?q=...), WhatsApp Status Button Deep-Links (?hub=, ?area=), & SEO Hub deep-links
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const qParam = params.get('q');
     const gradeParam = params.get('grade');
     const subjectParam = params.get('subject');
+    const hubParam = (params.get('hub') || '').toLowerCase();
+    const areaParam = (params.get('area') || '').toLowerCase();
+
     if (qParam) setSearchQuery(qParam);
     if (gradeParam) setSelectedGrade(gradeParam);
     if (subjectParam) setSelectedSubject(subjectParam);
+
+    if (hubParam === 'gemini') {
+      setGeminiOpenTick((c) => c + 1);
+    } else if (hubParam === 'hustles') {
+      setSideHustlesOpenTick((c) => c + 1);
+    } else if (hubParam === 'tsc') {
+      setTscOpenTick((c) => c + 1);
+    } else if (hubParam === 'counselling') {
+      setCounsellingOpenTick((c) => c + 1);
+    } else if (hubParam === 'gaming') {
+      setGameLaunch({
+        subject: subjectParam || 'Mathematics',
+        gradeKey: gradeParam || '7',
+        tick: Date.now(),
+      });
+    }
+
+    const areaMap: Record<string, string> = {
+      all: 'All',
+      kjsea: 'NATIONAL KJSEA EXAMINATION (ALL GRADES)',
+      schemes: 'Schemes of Work',
+      'lesson-plans': 'Lesson Plans',
+      notes: "Teachers' Notes",
+      records: 'Records of Work',
+      exams: 'Revision Papers & Exams',
+      holidays: 'Holiday Assignments & Designs',
+    };
+    if (areaParam && areaMap[areaParam]) {
+      setSelectedCategory(areaMap[areaParam]);
+      if (areaParam === 'kjsea') {
+        setKjseaModalTick((c) => c + 1);
+      }
+      setTimeout(() => {
+        document
+          .getElementById('curriculum-materials-section')
+          ?.scrollIntoView({ behavior: 'smooth' });
+      }, 450);
+    }
   }, []);
 
   useEffect(() => {

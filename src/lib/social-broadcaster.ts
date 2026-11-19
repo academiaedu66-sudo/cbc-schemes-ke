@@ -78,11 +78,11 @@ export const DEFAULT_SOCIAL_PLATFORMS: SocialPlatformEntry[] = [
   },
   {
     id: 'whatsapp',
-    name: 'WhatsApp Business / Status / Channel',
+    name: 'WhatsApp Status & Business (0728595160 • Hourly Auto-Status)',
     shortBadge: 'WA',
     allowPosting: true,
     profileUrl: DEFAULT_WHATSAPP_PROFILE_URL,
-    placeholder: 'https://wa.me/254705759072 or WhatsApp Channel URL',
+    placeholder: 'https://wa.me/254728595160',
   },
   {
     id: 'tiktok',

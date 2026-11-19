@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Music2, Sparkles } from "lucide-react";
+import LuxuryWelcomeSong from "./LuxuryWelcomeSong";
 
 export default function WelcomeAnimation() {
   const [showSplash, setShowSplash] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
+  const [songReplayTick, setSongReplayTick] = useState(0);
 
   const dismissSplash = useCallback(() => {
     setIsFadingOut(true);
@@ -61,8 +63,20 @@ export default function WelcomeAnimation() {
             BE ALIVE, YOU ARE SPECIAL
           </button>
           <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse shrink-0" />
+          <button
+            type="button"
+            onClick={() => setSongReplayTick((t) => t + 1)}
+            title="Play 1-Minute 5-Star Concierge Welcome Song"
+            className="ml-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/40 text-[10px] font-extrabold uppercase tracking-wider text-amber-200 transition cursor-pointer"
+          >
+            <Music2 className="w-3 h-3 text-amber-300" />
+            <span>1-Min Song</span>
+          </button>
         </div>
       </div>
+
+      {/* 1-Minute 5-Star Hotel Welcome Song (Auto-starts on first website interaction) */}
+      <LuxuryWelcomeSong externalReplayTick={songReplayTick} />
 
       {/* Full-Screen Entry Welcome Animation */}
       {showSplash && (

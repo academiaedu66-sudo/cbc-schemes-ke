@@ -110,25 +110,32 @@ export async function getCachedGradeCatalog(gradeSlug: string): Promise<SeoResou
   const info = slugToGradeInfo(gradeSlug);
   if (!info) return [];
 
-  const rows: SeoResourceRow[] = [];
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabaseAdmin
-      .from('resources')
-      .select('id, title, grade, level, category, subject, term, price, format, file_path, created_at')
-      .eq('grade', info.dbGrade)
-      .order('category', { ascending: true })
-      .order('subject', { ascending: true })
-      .order('term', { ascending: true })
-      .range(from, from + 999);
-
-    if (error || !data || data.length === 0) break;
-    rows.push(...(data as SeoResourceRow[]));
-    if (data.length < 1000) break;
-    from += 1000;
+  try {
+    const pages = await Promise.all(
+      [0, 1000].map((from) =>
+        supabaseAdmin
+          .from('resources')
+          .select(
+            'id, title, grade, level, category, subject, term, price, format, file_path, created_at'
+          )
+          .eq('grade', info.dbGrade)
+          .order('category', { ascending: true })
+          .order('subject', { ascending: true })
+          .order('term', { ascending: true })
+          .range(from, from + 999)
+          .abortSignal(AbortSignal.timeout(10000))
+      )
+    );
+    const rows: SeoResourceRow[] = [];
+    for (const p of pages) {
+      if (p.data && p.data.length > 0) {
+        rows.push(...(p.data as SeoResourceRow[]));
+      }
+    }
+    return rows;
+  } catch {
+    return [];
   }
-
-  return rows;
 }
 
 export async function getCachedMaterialById(rawId: string): Promise<SeoResourceRow | null> {

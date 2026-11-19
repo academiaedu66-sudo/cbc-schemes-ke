@@ -46,4 +46,6 @@ next-env.d.ts
 
 # private database & website data backups (never commit to public git)
 /backups
+/.whatsapp-status-auth-*
+
 

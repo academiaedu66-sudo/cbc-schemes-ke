@@ -9,9 +9,9 @@ export const DEFAULT_FACEBOOK_PROFILE_URL =
   'https://www.facebook.com/profile.php?id=61591027359399';
 export const DEFAULT_FACEBOOK_REELS_URL =
   'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab';
-export const DEFAULT_WHATSAPP_PHONE_INTL = '254705759072';
+export const DEFAULT_WHATSAPP_PHONE_INTL = '254728595160';
 export const DEFAULT_WHATSAPP_PROFILE_URL =
-  'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20from%20Facebook%20and%20need%20CBC%20materials';
+  'https://wa.me/254728595160?text=Hello%2C%20I%20saw%20your%20WhatsApp%20Status%20and%20visited%20cbcmaterials.shop';
 
 export interface GeneratedFacebookLinkAd {
   id: string;
