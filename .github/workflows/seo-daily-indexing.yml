@@ -16,4 +16,5 @@ jobs:
       - name: Warm Sitemap & Submit Priority CBCMaterials URLs to IndexNow
         run: |
           curl -fsSL "https://www.cbcmaterials.shop/sitemap.xml" > /dev/null
+          curl -fsSL "https://www.cbcmaterials.shop/api/seo/sensor?cron=daily" > /dev/null
           node scripts/ping-search-engines-seo.mjs

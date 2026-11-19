@@ -208,6 +208,24 @@ export default function HomePage() {
     setExpandedAreaCounts({});
   }, [selectedGrade, selectedSubject, selectedCategory, selectedTerm, examSubFilter, searchQuery]);
 
+  // Notify Live Search Sensor whenever a visitor types a search keyword (>= 3 chars)
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 3) return;
+    const t = setTimeout(() => {
+      fetch('/api/seo/sensor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          landingPath: '/',
+          referrer: typeof window !== 'undefined' ? window.location.href : '',
+          searchQuery: q,
+        }),
+      }).catch(() => {});
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
   // Dynamic subject options scoped to selected Grade
   const availableSubjects = useMemo(() => {
     const set = new Set<string>();

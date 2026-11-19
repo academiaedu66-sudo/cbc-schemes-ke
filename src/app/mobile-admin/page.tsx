@@ -167,8 +167,20 @@ interface MobileWalletOverview {
   withdrawals: MobileWithdrawalRecord[];
 }
 
+interface MobileCustomerSensorEvent {
+  id: string;
+  timestamp: string;
+  sourceLabel: string;
+  keywordCluster: string;
+  searchQuery?: string;
+  landingPath: string;
+  deviceSummary: string;
+}
+
 const PINCHEZ_SPOKEN_GREETING =
   'Hello senior counsel Pinchez. Please check money.';
+
+const PROFESSOR_CUSTOMER_GREETING = 'New customer is here PROFESSOR';
 
 const STORAGE_AUTH_KEY = 'cbc_mobile_admin_credentials_v1';
 
@@ -223,6 +235,10 @@ export default function MobileAdminAppPage() {
     MobilePurchaseAttempt[]
   >([]);
   const [totalPurchaseAttempts, setTotalPurchaseAttempts] = useState(0);
+  const [customerSensorFeed, setCustomerSensorFeed] = useState<
+    MobileCustomerSensorEvent[]
+  >([]);
+  const [totalCustomersDetected, setTotalCustomersDetected] = useState(0);
   const [walletOverview, setWalletOverview] =
     useState<MobileWalletOverview | null>(null);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
@@ -265,8 +281,10 @@ export default function MobileAdminAppPage() {
   const prevPendingCountRef = useRef<number | null>(null);
   const prevChallengeCountRef = useRef<number | null>(null);
   const lastSeenAttemptIdRef = useRef<string | null | undefined>(undefined);
+  const lastSeenCustomerIdRef = useRef<string | null | undefined>(undefined);
   const voiceEnabledRef = useRef<boolean>(true);
   const alertAudioRef = useRef<HTMLAudioElement | null>(null);
+  const professorAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioUnlockedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -280,6 +298,11 @@ export default function MobileAdminAppPage() {
     audio.preload = 'auto';
     audio.volume = 1.0;
     alertAudioRef.current = audio;
+
+    const profAudio = new Audio('/audio/new-customer-professor.mp3');
+    profAudio.preload = 'auto';
+    profAudio.volume = 1.0;
+    professorAudioRef.current = profAudio;
 
     const unlockOnGesture = () => {
       if (audioUnlockedRef.current) return;
@@ -349,6 +372,45 @@ export default function MobileAdminAppPage() {
     }
   }, []);
 
+  const playProfessorCustomerAlert = useCallback((forcePlay = false) => {
+    if (!forcePlay && !voiceEnabledRef.current) return;
+    if (typeof window === 'undefined') return;
+
+    if (navigator.vibrate) {
+      navigator.vibrate([180, 80, 220]);
+    }
+
+    const speakProfessorFallback = () => {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(PROFESSOR_CUSTOMER_GREETING);
+          utter.rate = 0.96;
+          utter.pitch = 1.05;
+          utter.volume = 1.0;
+          window.speechSynthesis.speak(utter);
+        }
+      } catch { }
+    };
+
+    try {
+      const pAudio =
+        professorAudioRef.current ||
+        new Audio('/audio/new-customer-professor.mp3');
+      professorAudioRef.current = pAudio;
+      pAudio.currentTime = 0;
+      pAudio.volume = 1.0;
+      const p = pAudio.play();
+      if (p !== undefined) {
+        p.catch(() => {
+          speakProfessorFallback();
+        });
+      }
+    } catch {
+      speakProfessorFallback();
+    }
+  }, []);
+
   // Register PWA Service Worker & Capture Install Prompt
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -384,7 +446,7 @@ export default function MobileAdminAppPage() {
       };
 
       try {
-        const [ordRes, monRes, tuiRes, gamRes, secRes, attRes, walRes] =
+        const [ordRes, monRes, tuiRes, gamRes, secRes, attRes, walRes, senRes] =
           await Promise.all([
             fetch('/api/admin/orders', { headers }),
             fetch('/api/monetization/track', { headers }),
@@ -393,6 +455,7 @@ export default function MobileAdminAppPage() {
             fetch('/api/admin/security', { headers }),
             fetch('/api/purchase-attempt', { headers }),
             fetch('/api/admin/wallet', { headers }),
+            fetch('/api/seo/sensor', { headers }),
           ]);
 
         if (ordRes.status === 401) {
@@ -523,6 +586,33 @@ export default function MobileAdminAppPage() {
           }
         }
 
+        if (senRes.ok) {
+          const senJson = (await senRes.json()) as {
+            totalCustomersDetected?: number;
+            latestCustomer?: MobileCustomerSensorEvent | null;
+            recentCustomers?: MobileCustomerSensorEvent[];
+          };
+          setTotalCustomersDetected(senJson.totalCustomersDetected || 0);
+          setCustomerSensorFeed(senJson.recentCustomers || []);
+
+          const newestCustId = senJson.latestCustomer?.id || null;
+          if (lastSeenCustomerIdRef.current === undefined) {
+            lastSeenCustomerIdRef.current = newestCustId;
+          } else if (
+            newestCustId &&
+            newestCustId !== lastSeenCustomerIdRef.current
+          ) {
+            lastSeenCustomerIdRef.current = newestCustId;
+            playProfessorCustomerAlert();
+            const c = senJson.latestCustomer;
+            if (c) {
+              showToast(
+                `New customer is here PROFESSOR! (${c.sourceLabel} → ${c.keywordCluster})`
+              );
+            }
+          }
+        }
+
         return true;
       } catch {
         return false;
@@ -530,7 +620,7 @@ export default function MobileAdminAppPage() {
         setSyncing(false);
       }
     },
-    [playPinchezVoiceAlert]
+    [playPinchezVoiceAlert, playProfessorCustomerAlert]
   );
 
   // Restore saved mobile session if present
@@ -1363,6 +1453,55 @@ export default function MobileAdminAppPage() {
               >
                 ▶ Test Sound
               </button>
+            </div>
+
+            {/* Live Search & Customer Arrival Sensor Strip ("New customer is here PROFESSOR") */}
+            <div className="bg-gradient-to-r from-indigo-950/90 via-slate-900 to-emerald-950/60 border border-indigo-400/40 rounded-2xl p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase text-indigo-300 truncate">
+                    Live Search &amp; Customer Sensor ({totalCustomersDetected} Detected)
+                  </p>
+                  <p className="text-[11px] text-slate-300 truncate">
+                    Rings: &ldquo;New customer is here PROFESSOR&rdquo;
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playProfessorCustomerAlert(true);
+                    showToast('Playing: "New customer is here PROFESSOR"');
+                  }}
+                  className="bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-white font-black text-[11px] px-3 py-2 rounded-xl shrink-0 cursor-pointer"
+                >
+                  ▶ Test Professor
+                </button>
+              </div>
+
+              {customerSensorFeed.length > 0 && (
+                <div className="space-y-1.5 max-h-32 overflow-y-auto pt-1 border-t border-slate-800">
+                  {customerSensorFeed.slice(0, 4).map((cust) => (
+                    <div
+                      key={cust.id}
+                      className="flex items-center justify-between gap-2 text-xs bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-1.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-bold text-white truncate">
+                          {cust.keywordCluster}
+                          {cust.searchQuery ? ` (“${cust.searchQuery}”)` : ''}
+                        </p>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {cust.sourceLabel} • {cust.deviceSummary} •{' '}
+                          {formatShortTime(cust.timestamp)}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-400 shrink-0">
+                        LIVE
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Live Real-Time Purchase Attempts Feed */}

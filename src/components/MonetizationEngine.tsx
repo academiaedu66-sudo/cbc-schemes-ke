@@ -209,7 +209,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
 
     if (!viewRecordedRef.current) {
       viewRecordedRef.current = true;
-      // Record real page view (skip /admin, /mobile-admin and /monetization routes)
+      // Record real page view & fire Live Search/Customer Arrival Sensor (skip /admin, /mobile-admin and /monetization routes)
       if (
         typeof window !== 'undefined' &&
         !window.location.pathname.startsWith('/admin') &&
@@ -217,6 +217,23 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
         !window.location.pathname.startsWith('/monetization')
       ) {
         sendTrackBeacon({ eventType: 'view', placement: 'page' });
+
+        let detectedQuery = '';
+        try {
+          const sp = new URLSearchParams(window.location.search);
+          detectedQuery = sp.get('q') || sp.get('hub') || sp.get('area') || '';
+        } catch {}
+
+        fetch('/api/seo/sensor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            landingPath: window.location.pathname + window.location.search,
+            referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
+            searchQuery: detectedQuery,
+          }),
+          keepalive: true,
+        }).catch(() => {});
       }
     }
 

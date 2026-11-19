@@ -37,6 +37,7 @@ import {
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
+import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
 import AdminTwoFactorGate, {
@@ -829,6 +830,9 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* LIVE SEARCH & CUSTOMER ARRIVAL SENSOR ("New customer is here PROFESSOR") + DAILY SEO RANKER */}
+        <CustomerSensorAdminBanner password={password} />
 
         {/* CONNECTED WHATSAPP (0728595160) HOURLY STATUS AUTO-POSTER FOR ALL 18 WEBSITE BUTTONS */}
         <WhatsAppStatusAutoPanel password={password} />
