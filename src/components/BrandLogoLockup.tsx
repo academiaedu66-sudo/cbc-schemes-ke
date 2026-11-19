@@ -6,18 +6,20 @@ import Link from 'next/link';
 export default function BrandLogoLockup({
   size = 'lg',
   showTagline = false,
+  subtitle,
   asHeading = false,
 }: {
   size?: 'sm' | 'md' | 'lg';
   showTagline?: boolean;
+  subtitle?: string;
   asHeading?: boolean;
 }) {
   const imgClass =
     size === 'sm'
-      ? 'w-9 h-9 rounded-xl'
+      ? 'w-10 h-10 rounded-xl'
       : size === 'md'
-      ? 'w-11 h-11 rounded-2xl'
-      : 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl';
+      ? 'w-12 h-12 rounded-2xl'
+      : 'w-16 h-16 sm:w-20 sm:h-20 rounded-2xl';
 
   const textClass =
     size === 'sm'
@@ -52,11 +54,9 @@ export default function BrandLogoLockup({
   );
 
   return (
-    <Link
-      href="/"
-      className="inline-flex items-center gap-3 group focus:outline-none"
-    >
-      <div className="relative shrink-0">
+    <div className="flex flex-row items-center gap-3.5 sm:gap-4 text-left">
+      {/* Far-Left Dedicated Crest Logo Column (Never stacked on top of writings) */}
+      <Link href="/" className="relative shrink-0 group focus:outline-none">
         <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-amber-400 via-emerald-400 to-rose-500 opacity-75 blur-xs group-hover:opacity-100 transition" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -64,16 +64,24 @@ export default function BrandLogoLockup({
           alt="CBCMATERIALS.SHOP Official Crest Logo"
           className={`relative ${imgClass} object-cover bg-white border-2 border-amber-300 shadow-lg`}
         />
-      </div>
+      </Link>
 
-      <div className="flex flex-col">
-        {asHeading ? <h1>{coloredWordmark}</h1> : coloredWordmark}
+      {/* Right-Side Writings Column */}
+      <div className="flex flex-col justify-center min-w-0">
+        <Link href="/" className="focus:outline-none w-fit">
+          {asHeading ? <h1>{coloredWordmark}</h1> : coloredWordmark}
+        </Link>
         {showTagline && (
-          <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-widest text-amber-200/95 mt-1">
+          <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-amber-200/95 mt-1">
             KENYA&apos;S #1 OFFICIAL CBC &amp; KNEC PORTAL (PP1–GRADE 12)
           </span>
         )}
+        {subtitle && (
+          <p className="text-emerald-100 text-xs sm:text-sm mt-1 leading-snug max-w-2xl">
+            {subtitle}
+          </p>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }

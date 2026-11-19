@@ -77,34 +77,42 @@ export default function WelcomeAnimation() {
     <>
       {/* Persistent Shimmering Top Welcome Ribbon */}
       <div className="bg-slate-950 text-white border-b border-emerald-500/30 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center justify-center gap-2.5 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/cbcmaterials-logo.jpg"
-            alt="CBCMATERIALS.SHOP Logo"
-            className="w-5 h-5 rounded-md bg-white border border-amber-300 object-cover shrink-0"
-          />
-          <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider inline-flex items-center">
-            <span className="text-amber-300">CBC</span>
-            <span className="text-emerald-300">MATERIALS</span>
-            <span className="text-rose-400">.SHOP</span>
-          </span>
-          <span className="text-slate-600">•</span>
-          <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
-          <button
-            type="button"
-            onClick={triggerReplay}
-            title="Click to replay welcome animation"
-            className="text-xs sm:text-sm font-black tracking-[0.18em] uppercase bg-gradient-to-r from-emerald-300 via-amber-200 to-teal-300 bg-clip-text text-transparent animate-welcome-shimmer cursor-pointer hover:opacity-90 transition"
-          >
-            BE ALIVE, YOU ARE SPECIAL
-          </button>
-          <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse shrink-0" />
+        <div className="w-full px-3 sm:px-6 py-2 flex items-center justify-between gap-2.5">
+          {/* Far-Left Mini Crest & Wordmark */}
+          <div className="inline-flex items-center gap-2 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/cbcmaterials-logo.jpg"
+              alt="CBCMATERIALS.SHOP Logo"
+              className="w-6 h-6 rounded-md bg-white border border-amber-300 object-cover shrink-0"
+            />
+            <span className="hidden sm:inline-flex text-xs font-black uppercase tracking-wider items-center">
+              <span className="text-amber-300">CBC</span>
+              <span className="text-emerald-300">MATERIALS</span>
+              <span className="text-rose-400">.SHOP</span>
+            </span>
+          </div>
+
+          {/* Center Welcome Statement */}
+          <div className="flex items-center justify-center gap-2 text-center">
+            <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
+            <button
+              type="button"
+              onClick={triggerReplay}
+              title="Click to replay welcome animation"
+              className="text-xs sm:text-sm font-black tracking-[0.18em] uppercase bg-gradient-to-r from-emerald-300 via-amber-200 to-teal-300 bg-clip-text text-transparent animate-welcome-shimmer cursor-pointer hover:opacity-90 transition"
+            >
+              BE ALIVE, YOU ARE SPECIAL
+            </button>
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse shrink-0" />
+          </div>
+
+          {/* Right Song Replay Button */}
           <button
             type="button"
             onClick={triggerSongReplay}
             title="Play 1-Minute 5-Star Concierge Welcome Song"
-            className="ml-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/40 text-[10px] font-extrabold uppercase tracking-wider text-amber-200 transition cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/40 text-[10px] font-extrabold uppercase tracking-wider text-amber-200 transition cursor-pointer shrink-0"
           >
             <Music2 className="w-3 h-3 text-amber-300" />
             <span>1-Min Song</span>

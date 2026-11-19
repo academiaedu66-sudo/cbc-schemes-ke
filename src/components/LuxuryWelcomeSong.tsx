@@ -516,30 +516,32 @@ export default function LuxuryWelcomeSong({
         />
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-amber-300/10 blur-3xl animate-pulse pointer-events-none" />
 
+        {/* Far Top-Left Official Crest Logo (Completely Clear of Center Writings!) */}
+        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2.5 pointer-events-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/cbcmaterials-logo.jpg"
+            alt="CBCMATERIALS.SHOP Official Crest Logo"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border-2 border-amber-300 shadow-[0_0_25px_rgba(251,191,36,0.5)] object-cover shrink-0"
+          />
+          <div className="hidden sm:inline-flex items-center gap-1 text-sm font-black uppercase tracking-tight">
+            <span className="text-amber-300">CBC</span>
+            <span className="text-emerald-300">MATERIALS</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-rose-600 text-white text-xs border border-amber-200/60">
+              .SHOP
+            </span>
+          </div>
+        </div>
+
         {/* Center Luxury Concierge Lounge Card */}
-        <div className="relative max-w-2xl w-full rounded-3xl bg-slate-950/75 border border-amber-300/40 shadow-[0_25px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 text-center space-y-6">
-          {/* Official Crest Logo + Top 5-Star Concierge Badge */}
-          <div className="flex flex-col items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/cbcmaterials-logo.jpg"
-              alt="CBCMATERIALS.SHOP Official Crest Logo"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border-2 border-amber-300 shadow-[0_0_30px_rgba(251,191,36,0.5)] object-cover"
-            />
-            <div className="inline-flex items-center gap-1.5 text-base sm:text-xl font-black uppercase tracking-tight">
-              <span className="text-amber-300">CBC</span>
-              <span className="text-emerald-300">MATERIALS</span>
-              <span className="px-2 py-0.5 rounded-lg bg-rose-600 text-white text-sm sm:text-base border border-amber-200/60">
-                .SHOP
-              </span>
-            </div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/40 shadow-md">
-              <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
-              <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-amber-200">
-                5-Star Concierge Welcome Lounge
-              </span>
-              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
-            </div>
+        <div className="relative max-w-2xl w-full rounded-3xl bg-slate-950/75 border border-amber-300/40 shadow-[0_25px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 text-center space-y-6 mt-12 sm:mt-0">
+          {/* Top 5-Star Concierge Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/40 shadow-md">
+            <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-amber-200">
+              5-Star Concierge Welcome Lounge
+            </span>
+            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
           </div>
 
           {/* Signature Centerpiece Statement */}

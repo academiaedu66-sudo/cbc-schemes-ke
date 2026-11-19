@@ -643,15 +643,16 @@ export default function HomePage() {
       {/* Entry Welcome Splash & Persistent Animated Welcome Ribbon */}
       <WelcomeAnimation />
 
-      {/* Header Bar */}
+      {/* Header Bar — Logo Anchored Far Left, Writings & Buttons Strictly Beside/Right */}
       <header className="bg-gradient-to-r from-slate-950 via-emerald-900 to-indigo-950 text-white shadow-lg border-b-2 border-amber-400/50">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="space-y-1.5">
-            <BrandLogoLockup size="lg" showTagline asHeading />
-            <p className="text-emerald-100 text-xs sm:text-sm">
-              Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term
-              Exams, KPSEA/KJSEA Trials &amp; Designs (PP1–Grade 12 • Editable DOCX + PDF)
-            </p>
+        <div className="w-full px-3 sm:px-6 lg:px-8 py-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+          <div className="shrink-0">
+            <BrandLogoLockup
+              size="lg"
+              showTagline
+              asHeading
+              subtitle="Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term Exams, KPSEA/KJSEA Trials & Designs (PP1–Grade 12 • Editable DOCX + PDF)"
+            />
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
             <button
