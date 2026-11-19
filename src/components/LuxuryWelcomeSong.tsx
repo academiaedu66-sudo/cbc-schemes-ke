@@ -518,13 +518,28 @@ export default function LuxuryWelcomeSong({
 
         {/* Center Luxury Concierge Lounge Card */}
         <div className="relative max-w-2xl w-full rounded-3xl bg-slate-950/75 border border-amber-300/40 shadow-[0_25px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 text-center space-y-6">
-          {/* Top 5-Star Concierge Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/40 shadow-md">
-            <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-amber-200">
-              5-Star Concierge Welcome Lounge
-            </span>
-            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+          {/* Official Crest Logo + Top 5-Star Concierge Badge */}
+          <div className="flex flex-col items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/cbcmaterials-logo.jpg"
+              alt="CBCMATERIALS.SHOP Official Crest Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border-2 border-amber-300 shadow-[0_0_30px_rgba(251,191,36,0.5)] object-cover"
+            />
+            <div className="inline-flex items-center gap-1.5 text-base sm:text-xl font-black uppercase tracking-tight">
+              <span className="text-amber-300">CBC</span>
+              <span className="text-emerald-300">MATERIALS</span>
+              <span className="px-2 py-0.5 rounded-lg bg-rose-600 text-white text-sm sm:text-base border border-amber-200/60">
+                .SHOP
+              </span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/40 shadow-md">
+              <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
+              <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-amber-200">
+                5-Star Concierge Welcome Lounge
+              </span>
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+            </div>
           </div>
 
           {/* Signature Centerpiece Statement */}
@@ -538,7 +553,7 @@ export default function LuxuryWelcomeSong({
               </span>
             </h2>
             <p className="text-xs sm:text-sm text-emerald-100/85 font-medium max-w-lg mx-auto">
-              Welcome to CBCMaterials Kenya — Please enjoy our soft 1-minute
+              Welcome to <strong className="text-amber-300">CBCMATERIALS.SHOP</strong> — Please enjoy our soft 1-minute
               5-Star Welcome Song before browsing Grade 1–12 resources.
             </p>
           </div>

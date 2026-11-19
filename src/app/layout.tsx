@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MonetizationProvider } from "@/components/MonetizationEngine";
@@ -13,22 +13,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#065f46",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.cbcmaterials.shop"),
   title: {
     default:
-      "CBCMaterials Kenya (2026) | CBC Schemes of Work, Teachers Notes, KNEC KJSEA & KPSEA Examinations, TSC & Tuition Tutors",
-    template: "%s | CBCMaterials Kenya (cbcmaterials.shop)",
+      "CBCMATERIALS.SHOP | 2026 CBC Schemes of Work, Teachers Notes, KNEC KJSEA & KPSEA Examinations, TSC & Tuition Tutors",
+    template: "%s | CBCMATERIALS.SHOP",
   },
   description:
-    "Official CBCMaterials Kenya Portal (www.cbcmaterials.shop) — Download 6,534+ KICD-rationalized 2026 CBC Schemes of Work, Teachers' Notes, Lesson Plans, Records of Work, KNEC KJSEA & KPSEA Examinations + Marking Schemes, Revision Books, All TSC Services, and Verified Home & Online Tuition Tutors (PP1–Grade 12).",
-  applicationName: "CBCMaterials Kenya",
+    "Official CBCMATERIALS.SHOP Portal — Download 6,534+ KICD-rationalized 2026 CBC Schemes of Work, Teachers' Notes, Lesson Plans, Records of Work, KNEC KJSEA & KPSEA Examinations + Marking Schemes, Revision Books, All TSC Services, Tutor Peter Classes & Verified Tuition Tutors (PP1–Grade 12).",
+  applicationName: "CBCMATERIALS.SHOP",
   category: "education",
   authors: [
-    { name: "CBCMaterials Kenya (CBC Kenya Resource Hub)", url: "https://www.cbcmaterials.shop" },
+    { name: "CBCMATERIALS.SHOP", url: "https://www.cbcmaterials.shop" },
   ],
-  creator: "CBCMaterials Kenya",
-  publisher: "CBCMaterials Kenya",
+  creator: "CBCMATERIALS.SHOP",
+  publisher: "CBCMATERIALS.SHOP",
   alternates: {
     canonical: "https://www.cbcmaterials.shop",
     languages: {
@@ -48,6 +52,8 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
+    "CBCMATERIALS.SHOP",
+    "WWW.CBCMATERIALS.SHOP",
     "CBC",
     "CBC Kenya",
     "CBCMATERIALS",
@@ -80,6 +86,7 @@ export const metadata: Metadata = {
     "Home Tuition and Online Tutors Kenya",
     "Holiday Tuition Teachers Nairobi Mombasa Kisumu Nakuru Eldoret All 47 Counties",
     "Private CBC Tutors PP1 to Grade 12",
+    "Tutor Peter Whiteboard Classes",
     "CBC Lesson Plans Editable Word",
     "KICD Curriculum Designs PDF",
     "Senior School Grade 10 11 12 Pathways Schemes and Notes",
@@ -89,20 +96,20 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title:
-      "CBCMaterials Kenya (2026) | 6,534+ CBC Schemes of Work, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC & Tuition Tutors",
+      "CBCMATERIALS.SHOP | 6,534+ CBC Schemes of Work, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC & Tuition Tutors",
     description:
-      "Download 6,534+ KICD-rationalized 2026 Schemes of Work, Teachers' Notes, Lesson Plans, KNEC KJSEA & KPSEA Examinations + Marking Schemes, TSC Tools & Verified Tuition Tutors (PP1–Grade 12) on cbcmaterials.shop.",
+      "Download 6,534+ KICD-rationalized 2026 Schemes of Work, Teachers' Notes, Lesson Plans, KNEC KJSEA & KPSEA Examinations + Marking Schemes, TSC Tools & Verified Tuition Tutors (PP1–Grade 12) on CBCMATERIALS.SHOP.",
     url: "https://www.cbcmaterials.shop",
-    siteName: "CBCMaterials Kenya (cbcmaterials.shop)",
+    siteName: "CBCMATERIALS.SHOP",
     locale: "en_KE",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title:
-      "CBCMaterials Kenya (2026) | Schemes of Work, Teachers Notes, KNEC Exams, TSC & Tutors",
+      "CBCMATERIALS.SHOP | Schemes of Work, Teachers Notes, KNEC Exams, TSC & Tutors",
     description:
-      "6,534+ Editable Word (.DOCX) + Print-Ready (.PDF) CBC Schemes, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC Services & Verified Tutors in Kenya.",
+      "6,534+ Editable Word (.DOCX) + Print-Ready (.PDF) CBC Schemes, Teachers Notes, KNEC KJSEA/KPSEA Exams, TSC Services & Verified Tutors on CBCMATERIALS.SHOP.",
   },
   other: {
     "geo.region": "KE",
@@ -121,13 +128,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link
           rel="search"
           type="application/opensearchdescription+xml"
-          title="CBCMaterials Kenya Search"
+          title="CBCMATERIALS.SHOP Search"
           href="/opensearch.xml"
         />
         <link
           rel="alternate"
           type="application/rss+xml"
-          title="CBCMaterials Kenya Official Social & Video SEO Feed"
+          title="CBCMATERIALS.SHOP Official Social & Video SEO Feed"
           href="/social-feed.xml"
         />
       </head>

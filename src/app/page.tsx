@@ -45,6 +45,7 @@ import CbcBooksHub, {
 } from '@/components/CbcBooksHub';
 import NationalKjseaHub from '@/components/NationalKjseaHub';
 import TutorPeterVideosHubModal from '@/components/TutorPeterVideosHubModal';
+import BrandLogoLockup from '@/components/BrandLogoLockup';
 import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
@@ -643,14 +644,11 @@ export default function HomePage() {
       <WelcomeAnimation />
 
       {/* Header Bar */}
-      <header className="bg-emerald-800 text-white shadow-md">
+      <header className="bg-gradient-to-r from-slate-950 via-emerald-900 to-indigo-950 text-white shadow-lg border-b-2 border-amber-400/50">
         <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
-              <BookOpen className="w-7 h-7 text-emerald-300" />
-              CBC Kenya Resource Hub
-            </h1>
-            <p className="text-emerald-100 text-sm mt-1">
+          <div className="space-y-1.5">
+            <BrandLogoLockup size="lg" showTagline asHeading />
+            <p className="text-emerald-100 text-xs sm:text-sm">
               Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term
               Exams, KPSEA/KJSEA Trials &amp; Designs (PP1–Grade 12 • Editable DOCX + PDF)
             </p>

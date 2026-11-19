@@ -77,7 +77,19 @@ export default function WelcomeAnimation() {
     <>
       {/* Persistent Shimmering Top Welcome Ribbon */}
       <div className="bg-slate-950 text-white border-b border-emerald-500/30 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-center gap-2.5 text-center">
+        <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center justify-center gap-2.5 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/cbcmaterials-logo.jpg"
+            alt="CBCMATERIALS.SHOP Logo"
+            className="w-5 h-5 rounded-md bg-white border border-amber-300 object-cover shrink-0"
+          />
+          <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider inline-flex items-center">
+            <span className="text-amber-300">CBC</span>
+            <span className="text-emerald-300">MATERIALS</span>
+            <span className="text-rose-400">.SHOP</span>
+          </span>
+          <span className="text-slate-600">•</span>
           <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-welcome-heartbeat shrink-0" />
           <button
             type="button"

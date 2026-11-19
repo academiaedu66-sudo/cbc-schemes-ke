@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { BookOpen, Megaphone, MessageCircle, ShieldCheck } from 'lucide-react';
 import { useMonetization } from '@/components/MonetizationEngine';
+import BrandLogoLockup from './BrandLogoLockup';
 
 const FOOTER_GRADE_SLUGS = [
   { slug: 'pp1', label: 'PP1' },
@@ -36,12 +37,9 @@ export default function SiteFooter() {
       <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Brand & Mission */}
         <div className="space-y-3 md:col-span-2">
-          <div className="flex items-center gap-2 text-white font-black text-lg">
-            <BookOpen className="w-5 h-5 text-emerald-400" />
-            <span>CBC Kenya Resource Hub</span>
-          </div>
+          <BrandLogoLockup size="md" showTagline />
           <p className="text-xs text-slate-400 leading-relaxed max-w-md">
-            Kenya&apos;s #1 KICD-aligned CBCMaterials portal (www.cbcmaterials.shop) providing
+            Kenya&apos;s #1 KICD-aligned <strong className="text-amber-300">CBCMATERIALS.SHOP</strong> portal providing
             6,534+ Editable Word (.DOCX) and Print-Ready (.PDF) CBC Schemes of Work, Lesson Plans,
             Teachers&apos; Notes, Records of Work, National KJSEA &amp; KPSEA Examinations + Marking
             Schemes, All TSC Services, and Verified Home &amp; Online Tuition Tutors (PP1–Grade 12).

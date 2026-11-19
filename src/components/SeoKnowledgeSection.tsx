@@ -52,12 +52,13 @@ export default function SeoKnowledgeSection() {
     {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      name: 'CBCMaterials Kenya — CBC Kenya Resource Hub',
+      name: 'CBCMATERIALS.SHOP',
       alternateName: [
-        'CBCMaterials',
+        'CBCMATERIALS.SHOP',
+        'WWW.CBCMATERIALS.SHOP',
+        'CBCMATERIALS',
         'CBC Materials Kenya',
         'CBC Kenya Resource Hub',
-        'cbcmaterials.shop',
       ],
       url: 'https://www.cbcmaterials.shop',
       inLanguage: 'en-KE',
@@ -73,8 +74,15 @@ export default function SeoKnowledgeSection() {
     {
       '@context': 'https://schema.org',
       '@type': 'EducationalOrganization',
-      name: 'CBCMaterials Kenya (CBC Kenya Resource Hub)',
+      name: 'CBCMATERIALS.SHOP',
       url: 'https://www.cbcmaterials.shop',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.cbcmaterials.shop/images/cbcmaterials-logo.jpg',
+        width: 1024,
+        height: 1024,
+      },
+      image: 'https://www.cbcmaterials.shop/images/cbcmaterials-logo.jpg',
       sameAs: [
         'https://www.facebook.com/profile.php?id=61591027359399',
         'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',

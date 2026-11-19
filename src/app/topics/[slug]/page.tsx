@@ -89,10 +89,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: `${pillar.metaTitle} | CBCMaterials Kenya`,
+      title: `${pillar.metaTitle} | CBCMATERIALS.SHOP`,
       description: pillar.metaDescription,
       url: canonicalUrl,
-      siteName: 'CBC Kenya Resource Hub (cbcmaterials.shop)',
+      siteName: 'CBCMATERIALS.SHOP',
       locale: 'en_KE',
       type: 'website',
     },
