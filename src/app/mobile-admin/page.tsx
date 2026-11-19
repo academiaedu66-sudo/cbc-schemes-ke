@@ -5,6 +5,7 @@ import Link from 'next/link';
 import MobileSocialAutoPoster from '@/components/MobileSocialAutoPoster';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
+import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
 import {
   Activity,
   ArrowUpRight,
@@ -2424,6 +2425,11 @@ export default function MobileAdminAppPage() {
         {/* ================================================================= */}
         {activeTab === 'LEADS' && (
           <div className="space-y-5">
+            <AdminCustomersVaultPanel
+              password={password}
+              adminEmail={email}
+              darkTheme
+            />
             {/* Gaming 1,000 Pts -> KSh 5 Claims */}
             <div className="space-y-2.5">
               <h2 className="text-xs font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">

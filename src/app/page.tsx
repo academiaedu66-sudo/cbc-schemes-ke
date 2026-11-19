@@ -24,6 +24,7 @@ import {
   Bot,
   Award,
   Lock,
+  UserPlus,
   Video,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -796,6 +797,22 @@ export default function HomePage() {
               <UploadCloud className="w-4 h-4" />
               Admin Studio
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(
+                    new CustomEvent('cbc-open-customer-auth', {
+                      detail: { mode: 'signup' },
+                    })
+                  );
+                }
+              }}
+              className="bg-gradient-to-r from-amber-300 to-emerald-300 hover:brightness-105 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              Sign Up / Login
+            </button>
             <a
               href="https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab"
               target="_blank"

@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Wallet,
   Settings,
+  Users,
   Zap,
 } from 'lucide-react';
 import {
@@ -39,6 +40,7 @@ import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
+import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
 import AdminTwoFactorGate, {
@@ -534,6 +536,18 @@ export default function AdminDashboardPage() {
             >
               Monetization &amp; Earnings Page
             </Link>
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById('registered-customers-vault')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Registered Customers (Emails &amp; Phones)
+            </button>
             <Link
               href="/"
               className="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
@@ -560,6 +574,9 @@ export default function AdminDashboardPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* BACKEND ANTI-HACKER SHIELD, 2-STEP VERIFICATION & WEBSITE BACKUP */}
         <AdminSecurityBackupPanel password={password} />
+
+        {/* BACKEND VAULT FOR FRONTEND CUSTOMER SIGN-UPS (EMAILS & PHONE NUMBERS) */}
+        <AdminCustomersVaultPanel password={password} />
 
         {/* LIVE STK -> 0728595160 INSTANT PAYOUT CONFIGURATION */}
         <section

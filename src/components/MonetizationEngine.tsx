@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ExternalLink, Megaphone, Sparkles, TrendingUp } from 'lucide-react';
 import LuxuryWelcomeSong from './LuxuryWelcomeSong';
+import CustomerAuthGateModal from './CustomerAuthGateModal';
 import {
   DEFAULT_ADSTERRA_SMARTLINK_URL,
   DEFAULT_ADSTERRA_UNIT_SRC,
@@ -349,6 +350,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   return (
     <MonetizationContext.Provider value={value}>
       <LuxuryWelcomeSong />
+      <CustomerAuthGateModal />
       {children}
     </MonetizationContext.Provider>
   );

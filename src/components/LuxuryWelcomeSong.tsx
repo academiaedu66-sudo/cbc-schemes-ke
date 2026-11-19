@@ -119,6 +119,9 @@ export default function LuxuryWelcomeSong({
       document.body.style.overflow = '';
     }
     if (typeof window !== 'undefined') {
+      (
+        window as unknown as { __cbcWelcomeSongCompletedAt?: number }
+      ).__cbcWelcomeSongCompletedAt = Date.now();
       window.dispatchEvent(new CustomEvent('cbc-compulsory-song-completed'));
     }
 
