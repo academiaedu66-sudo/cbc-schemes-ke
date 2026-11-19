@@ -23,6 +23,7 @@ import {
   Briefcase,
   Bot,
   Award,
+  Video,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -42,6 +43,7 @@ import CbcBooksHub, {
   type ExternalBookModalLaunch,
 } from '@/components/CbcBooksHub';
 import NationalKjseaHub from '@/components/NationalKjseaHub';
+import TutorPeterVideosHubModal from '@/components/TutorPeterVideosHubModal';
 import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
 import SiteFooter from '@/components/SiteFooter';
@@ -126,6 +128,8 @@ export default function HomePage() {
 
   // Preview Modal State
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
+  const [isVideosModalOpen, setIsVideosModalOpen] = useState(false);
+  const [videoModalItem, setVideoModalItem] = useState<ResourceItem | null>(null);
 
   // Checkout Modal State (PayHero Live STK Express primary + Direct M-Pesa Code backup)
   const [modalItem, setModalItem] = useState<ResourceItem | null>(null);
@@ -738,6 +742,18 @@ export default function HomePage() {
             </button>
             <button
               type="button"
+              onClick={() => {
+                trackInteraction('tutor_peter_videos_header_click');
+                setVideoModalItem(null);
+                setIsVideosModalOpen(true);
+              }}
+              className="bg-red-600 hover:bg-red-500 text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+            >
+              <Video className="w-4 h-4" />
+              VIDEOS (TUTOR PETER CLASS)
+            </button>
+            <button
+              type="button"
               onClick={() =>
                 setGameLaunch({
                   subject: selectedSubject !== 'All' ? selectedSubject : 'Mathematics',
@@ -826,6 +842,21 @@ export default function HomePage() {
             <span>ALL CURRICULUM MATERIALS</span>
             <ChevronDown className="w-4 h-4 text-emerald-200" />
           </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                trackInteraction('tutor_peter_videos_bar_click');
+                setVideoModalItem(null);
+                setIsVideosModalOpen(true);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-5 py-3.5 rounded-xl text-sm sm:text-base font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer shrink-0"
+            >
+              <Video className="w-5 h-5 text-amber-300" />
+              <span>VIDEOS (TUTOR PETER WHITEBOARD)</span>
+            </button>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {MATERIAL_AREAS.map((area) => (
@@ -1342,6 +1373,10 @@ export default function HomePage() {
                             resource={item}
                             onPreview={(res) => setPreviewItem(res)}
                             onBuy={(res) => openCheckoutFor(res)}
+                            onWatchVideo={(res) => {
+                              setVideoModalItem(res);
+                              setIsVideosModalOpen(true);
+                            }}
                             onPlayGame={(res) =>
                               setGameLaunch({
                                 subject: res.subject || 'Mathematics',
@@ -1461,6 +1496,10 @@ export default function HomePage() {
                       resource={item}
                       onPreview={(res) => setPreviewItem(res)}
                       onBuy={(res) => openCheckoutFor(res)}
+                      onWatchVideo={(res) => {
+                        setVideoModalItem(res);
+                        setIsVideosModalOpen(true);
+                      }}
                       onPlayGame={(res) =>
                         setGameLaunch({
                           subject: res.subject || 'Mathematics',
@@ -1864,6 +1903,12 @@ export default function HomePage() {
           </div>
         </div>
       )}
+      <TutorPeterVideosHubModal
+        isOpen={isVideosModalOpen}
+        onClose={() => setIsVideosModalOpen(false)}
+        resources={resources}
+        initialResource={videoModalItem}
+      />
     </div>
   );
 }

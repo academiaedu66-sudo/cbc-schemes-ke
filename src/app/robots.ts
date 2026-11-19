@@ -10,7 +10,11 @@ export default function robots(): MetadataRoute.Robots {
           '/topics/',
           '/grades/',
           '/materials/',
+          '/videos/',
+          '/videos',
           '/status-ad/',
+          '/social-feed.xml',
+          '/video-sitemap.xml',
           '/opensearch.xml',
           '/ads.txt',
           '/advertise',
@@ -21,7 +25,17 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Googlebot',
-        allow: ['/', '/topics/', '/grades/', '/materials/', '/opensearch.xml'],
+        allow: [
+          '/',
+          '/topics/',
+          '/grades/',
+          '/materials/',
+          '/videos/',
+          '/videos',
+          '/social-feed.xml',
+          '/video-sitemap.xml',
+          '/opensearch.xml',
+        ],
         disallow: ['/admin', '/mobile-admin', '/api/admin/'],
       },
       {
@@ -30,6 +44,9 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     host: 'https://www.cbcmaterials.shop',
-    sitemap: 'https://www.cbcmaterials.shop/sitemap.xml',
+    sitemap: [
+      'https://www.cbcmaterials.shop/sitemap.xml',
+      'https://www.cbcmaterials.shop/video-sitemap.xml',
+    ],
   };
 }

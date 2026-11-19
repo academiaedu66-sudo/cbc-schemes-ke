@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye, Gamepad2 } from "lucide-react";
+import Link from "next/link";
+import { Eye, Gamepad2, Video } from "lucide-react";
 import {
   formatGradeLabel,
   formatTermLabel,
@@ -26,6 +27,7 @@ interface ResourceProps {
   onBuy: (resource: ResourceItem) => void;
   onPreview: (resource: ResourceItem) => void;
   onPlayGame?: (resource: ResourceItem) => void;
+  onWatchVideo?: (resource: ResourceItem) => void;
 }
 
 export default function ResourceCard({
@@ -33,6 +35,7 @@ export default function ResourceCard({
   onBuy,
   onPreview,
   onPlayGame,
+  onWatchVideo,
 }: ResourceProps) {
   const isDocx = resource.format.toLowerCase().includes("doc");
   const gradeKey = getResourceGradeKey(resource);
@@ -131,6 +134,26 @@ export default function ResourceCard({
             KES {resource.price}
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
+            {onWatchVideo ? (
+              <button
+                type="button"
+                onClick={() => onWatchVideo(resource)}
+                title="Watch Tutor Peter's Whiteboard Class Demonstration for this material"
+                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-xs transition cursor-pointer"
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>VIDEOS</span>
+              </button>
+            ) : (
+              <Link
+                href={`/videos/material/${resource.id}`}
+                title="Watch Tutor Peter's Whiteboard Class Demonstration"
+                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-xs transition"
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>VIDEOS</span>
+              </Link>
+            )}
             {onPlayGame && (
               <button
                 type="button"
