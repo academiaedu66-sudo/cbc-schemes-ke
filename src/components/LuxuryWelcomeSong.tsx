@@ -52,9 +52,8 @@ const EQUALIZER_BAR_HEIGHTS = [
 
 export function isSearchCrawlerBot(): boolean {
   if (typeof navigator === 'undefined') return false;
-  if (navigator.webdriver) return true;
   const ua = navigator.userAgent || '';
-  return /bot|googlebot|bingbot|yandex|baiduspider|duckduckbot|slurp|crawler|spider|lighthouse|chrome-lighthouse|pagespeed|inspect|headless/i.test(
+  return /googlebot|bingbot|yandexbot|baiduspider|duckduckbot|slurp|applebot|facebookexternalhit|twitterbot|linkedinbot|whatsapp|chrome-lighthouse|pagespeed/i.test(
     ua
   );
 }
@@ -241,37 +240,40 @@ export default function LuxuryWelcomeSong({
     [clearTimers, completeCompulsoryGate, stopOptionalSong]
   );
 
-  const attemptCompulsoryPlay = useCallback(async (): Promise<boolean> => {
-    if (completedCompulsoryRef.current) return true;
-    const existing = audioRef.current;
-    if (existing && !existing.paused && existing.currentTime > 0) {
-      setIsPlaying(true);
-      setGateMode('COMPULSORY_PLAYING');
-      return true;
-    }
-    if (playInFlightRef.current) return false;
-    playInFlightRef.current = true;
+  const attemptCompulsoryPlay = useCallback(
+    async (fromUserGesture = false): Promise<boolean> => {
+      if (completedCompulsoryRef.current) return true;
+      const existing = audioRef.current;
+      if (existing && !existing.paused && existing.currentTime > 0) {
+        setIsPlaying(true);
+        setGateMode('COMPULSORY_PLAYING');
+        return true;
+      }
+      if (playInFlightRef.current && !fromUserGesture) return false;
+      playInFlightRef.current = true;
 
-    try {
-      const audio = ensureAudioInstance();
-      audio.volume = 0.82;
-      audio.muted = false;
-      audio.playbackRate = 1;
-      setIsMuted(false);
+      try {
+        const audio = ensureAudioInstance();
+        audio.volume = 0.85;
+        audio.muted = false;
+        audio.playbackRate = 1;
+        setIsMuted(false);
 
-      await audio.play();
-      playInFlightRef.current = false;
-      setIsPlaying(true);
-      setGateMode('COMPULSORY_PLAYING');
-      startWallClockTicker(true);
-      return true;
-    } catch {
-      playInFlightRef.current = false;
-      setIsPlaying(false);
-      setGateMode('COMPULSORY_WAITING_GESTURE');
-      return false;
-    }
-  }, [ensureAudioInstance, startWallClockTicker]);
+        await audio.play();
+        playInFlightRef.current = false;
+        setIsPlaying(true);
+        setGateMode('COMPULSORY_PLAYING');
+        startWallClockTicker(true);
+        return true;
+      } catch {
+        playInFlightRef.current = false;
+        setIsPlaying(false);
+        setGateMode('COMPULSORY_WAITING_GESTURE');
+        return false;
+      }
+    },
+    [ensureAudioInstance, startWallClockTicker]
+  );
 
   const startOptionalReplay = useCallback(async () => {
     if (compulsoryActiveRef.current) {
@@ -297,7 +299,7 @@ export default function LuxuryWelcomeSong({
     }
   }, [attemptCompulsoryPlay, ensureAudioInstance, startWallClockTicker]);
 
-  // Compulsory 1-Minute Welcome Song on First Site Visit / Interaction
+  // MANDATORY 1-Minute Welcome Song EVERY TIME a visitor enters / opens the website!
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const path = window.location.pathname || '';
@@ -307,20 +309,6 @@ export default function LuxuryWelcomeSong({
     }
     if (isSearchCrawlerBot()) return;
 
-    let mustListenCompulsorily = false;
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const forcedAutoplay = params.get('autoplay_song') === '1';
-      const alreadyCompleted = localStorage.getItem(
-        COMPULSORY_WELCOME_SONG_DONE_KEY
-      );
-      mustListenCompulsorily = forcedAutoplay || !alreadyCompleted;
-    } catch {
-      mustListenCompulsorily = true;
-    }
-
-    if (!mustListenCompulsorily) return;
-
     compulsoryActiveRef.current = true;
     completedCompulsoryRef.current = false;
     maxReachedTimeRef.current = 0;
@@ -328,13 +316,13 @@ export default function LuxuryWelcomeSong({
     setElapsedSec(0);
     setGateMode('COMPULSORY_WAITING_GESTURE');
 
-    // Lock background browsing & scrolling until the 1-minute song finishes
+    // Lock background browsing & scrolling until the full 1-minute song finishes
     document.body.style.overflow = 'hidden';
 
-    // Preload audio & attempt immediate autoplay right away
+    // Preload audio immediately
     ensureAudioInstance();
 
-    // Valid browser user-activation events ONLY (scroll/mousemove cannot unlock WebAudio/HTMLAudio)
+    // Valid browser user-activation events ONLY
     const activationEvents: Array<keyof WindowEventMap> = [
       'pointerdown',
       'touchstart',
@@ -364,7 +352,7 @@ export default function LuxuryWelcomeSong({
         removeGestureListeners();
         return;
       }
-      void attemptCompulsoryPlay().then((started) => {
+      void attemptCompulsoryPlay(true).then((started) => {
         if (started) {
           removeGestureListeners();
         }
@@ -378,9 +366,9 @@ export default function LuxuryWelcomeSong({
       });
     }
 
-    // Attempt zero-click autoplay immediately on mount; if browser waits for interaction,
-    // listeners remain armed and fire on the very first touch/click/key anywhere!
-    void attemptCompulsoryPlay().then((startedImmediately) => {
+    // Attempt zero-click autoplay immediately on arrival; if browser awaits first touch,
+    // listeners remain armed and trigger instantaneously on first interaction!
+    void attemptCompulsoryPlay(false).then((startedImmediately) => {
       if (startedImmediately) {
         removeGestureListeners();
       }
@@ -493,10 +481,10 @@ export default function LuxuryWelcomeSong({
         aria-modal="true"
         aria-label="5-Star Concierge Compulsory 1-Minute Welcome Song"
         onPointerDown={() => {
-          if (waitingForFirstTouch) void attemptCompulsoryPlay();
+          if (waitingForFirstTouch) void attemptCompulsoryPlay(true);
         }}
         onClick={() => {
-          if (waitingForFirstTouch) void attemptCompulsoryPlay();
+          if (waitingForFirstTouch) void attemptCompulsoryPlay(true);
         }}
         className={`fixed inset-0 z-[130] flex items-center justify-center px-5 py-8 overflow-hidden select-none transition-all duration-700 ${
           isUnlocking
@@ -615,7 +603,7 @@ export default function LuxuryWelcomeSong({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  void attemptCompulsoryPlay();
+                  void attemptCompulsoryPlay(true);
                 }}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-emerald-300 text-slate-950 font-black text-sm sm:text-base tracking-wide shadow-[0_0_35px_rgba(251,191,36,0.55)] hover:brightness-105 active:scale-[0.99] transition cursor-pointer animate-bounce"
               >

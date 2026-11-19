@@ -2,10 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { Heart, Music2, Sparkles } from "lucide-react";
-import {
-  COMPULSORY_WELCOME_SONG_DONE_KEY,
-  isSearchCrawlerBot,
-} from "./LuxuryWelcomeSong";
 
 export default function WelcomeAnimation() {
   const [showSplash, setShowSplash] = useState(false);
@@ -31,22 +27,8 @@ export default function WelcomeAnimation() {
     }
   };
 
-  // For returning visitors who already completed the compulsory 1-minute welcome song,
-  // show the brief 3.6s welcome splash. First-time visitors immediately see the full-screen
-  // 1-Minute 5-Star Concierge Compulsory Welcome Song Gate instead!
-  useEffect(() => {
-    if (typeof window === "undefined" || isSearchCrawlerBot()) return;
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const forcedSong = params.get("autoplay_song") === "1";
-      const completedCompulsorySong = localStorage.getItem(
-        COMPULSORY_WELCOME_SONG_DONE_KEY
-      );
-      if (completedCompulsorySong && !forcedSong) {
-        setShowSplash(true);
-      }
-    } catch {}
-  }, []);
+  // The Mandatory 1-Minute 5-Star Welcome Song Lounge greets visitors on every site entry;
+  // this short visual splash is available anytime via clicking "BE ALIVE, YOU ARE SPECIAL".
 
   useEffect(() => {
     if (!showSplash) return;
