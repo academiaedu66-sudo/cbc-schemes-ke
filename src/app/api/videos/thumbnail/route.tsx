@@ -188,10 +188,10 @@ export async function GET(req: NextRequest) {
                   fontWeight: 900,
                   padding: '8px 18px',
                   borderRadius: '12px',
+                  display: 'flex',
                 }}
               >
-                {lesson.gradeLabel.toUpperCase()} •{' '}
-                {lesson.subject.toUpperCase()}
+                {`${lesson.gradeLabel.toUpperCase()} • ${lesson.subject.toUpperCase()}`}
               </div>
               <div
                 style={{
@@ -202,9 +202,10 @@ export async function GET(req: NextRequest) {
                   fontWeight: 900,
                   padding: '6px 14px',
                   borderRadius: '12px',
+                  display: 'flex',
                 }}
               >
-                2026 KICD • {lesson.termLabel.toUpperCase()}
+                {`2026 KICD • ${lesson.termLabel.toUpperCase()}`}
               </div>
             </div>
 
@@ -274,9 +275,10 @@ export async function GET(req: NextRequest) {
                 fontSize: '20px',
                 fontWeight: 800,
                 color: '#fde68a',
+                display: 'flex',
               }}
             >
-              WORD + PDF • KES {lesson.price}
+              {`WORD + PDF • KES ${lesson.price}`}
             </div>
           </div>
         </div>
