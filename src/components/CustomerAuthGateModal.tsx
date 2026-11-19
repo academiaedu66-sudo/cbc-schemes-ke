@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   CheckCircle2,
   Loader2,
@@ -460,6 +461,27 @@ export default function CustomerAuthGateModal() {
                 Skip for Now →
               </button>
             </div>
+
+            <p className="text-[10px] text-slate-400 text-center leading-snug">
+              Protected under the Kenya Data Protection Act (2019). By signing
+              up, you agree to our{' '}
+              <Link
+                href="/privacy-policy"
+                onClick={() => setIsOpen(false)}
+                className="underline text-emerald-300 hover:text-white"
+              >
+                Privacy Policy
+              </Link>{' '}
+              &amp;{' '}
+              <Link
+                href="/terms"
+                onClick={() => setIsOpen(false)}
+                className="underline text-emerald-300 hover:text-white"
+              >
+                Terms
+              </Link>
+              .
+            </p>
           </>
         )}
       </div>

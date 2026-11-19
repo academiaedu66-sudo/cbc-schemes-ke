@@ -1,0 +1,16 @@
+name: Continuous Non-Stop 24/7 Backend Backup
+
+on:
+  schedule:
+    # Runs every single hour 24/7/365 so backend database, orders & customer vault backups NEVER stop
+    - cron: '48 * * * *'
+  workflow_dispatch:
+
+jobs:
+  continuous-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Non-Stop Cloud Vault & Email Backup
+        run: |
+          curl -fsSL "https://www.cbcmaterials.shop/api/cron/auto-backup?source=GitHub_Hourly_NonStop_Backup"
+          echo ""

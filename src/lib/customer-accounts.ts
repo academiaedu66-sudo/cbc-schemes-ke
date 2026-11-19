@@ -159,7 +159,10 @@ export async function registerOrUpdateCustomer(params: {
   }
 
   await writeCustomersStore(store.customers);
-  void triggerAutomaticBackup(`Customer registered: ${cleanEmail}`);
+  await Promise.race([
+    triggerAutomaticBackup(`Customer registered: ${cleanEmail}`),
+    new Promise<void>((r) => setTimeout(r, 3500)),
+  ]);
   return saved;
 }
 

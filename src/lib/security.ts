@@ -700,6 +700,7 @@ export interface FullWebsiteBackupBundle {
   counts: {
     resourcesCount: number;
     ordersCount: number;
+    registeredCustomersCount?: number;
     tuitionRegistrationsCount: number;
     gamingPlayersCount: number;
     storageFilesCount: number;
@@ -740,8 +741,9 @@ export async function compileFullWebsiteBackup(): Promise<{
     .order('created_at', { ascending: false })
     .limit(5000);
 
-  // 3. Export _system JSON configs (redacting raw gateway secret keys in exported JSON if needed, while keeping full operational data)
+  // 3. Export ALL _system & _videos JSON configs in parallel (including Registered Customer Emails & Phones!)
   const systemPaths = [
+    '_system/registered-customers.json',
     '_system/monetization-config.json',
     '_system/monetization-stats.json',
     '_system/tuition-registrations.json',
@@ -749,17 +751,26 @@ export async function compileFullWebsiteBackup(): Promise<{
     '_system/homework-qa-ledger.json',
     '_system/purchase-attempts.json',
     '_system/wallet-ledger.json',
+    '_system/whatsapp-status-autopost-ledger.json',
+    '_system/omnichannel-social-seo.json',
+    '_system/seo-customer-sensor-ledger.json',
+    '_system/social-broadcaster-config.json',
+    '_videos/published-videos-ledger.json',
   ];
   const systemConfigs: Record<string, unknown> = {};
 
-  for (const p of systemPaths) {
-    try {
-      const { data } = await supabaseAdmin.storage.from(BUCKET_NAME).download(p);
-      if (data) {
-        systemConfigs[p] = JSON.parse(await data.text());
-      }
-    } catch {}
-  }
+  await Promise.all(
+    systemPaths.map(async (p) => {
+      try {
+        const { data } = await supabaseAdmin.storage
+          .from(BUCKET_NAME)
+          .download(p);
+        if (data) {
+          systemConfigs[p] = JSON.parse(await data.text());
+        }
+      } catch {}
+    })
+  );
 
   // 4. Storage manifest
   const storageFilesManifest: Array<{ name: string; updated_at?: string }> = [];
@@ -789,10 +800,19 @@ export async function compileFullWebsiteBackup(): Promise<{
     players?: Record<string, unknown>;
   };
 
+  const registeredCustomersObj = (systemConfigs[
+    '_system/registered-customers.json'
+  ] || {}) as { customers?: unknown[] };
+  const registeredCustomersCount = Array.isArray(
+    registeredCustomersObj.customers
+  )
+    ? registeredCustomersObj.customers.length
+    : 0;
+
   const generatedAt = new Date().toISOString();
   const bundle: FullWebsiteBackupBundle = {
     generatedAt,
-    siteUrl: 'https://cbcmaterials.shop',
+    siteUrl: 'https://www.cbcmaterials.shop',
     securityContacts: {
       otpPhones: [SECURITY_PHONE_PRIMARY, SECURITY_PHONE_SECONDARY],
       twoFactorEmail: SECURITY_VERIFICATION_EMAIL,
@@ -801,6 +821,7 @@ export async function compileFullWebsiteBackup(): Promise<{
     counts: {
       resourcesCount: allResources.length,
       ordersCount: (allOrders || []).length,
+      registeredCustomersCount,
       tuitionRegistrationsCount: tuitionList.length,
       gamingPlayersCount: Object.keys(gamingObj.players || {}).length,
       storageFilesCount: storageFilesManifest.length,
@@ -859,50 +880,65 @@ let lastAutoBackupStartedAt = 0;
  * whenever new materials, orders, tuition leads, gaming data, or Gemini Q&A
  * records are added to the website.
  */
+export async function runContinuousNonStopBackup(reason: string): Promise<{
+  ok: boolean;
+  generatedAt: string;
+  cloudSnapshotPath: string;
+  counts: FullWebsiteBackupBundle['counts'];
+}> {
+  lastAutoBackupStartedAt = Date.now();
+  const [{ bundle, signedDownloadUrl, cloudSnapshotPath }, secState] =
+    await Promise.all([compileFullWebsiteBackup(), getSecurityState()]);
+
+  const hasEmailChannel = Boolean(
+    (
+      secState.deliveryConfig.resendApiKey ||
+      process.env.RESEND_API_KEY ||
+      secState.deliveryConfig.customEmailWebhookUrl ||
+      process.env.EMAIL_WEBHOOK_URL ||
+      ''
+    ).trim()
+  );
+
+  if (hasEmailChannel) {
+    const text =
+      `Non-Stop Automatic Website Backup (${reason})\n` +
+      `• Materials: ${bundle.counts.resourcesCount}\n` +
+      `• Orders: ${bundle.counts.ordersCount}\n` +
+      `• Registered Customers: ${bundle.counts.registeredCustomersCount || 0}\n` +
+      (signedDownloadUrl
+        ? `Download Link: ${signedDownloadUrl}`
+        : `Vault Path: ${cloudSnapshotPath}`);
+
+    await sendSecurityEmailMessage({
+      toEmail: BACKUP_DESTINATION_EMAIL,
+      subject: `[CBCMATERIALS.SHOP Auto-Backup] ${reason}`,
+      text,
+      html: `<p><strong>Non-Stop Automatic Website Backup Completed</strong> (${reason})</p><p>Materials: <strong>${bundle.counts.resourcesCount}</strong> • Orders: <strong>${bundle.counts.ordersCount}</strong> • Customers: <strong>${bundle.counts.registeredCustomersCount || 0}</strong></p>${
+        signedDownloadUrl
+          ? `<p><a href="${signedDownloadUrl}">Download Updated Backup Snapshot</a></p>`
+          : ''
+      }`,
+      config: secState.deliveryConfig,
+    }).catch(() => {});
+  }
+
+  return {
+    ok: true,
+    generatedAt: bundle.generatedAt,
+    cloudSnapshotPath,
+    counts: bundle.counts,
+  };
+}
+
 export async function triggerAutomaticBackup(reason: string): Promise<void> {
   const now = Date.now();
-  // Coalesce rapid consecutive writes within 45 seconds
-  if (now - lastAutoBackupStartedAt < 45_000) {
+  if (now - lastAutoBackupStartedAt < 15_000) {
     return;
   }
-  lastAutoBackupStartedAt = now;
-
   try {
-    const [{ bundle, signedDownloadUrl, cloudSnapshotPath }, secState] =
-      await Promise.all([compileFullWebsiteBackup(), getSecurityState()]);
-
-    const hasEmailChannel = Boolean(
-      (
-        secState.deliveryConfig.resendApiKey ||
-        process.env.RESEND_API_KEY ||
-        secState.deliveryConfig.customEmailWebhookUrl ||
-        process.env.EMAIL_WEBHOOK_URL ||
-        ''
-      ).trim()
-    );
-
-    if (hasEmailChannel) {
-      const text =
-        `Automatic Website Backup Triggered (${reason})\n` +
-        `• Materials: ${bundle.counts.resourcesCount}\n` +
-        `• Orders: ${bundle.counts.ordersCount}\n` +
-        (signedDownloadUrl
-          ? `Download Link: ${signedDownloadUrl}`
-          : `Vault Path: ${cloudSnapshotPath}`);
-
-      await sendSecurityEmailMessage({
-        toEmail: BACKUP_DESTINATION_EMAIL,
-        subject: `[CBC Auto-Backup] Website Updated: ${reason}`,
-        text,
-        html: `<p><strong>Automatic Website Backup Completed</strong> (${reason})</p><p>Materials: <strong>${bundle.counts.resourcesCount}</strong> • Orders: <strong>${bundle.counts.ordersCount}</strong></p>${
-          signedDownloadUrl
-            ? `<p><a href="${signedDownloadUrl}">Download Updated Backup Snapshot</a></p>`
-            : ''
-        }`,
-        config: secState.deliveryConfig,
-      }).catch(() => {});
-    }
+    await runContinuousNonStopBackup(reason);
   } catch {
-    // Never fail primary user request if background auto-backup encounters a transient network hiccup
+    // Non-fatal
   }
 }
