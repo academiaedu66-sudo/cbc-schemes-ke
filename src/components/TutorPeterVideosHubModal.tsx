@@ -20,6 +20,7 @@ import TutorPeterWhiteboardPlayer, {
 } from './TutorPeterWhiteboardPlayer';
 import { buildTutorPeterWhiteboardLesson } from '@/lib/tutor-peter-videos';
 import { formatGradeLabel, getResourceGradeKey } from '@/lib/material-utils';
+import VideoButtonPaywallGuard from './VideoButtonPaywallGuard';
 
 export default function TutorPeterVideosHubModal({
   isOpen,
@@ -186,7 +187,8 @@ export default function TutorPeterVideosHubModal({
           </div>
         </div>
 
-        {/* Main 2-Column Body: Active Whiteboard Player + All-Materials Selector */}
+        {/* Main 2-Column Body: Wrapped in $15 Video Button Paywall Guard! */}
+        <VideoButtonPaywallGuard contextTitle={activeResource?.title}>
         <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left 8 Cols: Active Tutor Peter Whiteboard Player */}
           <div className="lg:col-span-8 space-y-4">
@@ -326,6 +328,7 @@ export default function TutorPeterVideosHubModal({
             </div>
           </div>
         </div>
+        </VideoButtonPaywallGuard>
       </div>
     </div>
   );

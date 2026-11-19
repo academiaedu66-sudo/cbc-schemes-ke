@@ -19,6 +19,7 @@ import {
   type MaterialVideoInput,
 } from '@/lib/tutor-peter-videos';
 import TutorPeterWhiteboardPlayer from '@/components/TutorPeterWhiteboardPlayer';
+import VideoButtonPaywallGuard from '@/components/VideoButtonPaywallGuard';
 import SiteFooter from '@/components/SiteFooter';
 
 async function getCachedVideosHubData() {
@@ -157,6 +158,7 @@ export default async function SocialVideosIndexPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full space-y-12">
+        <VideoButtonPaywallGuard contextTitle="All Tutor Peter Whiteboard Class Videos ($15 Access)">
         {/* Featured Live Tutor Peter Whiteboard Studio */}
         <section className="space-y-3">
           <h2 className="text-lg sm:text-xl font-black text-slate-900">
@@ -284,6 +286,7 @@ export default async function SocialVideosIndexPage() {
             ))}
           </div>
         </section>
+        </VideoButtonPaywallGuard>
       </main>
 
       <SiteFooter />

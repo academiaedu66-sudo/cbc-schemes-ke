@@ -16,6 +16,7 @@ import {
   SITE_ORIGIN,
 } from '@/lib/tutor-peter-videos';
 import TutorPeterWhiteboardPlayer from '@/components/TutorPeterWhiteboardPlayer';
+import VideoButtonPaywallGuard from '@/components/VideoButtonPaywallGuard';
 import SiteFooter from '@/components/SiteFooter';
 
 type Props = {
@@ -207,7 +208,9 @@ export default async function MaterialWhiteboardVideoPage({ params }: Props) {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 flex-1 w-full space-y-8">
+        <VideoButtonPaywallGuard contextTitle={lesson.title}>
         <TutorPeterWhiteboardPlayer material={item} />
+        </VideoButtonPaywallGuard>
 
         {/* Spoken Transcript (Indexed by Google & YouTube Search!) */}
         <section className="rounded-3xl bg-white border border-slate-200 p-6 space-y-3 shadow-xs">

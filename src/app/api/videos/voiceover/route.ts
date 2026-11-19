@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAdminAuthorized } from '@/lib/admin-auth';
 import {
   buildTutorPeterWhiteboardLesson,
   type MaterialVideoInput,
@@ -115,6 +116,37 @@ async function synthesizeViaCloudMp3Chunks(
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const materialId = (searchParams.get('materialId') || '').trim();
+  const checkoutRequestId = (searchParams.get('checkoutRequestId') || '').trim();
+
+  // Verify $15 (KES 1,950) Video Unlock OR Admin Creator Authorization before streaming full lesson audio!
+  let isAuthorizedToListenFullClass = isAdminAuthorized(req);
+  if (!isAuthorizedToListenFullClass && checkoutRequestId) {
+    const { data: paidOrder } = await supabaseAdmin
+      .from('orders')
+      .select('status, amount')
+      .eq('checkout_request_id', checkoutRequestId)
+      .maybeSingle();
+
+    if (
+      paidOrder &&
+      paidOrder.status === 'COMPLETED' &&
+      Number(paidOrder.amount) >= 1900
+    ) {
+      isAuthorizedToListenFullClass = true;
+    }
+  }
+
+  if (!isAuthorizedToListenFullClass) {
+    return NextResponse.json(
+      {
+        locked: true,
+        priceUsd: 15,
+        priceKes: 1950,
+        error: 'This Tutor Peter Whiteboard Class Video is locked. Unlock for $15 (KSh 1,950).',
+      },
+      { status: 402 }
+    );
+  }
 
   let material: MaterialVideoInput = {
     id: materialId || 'sample-cbc-lesson',

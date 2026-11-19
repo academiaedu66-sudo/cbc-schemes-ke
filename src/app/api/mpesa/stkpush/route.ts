@@ -69,7 +69,9 @@ export async function POST(req: Request) {
             ? getBookPriceKes('MADE_FAMILIAR', normTerm)
             : serviceType === 'BOOK_COMPLETE_BUNDLE'
               ? getBookPriceKes('COMPLETE_BUNDLE', normTerm)
-              : Number(testAmount) || 0,
+              : serviceType === 'TUTOR_PETER_VIDEO'
+                ? 1950
+                : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
     }).catch(() => { });
@@ -161,6 +163,14 @@ export async function POST(req: Request) {
         title:
           cleanBookTitle ||
           'KENYA NATIONAL KJSEA TEST — Official Marking Scheme (100 Marks • KSh 50)',
+      };
+    } else if (serviceType === 'TUTOR_PETER_VIDEO') {
+      resource = {
+        id: null,
+        price: 1950,
+        title:
+          cleanBookTitle ||
+          "Tutor Peter's Whiteboard Class Video Unlock ($15 / KSh 1,950)",
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

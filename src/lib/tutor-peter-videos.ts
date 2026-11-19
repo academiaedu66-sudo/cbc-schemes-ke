@@ -5,6 +5,8 @@ import {
 } from '@/lib/material-utils';
 
 export const SITE_ORIGIN = 'https://www.cbcmaterials.shop';
+export const TUTOR_PETER_VIDEO_PRICE_USD = 15;
+export const TUTOR_PETER_VIDEO_PRICE_KES = 1950; // $15 USD (~130 KES/USD)
 
 export interface MaterialVideoInput {
   id: string;

@@ -23,6 +23,7 @@ import {
   Briefcase,
   Bot,
   Award,
+  Lock,
   Video,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -749,8 +750,9 @@ export default function HomePage() {
               }}
               className="bg-red-600 hover:bg-red-500 text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
+              <Lock className="w-3.5 h-3.5 text-amber-300" />
               <Video className="w-4 h-4" />
-              VIDEOS (TUTOR PETER CLASS)
+              VIDEOS ($15)
             </button>
             <button
               type="button"
@@ -853,8 +855,9 @@ export default function HomePage() {
               }}
               className="bg-red-600 hover:bg-red-700 text-white px-5 py-3.5 rounded-xl text-sm sm:text-base font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer shrink-0"
             >
+              <Lock className="w-4 h-4 text-amber-300" />
               <Video className="w-5 h-5 text-amber-300" />
-              <span>VIDEOS (TUTOR PETER WHITEBOARD)</span>
+              <span>VIDEOS — TUTOR PETER ($15)</span>
             </button>
           </div>
 

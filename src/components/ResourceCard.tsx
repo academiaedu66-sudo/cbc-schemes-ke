@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Gamepad2, Video } from "lucide-react";
+import { Eye, Gamepad2, Lock, Video } from "lucide-react";
 import {
   formatGradeLabel,
   formatTermLabel,
@@ -138,20 +138,22 @@ export default function ResourceCard({
               <button
                 type="button"
                 onClick={() => onWatchVideo(resource)}
-                title="Watch Tutor Peter's Whiteboard Class Demonstration for this material"
+                title="Locked Tutor Peter Whiteboard Class Video — Unlock for $15"
                 className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-xs transition cursor-pointer"
               >
+                <Lock className="w-3 h-3 text-amber-300" />
                 <Video className="w-3.5 h-3.5" />
-                <span>VIDEOS</span>
+                <span>VIDEOS ($15)</span>
               </button>
             ) : (
               <Link
                 href={`/videos/material/${resource.id}`}
-                title="Watch Tutor Peter's Whiteboard Class Demonstration"
+                title="Locked Tutor Peter Whiteboard Class Video — Unlock for $15"
                 className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-xs transition"
               >
+                <Lock className="w-3 h-3 text-amber-300" />
                 <Video className="w-3.5 h-3.5" />
-                <span>VIDEOS</span>
+                <span>VIDEOS ($15)</span>
               </Link>
             )}
             {onPlayGame && (

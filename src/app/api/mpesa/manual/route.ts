@@ -140,6 +140,14 @@ export async function POST(req: Request) {
           cleanBookTitle ||
           'KENYA NATIONAL KJSEA TEST — Official Marking Scheme (100 Marks • KSh 50)',
       };
+    } else if (serviceType === 'TUTOR_PETER_VIDEO') {
+      resource = {
+        id: null,
+        price: 1950,
+        title:
+          cleanBookTitle ||
+          "Tutor Peter's Whiteboard Class Video Unlock ($15 / KSh 1,950)",
+      };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin
         .from('resources')
