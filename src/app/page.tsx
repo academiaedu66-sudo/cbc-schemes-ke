@@ -674,7 +674,7 @@ export default function HomePage() {
                 className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-[0_0_24px_rgba(244,63,94,0.65)] transition cursor-pointer"
               >
                 <Sparkles className="w-5 h-5 text-amber-200 shrink-0" />
-                <span>REGISTER LEARNER FOR TUITION (KSH 1,000)</span>
+                <span>KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING</span>
               </button>
 
               <a

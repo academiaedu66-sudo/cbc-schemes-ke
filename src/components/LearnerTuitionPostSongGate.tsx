@@ -434,8 +434,8 @@ export default function LearnerTuitionPostSongGate() {
               OFFER ACTIVE NOW
             </span>
             <span>
-              LEARNER PERSONAL &amp; HOLIDAY TUITION SUBSCRIPTION (PP1 – GRADE 12 • ALL 47
-              COUNTIES) — KSH {LEARNER_FEE_KES.toLocaleString()} ONLY!
+              KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING (PP1 – GRADE 12 • ALL 47
+              COUNTIES)!
             </span>
           </div>
 
@@ -448,7 +448,7 @@ export default function LearnerTuitionPostSongGate() {
             <span>
               {alreadyRegisteredRef
                 ? `LEARNER TUITION REGISTERED (${alreadyRegisteredRef})`
-                : `REGISTER AS A LEARNER FOR TUITION (KSH ${LEARNER_FEE_KES.toLocaleString()})`}
+                : 'REGISTER LEARNER NOW — KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING'}
             </span>
           </button>
         </div>
@@ -483,12 +483,9 @@ export default function LearnerTuitionPostSongGate() {
 
             {/* BOLD UPPERCASE HERO HEADER */}
             <div className="bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white px-5 sm:px-7 py-5 border-b border-emerald-500/40 space-y-2">
-              <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider">
-                <GraduationCap className="w-4 h-4" />
-                <span>
-                  LEARNER TUITION SUBSCRIPTION • KSH {LEARNER_FEE_KES.toLocaleString()}{' '}
-                  ONLY
-                </span>
+              <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider shadow">
+                <GraduationCap className="w-4 h-4 shrink-0" />
+                <span>KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING</span>
               </div>
               <h2
                 id="learner-tuition-offer-title"
@@ -498,9 +495,8 @@ export default function LearnerTuitionPostSongGate() {
                 OFFER IS STILL ACTIVE!
               </h2>
               <p className="text-xs sm:text-sm font-extrabold uppercase text-emerald-100 leading-relaxed">
-                GET MATCHED WITH A VERIFIED 1-ON-1 HOME OR ONLINE CBC TEACHER ACROSS ALL
-                47 COUNTIES (PP1 – GRADE 12) • FULL LEARNER SUBSCRIPTION: KSH{' '}
-                {LEARNER_FEE_KES.toLocaleString()}!
+                KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING • VERIFIED 1-ON-1 HOME
+                OR ONLINE CBC TEACHERS ACROSS ALL 47 COUNTIES (PP1 – GRADE 12)!
               </p>
             </div>
 
@@ -643,8 +639,8 @@ export default function LearnerTuitionPostSongGate() {
                         <>
                           <Smartphone className="w-4 h-4 text-amber-300 shrink-0" />
                           <span>
-                            REGISTER NOW WHILE OFFER IS ACTIVE — PAY KSH{' '}
-                            {LEARNER_FEE_KES.toLocaleString()} SUBSCRIPTION
+                            REGISTER NOW — KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER
+                            MATCHING
                           </span>
                         </>
                       )}
@@ -665,8 +661,8 @@ export default function LearnerTuitionPostSongGate() {
                 <div className="space-y-4">
                   <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-300 p-4 space-y-1.5">
                     <p className="text-xs font-black uppercase text-emerald-950">
-                      LEARNER DETAILS SAVED ({savedRefCode || 'PENDING'}) • COMPLETE KSH{' '}
-                      {LEARNER_FEE_KES.toLocaleString()} SUBSCRIPTION NOW
+                      LEARNER DETAILS SAVED ({savedRefCode || 'PENDING'}) • KSH 1000 ONLY
+                      FOR SUBSCRIPTION AND TEACHER MATCHING
                     </p>
                     <p className="text-[11px] font-bold uppercase text-emerald-800">
                       LEARNER: {fullName} • {formatGradeLabel(learnerGrade)} •{' '}

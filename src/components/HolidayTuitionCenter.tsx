@@ -429,7 +429,7 @@ export default function HolidayTuitionCenter({
                   For Students &amp; Parents
                 </span>
                 <span className="bg-emerald-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-lg">
-                  Registration: KSh 1,000
+                  Ksh 1000 Only for subscription and teacher matching
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
@@ -539,7 +539,7 @@ export default function HolidayTuitionCenter({
                 </div>
                 <h3 className="text-base md:text-lg font-black">
                   {activeModalRole === 'LEARNER'
-                    ? 'Book a Personal / Holiday Tuition Teacher (KSh 1,000)'
+                    ? 'Book a Personal / Holiday Tuition Teacher — Ksh 1000 Only for subscription and teacher matching'
                     : 'Register as a Holiday / Personal Tuition Teacher (KSh 500)'}
                 </h3>
                 <p className="text-xs text-emerald-300 font-medium">
