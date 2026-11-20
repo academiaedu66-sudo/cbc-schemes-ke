@@ -644,17 +644,31 @@ export default function HomePage() {
       {/* Entry Welcome Splash & Persistent Animated Welcome Ribbon */}
       <WelcomeAnimation />
 
-      {/* Header Bar — Logo Anchored Far Left, Writings & Buttons Strictly Beside/Right */}
+      {/* Header Bar — Logo Anchored Far Left, HOLIDAY TUITION Button Prominent on Far Right */}
       <header className="bg-gradient-to-r from-slate-950 via-emerald-900 to-indigo-950 text-white shadow-lg border-b-2 border-amber-400/50">
-        <div className="w-full px-3 sm:px-6 lg:px-8 py-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-          <div className="shrink-0">
-            <BrandLogoLockup
-              size="lg"
-              showTagline
-              asHeading
-              subtitle="Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term Exams, KPSEA/KJSEA Trials & Designs (PP1–Grade 12 • Editable DOCX + PDF)"
-            />
+        <div className="w-full px-3 sm:px-6 lg:px-8 py-5 space-y-4">
+          {/* Top Row: Far-Left Brand Logo & Writings + Far-Right Visible HOLIDAY TUITION Button (Bold, Uppercase, Font 16) */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+            <div className="min-w-0">
+              <BrandLogoLockup
+                size="lg"
+                showTagline
+                asHeading
+                subtitle="Rationalized Schemes of Work, Lesson Plans, Notes, Opener/Mid/End-Term Exams, KPSEA/KJSEA Trials & Designs (PP1–Grade 12 • Editable DOCX + PDF)"
+              />
+            </div>
+
+            <a
+              href="#holiday-tuition-hub"
+              onClick={() => trackInteraction('holiday_tuition_top_right_click')}
+              style={{ fontSize: '16px' }}
+              className="md:ml-auto self-end md:self-center shrink-0 bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-6 py-3 rounded-2xl text-[16px] font-black uppercase tracking-wider inline-flex items-center gap-2.5 shadow-[0_0_28px_rgba(251,191,36,0.6)] transition"
+            >
+              <GraduationCap className="w-5 h-5 text-emerald-900 shrink-0" />
+              <span>HOLIDAY TUITION</span>
+            </a>
           </div>
+
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
@@ -776,13 +790,6 @@ export default function HomePage() {
               <HeartHandshake className="w-4 h-4 text-purple-900" />
               Guidance &amp; Counselling
             </button>
-            <a
-              href="#holiday-tuition-hub"
-              className="bg-white text-emerald-900 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
-            >
-              <GraduationCap className="w-4 h-4 text-emerald-700" />
-              Personal &amp; Holiday Tuition
-            </a>
             <Link
               href="/advertise"
               className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"

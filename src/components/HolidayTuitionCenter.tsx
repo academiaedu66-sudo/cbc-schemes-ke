@@ -444,10 +444,11 @@ export default function HolidayTuitionCenter({
             <button
               type="button"
               onClick={() => openModalForRole('LEARNER')}
-              className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer"
+              style={{ fontSize: '16px' }}
+              className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black uppercase text-[16px] py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <GraduationCap className="w-4 h-4 shrink-0" />
-              <span>Book Personal / Holiday Teacher (Student — KSh 1,000)</span>
+              <GraduationCap className="w-5 h-5 shrink-0" />
+              <span>BOOK HOLIDAY TUITION TEACHER (KSh 1,000)</span>
             </button>
           </div>
 
