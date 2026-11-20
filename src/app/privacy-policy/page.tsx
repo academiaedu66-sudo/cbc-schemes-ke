@@ -89,7 +89,7 @@ export default function PrivacyPolicyPage() {
               brokers. You have the right at any time to request access to,
               correction of, or permanent deletion of your registered email and
               phone record by contacting our Data Protection Desk on WhatsApp at{' '}
-              <strong>0705759072</strong>.
+              <strong>0728595160</strong>.
             </p>
           </section>
 
@@ -151,7 +151,7 @@ export default function PrivacyPolicyPage() {
             <p>
               For privacy requests, account deletion, or instant download
               assistance on <strong>CBCMATERIALS.SHOP</strong>, reach us via
-              WhatsApp on <strong>0705759072</strong> or M-Pesa support desk{' '}
+              WhatsApp on <strong>0728595160</strong> or M-Pesa support desk{' '}
               <strong>0728595160</strong>.
             </p>
           </section>

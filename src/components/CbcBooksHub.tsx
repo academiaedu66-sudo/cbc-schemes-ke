@@ -307,7 +307,7 @@ export interface ExternalBookModalLaunch {
 export default function CbcBooksHub({
   externalLaunch,
   merchantLocalPhone = '0728595160',
-  whatsappPhone = '254705759072',
+  whatsappPhone = '254728595160',
 }: {
   externalLaunch?: ExternalBookModalLaunch | null;
   merchantLocalPhone?: string;

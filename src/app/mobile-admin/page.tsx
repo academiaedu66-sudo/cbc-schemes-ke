@@ -2526,7 +2526,7 @@ export default function MobileAdminAppPage() {
                       </p>
                       <a
                         href={`https://wa.me/${cleanIntl}?text=${encodeURIComponent(
-                          `Hello ${t.fullName}! Messaging from CBC Hub Tuition Coordinator (0705759072) regarding your ${t.referenceCode} registration.`
+                          `Hello ${t.fullName}! Messaging from CBC Hub Tuition Coordinator (0728595160) regarding your ${t.referenceCode} registration.`
                         )}`}
                         target="_blank"
                         rel="noreferrer"

@@ -50,7 +50,7 @@ export default function GlobalNotFoundPage() {
               Facebook Reels
             </a>
             <a
-              href="https://wa.me/254705759072"
+              href="https://wa.me/254728595160"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-1.5 bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl"

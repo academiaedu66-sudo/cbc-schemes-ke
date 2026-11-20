@@ -161,7 +161,7 @@ export async function generateRotatingFacebookLinkAds(
       `✅ Editable Word (.DOCX) + Print-Ready (.PDF) • Unlocks in 1 Second via M-Pesa!\n` +
       `👇 Tap the link below to download:\n` +
       `${targetUrl} \n` +
-      `📲 WhatsApp Support: 0705759072\n` +
+      `📲 WhatsApp Support: 0728595160\n` +
       `#CBCKenya #KPSEA2026 #KJSEA2026 #KenyanTeachers #TSCTeachers #CBCMaterials`;
 
     const feedPostAd =

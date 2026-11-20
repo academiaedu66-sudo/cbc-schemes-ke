@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
       subscribed: false,
       feeKes: WEEKLY_SUBSCRIPTION_KES,
       merchantLocalPhone: '0728595160',
-      whatsappPhone: '254705759072',
+      whatsappPhone: '254728595160',
     });
   }
 }

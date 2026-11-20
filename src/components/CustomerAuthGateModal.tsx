@@ -30,6 +30,7 @@ export interface CustomerSessionInfo {
 declare global {
   interface Window {
     __cbcWelcomeSongCompletedAt?: number;
+    __cbcLearnerTuitionModalOpen?: boolean;
   }
 }
 
@@ -82,14 +83,20 @@ export default function CustomerAuthGateModal() {
     armedAfterSongRef.current = true;
     if (twoMinTimerRef.current) clearTimeout(twoMinTimerRef.current);
 
-    twoMinTimerRef.current = setTimeout(() => {
+    const openSafelyOrDefer = () => {
       try {
         if (localStorage.getItem(CUSTOMER_SESSION_STORAGE_KEY)) return;
       } catch {}
+      if (window.__cbcLearnerTuitionModalOpen) {
+        twoMinTimerRef.current = setTimeout(openSafelyOrDefer, 25000);
+        return;
+      }
       setErrorMsg('');
       setSuccessMsg('');
       setIsOpen(true);
-    }, TWO_MINUTES_AFTER_SONG_MS);
+    };
+
+    twoMinTimerRef.current = setTimeout(openSafelyOrDefer, TWO_MINUTES_AFTER_SONG_MS);
   }, []);
 
   // Listen for exact completion of the 1-Minute Mandatory Welcome Song -> then count 2 minutes of browsing!

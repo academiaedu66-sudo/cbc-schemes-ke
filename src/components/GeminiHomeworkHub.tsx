@@ -122,7 +122,7 @@ export default function GeminiHomeworkHub({
   const [subToken, setSubToken] = useState('');
   const [subExpiresAt, setSubExpiresAt] = useState<number | null>(null);
   const [merchantPhone, setMerchantPhone] = useState('0728595160');
-  const [whatsappPhone, setWhatsappPhone] = useState('254705759072');
+  const [whatsappPhone, setWhatsappPhone] = useState('254728595160');
   const [showPayBox, setShowPayBox] = useState(false);
   const [payTab, setPayTab] = useState<'STK' | 'DIRECT'>('STK');
   const [mpesaCode, setMpesaCode] = useState('');

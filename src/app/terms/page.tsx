@@ -73,7 +73,7 @@ export default function TermsPage() {
               STK Express (including Fuliza) or verified M-Pesa receipt code
               unlock digital access automatically on screen within seconds. If a
               browser closes mid-download, instant re-delivery is guaranteed via
-              WhatsApp support at <strong>0705759072</strong>.
+              WhatsApp support at <strong>0728595160</strong>.
             </p>
           </section>
 

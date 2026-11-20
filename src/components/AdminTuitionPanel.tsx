@@ -104,7 +104,7 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
           </div>
           <div>
             <h2 className="text-base font-black text-slate-900 uppercase flex flex-wrap items-center gap-2">
-              Holiday &amp; Personal Tuition Hub (WhatsApp 0705759072 Matchmaker)
+              Holiday &amp; Personal Tuition Hub (WhatsApp 0728595160 Matchmaker)
               <span className="bg-indigo-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">
                 {learners.length} Learners (KSh 1,000) • {teachers.length} Live Teachers (KSh 500)
               </span>
@@ -224,7 +224,7 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
               const cleanIntlPhone = item.phone.replace(/^\+/, '');
               const waHref = !isSeed
                 ? `https://wa.me/${cleanIntlPhone}?text=${encodeURIComponent(
-                    `Hello ${item.fullName}! Calling/messaging from CBC Kenya Resource Hub Tuition Desk (0705759072) regarding your ${item.referenceCode} registration for: ${item.subjects.join(', ')}.`
+                    `Hello ${item.fullName}! Calling/messaging from CBC Kenya Resource Hub Tuition Desk (0728595160) regarding your ${item.referenceCode} registration for: ${item.subjects.join(', ')}.`
                   )}`
                 : undefined;
 

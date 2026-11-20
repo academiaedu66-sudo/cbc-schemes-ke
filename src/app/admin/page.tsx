@@ -520,7 +520,7 @@ export default function AdminDashboardPage() {
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
               M-Pesa: <strong className="text-emerald-300">0728595160 (254728595160)</strong> •
-              WhatsApp Inbox: <strong className="text-emerald-300">0705759072 (254705759072)</strong> •{' '}
+              WhatsApp: <strong className="text-emerald-300">0728595160 (254728595160)</strong> •{' '}
               {inventory.length} listings ({storageCount} storage files)
             </p>
           </div>

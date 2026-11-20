@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ExternalLink, Megaphone, Sparkles, TrendingUp } from 'lucide-react';
 import LuxuryWelcomeSong from './LuxuryWelcomeSong';
+import LearnerTuitionPostSongGate from './LearnerTuitionPostSongGate';
 import CustomerAuthGateModal from './CustomerAuthGateModal';
 import {
   DEFAULT_ADSTERRA_SMARTLINK_URL,
@@ -91,7 +92,7 @@ const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
     profileUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
     reelsUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
     whatsappUrl:
-      'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
+      'https://wa.me/254728595160?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
     metaPixelId: '',
   },
   campaigns: DEFAULT_SPONSORED_CAMPAIGNS,
@@ -350,6 +351,7 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   return (
     <MonetizationContext.Provider value={value}>
       <LuxuryWelcomeSong />
+      <LearnerTuitionPostSongGate />
       <CustomerAuthGateModal />
       {children}
     </MonetizationContext.Provider>

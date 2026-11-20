@@ -125,7 +125,7 @@ export default function AdminMonetizationPanel({ password }: { password: string 
       headline: 'Your Sponsored Headline or Partner Offer Here',
       subtext: 'Short compelling description seen by teachers & parents across Kenya.',
       ctaText: 'Learn More →',
-      targetUrl: 'https://wa.me/254705759072',
+      targetUrl: 'https://wa.me/254728595160',
       accentColor: 'emerald',
     };
     setConfig({

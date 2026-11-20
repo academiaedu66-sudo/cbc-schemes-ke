@@ -1,6 +1,6 @@
 // Shared M-Pesa & WhatsApp Notification Helper
 // M-Pesa Collection / Instant Payout Number: 254728595160 (0728595160)
-// WhatsApp Notification Inbox: 254705759072 (0705759072)
+// Official Website WhatsApp Number: 254728595160 (0728595160)
 
 import {
   formatPayHeroAuthHeader,
@@ -9,7 +9,7 @@ import {
 } from '@/lib/payment-config';
 
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
-export const DEFAULT_WHATSAPP_PHONE = '254705759072';
+export const DEFAULT_WHATSAPP_PHONE = '254728595160';
 export const DEFAULT_PRODUCTION_ORIGIN = 'https://www.cbcmaterials.shop';
 
 export function getMerchantPhone(stored?: StoredPaymentConfig): string {
@@ -27,7 +27,10 @@ export function getWhatsAppPhone(): string {
     process.env.NEXT_PUBLIC_WHATSAPP_PHONE ||
     DEFAULT_WHATSAPP_PHONE
   ).trim();
-  return normalizeKenyanPhone(raw) || DEFAULT_WHATSAPP_PHONE;
+  const normalized = normalizeKenyanPhone(raw) || DEFAULT_WHATSAPP_PHONE;
+  // Enforce official website WhatsApp number 254728595160 (0728595160) even if legacy env had 254705759072
+  if (normalized === '254705759072') return DEFAULT_WHATSAPP_PHONE;
+  return normalized;
 }
 
 export function toLocalKenyanFormat(intlPhone: string): string {

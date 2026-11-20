@@ -378,7 +378,7 @@ export default function VideoButtonPaywallGuard({
           <div className="rounded-xl bg-white/10 border border-amber-300/40 px-4 py-3 text-xs font-semibold text-amber-200 flex flex-wrap items-center justify-between gap-2">
             <span>{feedback}</span>
             <a
-              href="https://wa.me/254705759072?text=Hello%20Tutor%20Peter%2C%20I%20need%20help%20unlocking%20the%20%2415%20Videos%20Button"
+              href="https://wa.me/254728595160?text=Hello%20Tutor%20Peter%2C%20I%20need%20help%20unlocking%20the%20%2415%20Videos%20Button"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold"

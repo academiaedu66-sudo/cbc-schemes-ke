@@ -735,7 +735,7 @@ export default function SubjectGamingHub({
                     className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2.5 rounded-xl transition"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Claim KSh {redeemSuccess.amountKes} via WhatsApp (0705759072)
+                    Claim KSh {redeemSuccess.amountKes} via WhatsApp (0728595160)
                   </a>
                 </div>
               )}

@@ -130,7 +130,7 @@ export default function NationalKjseaHub({
   initialGradeKey = '9',
   initialSubject,
   merchantLocalPhone = '0728595160',
-  whatsappPhone = '254705759072',
+  whatsappPhone = '254728595160',
   onOpenCatalogCategory,
 }: {
   externalOpenTick?: number;

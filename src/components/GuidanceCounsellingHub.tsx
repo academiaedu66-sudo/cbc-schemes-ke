@@ -435,13 +435,13 @@ export default function GuidanceCounsellingHub({
                           Need a 1-on-1 Personal Subject Teacher or human follow-up?
                         </span>
                         <a
-                          href="https://wa.me/254705759072?text=Hello%2C%20I%20just%20used%20the%20Guidance%20%26%20Counselling%20Desk%20and%20would%20like%20further%20assistance"
+                          href="https://wa.me/254728595160?text=Hello%2C%20I%20just%20used%20the%20Guidance%20%26%20Counselling%20Desk%20and%20would%20like%20further%20assistance"
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1 font-black text-emerald-700 hover:underline"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          WhatsApp 0705759072
+                          WhatsApp 0728595160
                         </a>
                       </div>
                     </div>

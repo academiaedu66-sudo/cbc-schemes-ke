@@ -5,8 +5,8 @@ const TUITION_STORAGE_PATH = '_system/tuition-registrations.json';
 
 export const LEARNER_FEE_KES = 1000;
 export const TEACHER_FEE_KES = 500;
-export const COORDINATOR_WHATSAPP_INTL = '254705759072';
-export const COORDINATOR_WHATSAPP_LOCAL = '0705759072';
+export const COORDINATOR_WHATSAPP_INTL = '254728595160';
+export const COORDINATOR_WHATSAPP_LOCAL = '0728595160';
 export const COORDINATOR_MPESA_LOCAL = '0728595160';
 
 export type TuitionRole = 'LEARNER' | 'TEACHER';

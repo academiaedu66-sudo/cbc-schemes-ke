@@ -26,6 +26,7 @@ import {
   Lock,
   UserPlus,
   Video,
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CategoryGrid, { MATERIAL_AREAS } from '@/components/CategoryGrid';
@@ -88,9 +89,9 @@ const FILTERED_GROUP_PREVIEW = 18;
 // M-Pesa Payment Recipient: 254728595160 (0728595160)
 const DEFAULT_MERCHANT_INTL = '254728595160';
 const DEFAULT_MERCHANT_LOCAL = '0728595160';
-// WhatsApp Notification Inbox: 254705759072 (0705759072)
-const DEFAULT_WHATSAPP_INTL = '254705759072';
-const DEFAULT_WHATSAPP_LOCAL = '0705759072';
+// Official Website WhatsApp Number: 254728595160 (0728595160)
+const DEFAULT_WHATSAPP_INTL = '254728595160';
+const DEFAULT_WHATSAPP_LOCAL = '0728595160';
 
 function extractCodeClient(raw: string): string | null {
   const upper = raw.trim().toUpperCase();
@@ -658,15 +659,34 @@ export default function HomePage() {
               />
             </div>
 
-            <a
-              href="#holiday-tuition-hub"
-              onClick={() => trackInteraction('holiday_tuition_top_right_click')}
-              style={{ fontSize: '16px' }}
-              className="md:ml-auto self-end md:self-center shrink-0 bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-6 py-3 rounded-2xl text-[16px] font-black uppercase tracking-wider inline-flex items-center gap-2.5 shadow-[0_0_28px_rgba(251,191,36,0.6)] transition"
-            >
-              <GraduationCap className="w-5 h-5 text-emerald-900 shrink-0" />
-              <span>HOLIDAY TUITION</span>
-            </a>
+            <div className="md:ml-auto self-end md:self-center shrink-0 flex flex-wrap items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  trackInteraction('learner_tuition_1000_btn_click');
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(
+                      new CustomEvent('cbc-open-learner-tuition-offer')
+                    );
+                  }
+                }}
+                style={{ fontSize: '15px' }}
+                className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-[0_0_24px_rgba(244,63,94,0.65)] transition cursor-pointer"
+              >
+                <Sparkles className="w-5 h-5 text-amber-200 shrink-0" />
+                <span>REGISTER LEARNER FOR TUITION (KSH 1,000)</span>
+              </button>
+
+              <a
+                href="#holiday-tuition-hub"
+                onClick={() => trackInteraction('holiday_tuition_top_right_click')}
+                style={{ fontSize: '16px' }}
+                className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-6 py-3 rounded-2xl text-[16px] font-black uppercase tracking-wider inline-flex items-center gap-2.5 shadow-[0_0_28px_rgba(251,191,36,0.6)] transition"
+              >
+                <GraduationCap className="w-5 h-5 text-emerald-900 shrink-0" />
+                <span>HOLIDAY TUITION</span>
+              </a>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

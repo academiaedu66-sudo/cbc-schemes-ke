@@ -301,7 +301,7 @@ export default function MonetizationControlPage() {
       headline: 'New Sponsored School / Bookshop / Affiliate Offer',
       subtext: 'Reach thousands of Kenyan teachers & parents browsing CBC resources.',
       ctaText: 'Open Offer →',
-      targetUrl: 'https://wa.me/254705759072',
+      targetUrl: 'https://wa.me/254728595160',
       accentColor: 'emerald',
     };
     setConfig({ ...config, campaigns: [item, ...config.campaigns] });

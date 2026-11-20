@@ -120,7 +120,7 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
     headline:
       'Follow Our Official Facebook Profile & Watch Daily CBC Revision Reels, Exam Tips & Free Teacher Updates!',
     subtext:
-      'Join thousands of Kenyan Teachers, Parents & Learners on Facebook + Chat directly on WhatsApp (0705759072) for instant CBC Schemes, Notes & KPSEA/KJSEA Trials.',
+      'Join thousands of Kenyan Teachers, Parents & Learners on Facebook + Chat directly on WhatsApp (0728595160) for instant CBC Schemes, Notes & KPSEA/KJSEA Trials.',
     ctaText: 'Follow & Watch on Facebook →',
     targetUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
     accentColor: 'blue',
@@ -149,7 +149,7 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
       'Connect directly with our Coordinator on WhatsApp or follow our Facebook Page for instant 2026 CBC support across all 47 counties.',
     ctaText: 'Chat on WhatsApp →',
     targetUrl:
-      'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20would%20like%20assistance',
+      'https://wa.me/254728595160?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20would%20like%20assistance',
     accentColor: 'emerald',
   },
   {
@@ -279,7 +279,7 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
       profileUrl: 'https://www.facebook.com/profile.php?id=61591027359399',
       reelsUrl: 'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab',
       whatsappUrl:
-        'https://wa.me/254705759072?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
+        'https://wa.me/254728595160?text=Hello%2C%20I%20visited%20cbcmaterials.shop%20and%20need%20CBC%20materials',
       metaPixelId: (process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim(),
       metaConversionsApiToken: (process.env.META_CONVERSIONS_API_TOKEN || '').trim(),
       fbPageAccessToken: (process.env.FACEBOOK_PAGE_ACCESS_TOKEN || '').trim(),
@@ -350,10 +350,22 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
     if (!fbMerged.profileId) {
       fbMerged.profileId = defaults.facebookMonetization.profileId;
     }
+    if (fbMerged.whatsappUrl) {
+      fbMerged.whatsappUrl = fbMerged.whatsappUrl
+        .replace(/254705759072/g, '254728595160')
+        .replace(/0705759072/g, '0728595160');
+    }
 
     let mergedCampaigns =
       Array.isArray(parsed.campaigns) && parsed.campaigns.length > 0
-        ? parsed.campaigns
+        ? parsed.campaigns.map((c) => ({
+            ...c,
+            headline: String(c.headline || '').replace(/0705759072/g, '0728595160'),
+            subtext: String(c.subtext || '').replace(/0705759072/g, '0728595160'),
+            targetUrl: String(c.targetUrl || '')
+              .replace(/254705759072/g, '254728595160')
+              .replace(/0705759072/g, '0728595160'),
+          }))
         : defaults.campaigns;
 
     // Ensure Facebook Reels spotlight campaigns are present when Facebook routing is enabled

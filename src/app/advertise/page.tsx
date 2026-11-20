@@ -117,7 +117,7 @@ export default function AdvertisePage() {
             </h2>
             <p className="text-xs text-slate-600">
               Pay directly via M-Pesa <strong>0728595160</strong> and send your banner
-              text/link on WhatsApp <strong>0705759072</strong> to go live immediately.
+              text/link on WhatsApp <strong>0728595160</strong> to go live immediately.
             </p>
           </div>
         </section>
@@ -129,7 +129,7 @@ export default function AdvertisePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {PACKAGES.map((pkg) => {
-              const waHref = `https://wa.me/254705759072?text=${encodeURIComponent(
+              const waHref = `https://wa.me/254728595160?text=${encodeURIComponent(
                 `Hello! I want to book the "${pkg.name}" (KES ${pkg.priceKes} ${pkg.period}) ad slot on CBC Kenya Resource Hub.`
               )}`;
               return (
@@ -170,7 +170,7 @@ export default function AdvertisePage() {
                     className="w-full inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-3 px-4 rounded-xl transition"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Book via WhatsApp (0705759072)
+                    Book via WhatsApp (0728595160)
                   </a>
                 </div>
               );
@@ -193,17 +193,17 @@ export default function AdvertisePage() {
               and will be back online shortly within the next{' '}
               <strong className="text-amber-300">72 hours or less</strong>. You can still
               reserve your sponsored slot right now via WhatsApp{' '}
-              <strong className="text-emerald-300">0705759072</strong>!
+              <strong className="text-emerald-300">0728595160</strong>!
             </p>
           </div>
           <a
-            href="https://wa.me/254705759072?text=Hello%2C%20I%20would%20like%20to%20place%20an%20ad%20on%20CBC%20Kenya%20Resource%20Hub"
+            href="https://wa.me/254728595160?text=Hello%2C%20I%20would%20like%20to%20place%20an%20ad%20on%20CBC%20Kenya%20Resource%20Hub"
             target="_blank"
             rel="noreferrer"
             className="shrink-0 inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-5 py-3.5 rounded-xl transition"
           >
             <MessageCircle className="w-4 h-4" />
-            Chat with Ad Desk: 0705759072
+            Chat with Ad Desk: 0728595160
           </a>
         </section>
       </main>

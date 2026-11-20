@@ -79,7 +79,7 @@ export default function SiteFooter() {
             <a
               href={
                 config.facebookPublic?.whatsappUrl ||
-                'https://wa.me/254705759072?text=Hello%2C%20I%20have%20an%20inquiry%20on%20CBC%20Kenya%20Resource%20Hub'
+                'https://wa.me/254728595160?text=Hello%2C%20I%20have%20an%20inquiry%20on%20CBC%20Kenya%20Resource%20Hub'
               }
               target="_blank"
               rel="noreferrer"
@@ -87,7 +87,7 @@ export default function SiteFooter() {
               className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition"
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp: 0705759072
+              WhatsApp: 0728595160
             </a>
             <a
               href="https://www.tiktok.com/@cbcmaterials.shop"

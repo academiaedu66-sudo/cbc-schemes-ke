@@ -311,14 +311,14 @@ export async function executeMultiPlatformBroadcast(params: {
       `🎮 PLAY ALL 21 CBC SUBJECTS & EARN REWARDS:\n` +
       `https://www.cbcmaterials.shop \n` +
       `👍 Follow on Facebook: ${DEFAULT_FACEBOOK_PROFILE_URL} \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `🎮 PLAY & REVISE ALL 21 CBC SUBJECTS ON WWW.CBCMATERIALS.SHOP!\n` +
         `✅ End-of-Strand Textbook Exercises (PP1 – Grade 12) • Zero Question Repetition!\n` +
         `✅ 1 Correct Question = 1 Point • 1,000 Points = KSh 5 Cash Reward (KSh 10 for 20-Min Pass)!\n\n` +
         `👉 Tap This Clickable Link to Start Playing:\nhttps://www.cbcmaterials.shop \n\n` +
-        `💬 WhatsApp Support: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Support: https://wa.me/254728595160 \n` +
         `#CBCKenya #KPSEA2026 #KJSEA2026 #KenyanStudents #CBCGaming #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_TUITION') {
@@ -328,14 +328,14 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `🎓 BOOK HOME OR ONLINE CBC TUITION / REGISTER AS A TEACHER:\n` +
       `https://www.cbcmaterials.shop \n` +
-      `💬 WhatsApp Coordinator: https://wa.me/254705759072`;
+      `💬 WhatsApp Coordinator: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `🎓 NEED A VERIFIED HOME OR ONLINE CBC TUITION TEACHER? (PP1 – GRADE 12)\n` +
         `✅ Parents & Learners matched with top subject teachers across all 47 Counties!\n` +
         `✅ Qualified CBC Teachers: Register (KSh 500) for Priority Student Matching!\n\n` +
         `👉 Click Here to Book or Register:\nhttps://www.cbcmaterials.shop \n\n` +
-        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Direct: https://wa.me/254728595160 \n` +
         `#HolidayTuitionKenya #TSCTeachers #CBCKenya #KenyanParents #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_GEMINI') {
@@ -345,13 +345,13 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `🤖 ASK GEMINI STEP-BY-STEP CBC HOMEWORK HELP:\n` +
       `https://www.cbcmaterials.shop \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `🤖 STUCK ON HOMEWORK? ASK GEMINI ON WWW.CBCMATERIALS.SHOP!\n` +
         `✅ Instant step-by-step worked answers for Maths, Sciences, English, Kiswahili & all CBC subjects (PP1–Grade 12)!\n\n` +
         `👉 Click Here to Try Free & Unlock Full Answers:\nhttps://www.cbcmaterials.shop \n\n` +
-        `💬 WhatsApp Support: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Support: https://wa.me/254728595160 \n` +
         `#CBCKenya #HomeworkHelpKenya #KPSEA #KJSEA #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_BOOK_1') {
@@ -361,7 +361,7 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `📘 GET "CBC GRADE UP" (50-Page Book + Marking Schemes — KSh 500):\n` +
       `https://www.cbcmaterials.shop/?book=1 \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `📘 NEW 50-PAGE BOOK PER SUBJECT: "CBC GRADE UP" (PP1 – GRADE 12)!\n` +
@@ -369,7 +369,7 @@ export async function executeMultiPlatformBroadcast(params: {
         `✅ Complete Marking Schemes & Worked Solutions at the end of every book!\n` +
         `✅ Only KSh 500 via Instant M-Pesa STK Prompt (PDF + Editable DOCX)!\n\n` +
         `👉 Click Here to Download Immediately:\nhttps://www.cbcmaterials.shop/?book=1 \n\n` +
-        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Direct: https://wa.me/254728595160 \n` +
         `#CBCGradeUp #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_BOOK_2') {
@@ -380,7 +380,7 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `📗 GET "SUPER-LIGHT CBC COMPILATION" (50-Page Notes + Q&A — KSh 750):\n` +
       `https://www.cbcmaterials.shop/?book=2 \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `📗 NEW 50-PAGE REVISION BOOK: "SUPER-LIGHT CBC COMPILATION" (PP1 – GRADE 12)!\n` +
@@ -388,7 +388,7 @@ export async function executeMultiPlatformBroadcast(params: {
         `✅ Every sub-topic followed immediately by relevant practice questions + Answers!\n` +
         `✅ Only KSh 750 via Instant M-Pesa STK Prompt (PDF + Editable DOCX)!\n\n` +
         `👉 Click Here to Download Immediately:\nhttps://www.cbcmaterials.shop/?book=2 \n\n` +
-        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Direct: https://wa.me/254728595160 \n` +
         `#SuperLightCBC #CBCKenya #KPSEA2026 #KJSEA2026 #CBCMaterials`;
     }
   } else if (selKey === 'SERVICE_BOOK_3') {
@@ -399,7 +399,7 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `📚 GET "SMART CBC ALL SUBJECTS" (100-Page Master Book — KSh 1,500):\n` +
       `https://www.cbcmaterials.shop/?book=3 \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `🏆 SMART CBC ALL SUBJECTS (100 PAGES + FULL GRADE SUBJECT ACCESS — KSh 1,500)!\n` +
@@ -407,7 +407,7 @@ export async function executeMultiPlatformBroadcast(params: {
         `✅ Point-Form Notes + Sub-topic Questions + 170 Exam Questions + Full Marking Schemes!\n` +
         `✅ Instant M-Pesa STK Prompt Auto-Download on WWW.CBCMATERIALS.SHOP!\n\n` +
         `👉 Click Here to Get Smart CBC All Subjects:\nhttps://www.cbcmaterials.shop/?book=3 \n\n` +
-        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Direct: https://wa.me/254728595160 \n` +
         `#SmartCBC #CBCGradeUp #CBCKenya #KPSEA2026 #KJSEA2026`;
     }
   } else if (selKey === 'SERVICE_PORTAL') {
@@ -417,7 +417,7 @@ export async function executeMultiPlatformBroadcast(params: {
     reelComment =
       `📚 GET ALL 3,400+ CBC SCHEMES, NOTES & EXAMS (WORD + PDF):\n` +
       `https://www.cbcmaterials.shop \n` +
-      `💬 WhatsApp: https://wa.me/254705759072`;
+      `💬 WhatsApp: https://wa.me/254728595160`;
     if (!feedCaption) {
       feedCaption =
         `🇰🇪 OFFICIAL KENYA CBC PORTAL — WWW.CBCMATERIALS.SHOP!\n` +
@@ -425,7 +425,7 @@ export async function executeMultiPlatformBroadcast(params: {
         `✅ Editable Word (.DOCX) + Print-Ready (.PDF) • Instant 1-Second M-Pesa Auto-Download!\n` +
         `✅ Plus: All-Subjects Gaming Arena, Holiday Tuition & Ask Gemini Q&A!\n\n` +
         `👉 Click Here to Open:\nhttps://www.cbcmaterials.shop \n\n` +
-        `💬 WhatsApp Direct: https://wa.me/254705759072 \n` +
+        `💬 WhatsApp Direct: https://wa.me/254728595160 \n` +
         `#CBCKenya #CBCMaterials #TSCTeachers #KPSEA2026 #KJSEA2026`;
     }
   } else if (selKey !== 'AUTO') {
@@ -444,7 +444,7 @@ export async function executeMultiPlatformBroadcast(params: {
         `📚 DOWNLOAD INSTANTLY (Editable Word + PDF — KES ${price}):\n` +
         `${targetUrl} \n` +
         `🌐 All Services: https://www.cbcmaterials.shop \n` +
-        `💬 WhatsApp: https://wa.me/254705759072`;
+        `💬 WhatsApp: https://wa.me/254728595160`;
       if (!feedCaption) {
         feedCaption =
           `🔥 2026 READY: ${item.title}\n` +
@@ -452,7 +452,7 @@ export async function executeMultiPlatformBroadcast(params: {
           `👉 Tap Clickable Link to Download:\n${targetUrl} \n` +
           `🌐 Full Website: https://www.cbcmaterials.shop \n` +
           `🎬 Watch Daily CBC Revision Reels on Our Facebook: ${DEFAULT_FACEBOOK_REELS_URL} \n` +
-          `💬 WhatsApp Direct: 0705759072\n` +
+          `💬 WhatsApp Direct: 0728595160\n` +
           `#CBCKenya #KPSEA2026 #KJSEA2026 #TSCTeachers #CBCMaterials`;
       }
     }
@@ -523,7 +523,7 @@ export async function executeMultiPlatformBroadcast(params: {
           body: JSON.stringify({
             chat_id: config.telegramChatId.trim(),
             photo: posterVerticalUrl,
-            caption: `${targetTitle}\n\n👉 Click to Open: ${targetUrl}\n🌐 Portal: https://www.cbcmaterials.shop\n💬 WhatsApp: https://wa.me/254705759072`,
+            caption: `${targetTitle}\n\n👉 Click to Open: ${targetUrl}\n🌐 Portal: https://www.cbcmaterials.shop\n💬 WhatsApp: https://wa.me/254728595160`,
           }),
         }
       );
