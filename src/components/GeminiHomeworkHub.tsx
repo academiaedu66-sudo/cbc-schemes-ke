@@ -445,7 +445,7 @@ export default function GeminiHomeworkHub({
   return (
     <>
       {/* HOMEPAGE SHOWCASE CARD */}
-      <section className="max-w-6xl mx-auto px-4 pt-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-950 text-white rounded-3xl p-6 sm:p-7 shadow-lg border border-indigo-500/30 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
             <div className="inline-flex flex-wrap items-center gap-2">

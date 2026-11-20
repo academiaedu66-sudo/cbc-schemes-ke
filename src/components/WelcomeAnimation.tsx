@@ -59,7 +59,7 @@ export default function WelcomeAnimation() {
     <>
       {/* Persistent Shimmering Top Welcome Ribbon */}
       <div className="bg-slate-950 text-white border-b border-emerald-500/30 relative overflow-hidden">
-        <div className="w-full px-3 sm:px-6 py-2 flex items-center justify-between gap-2.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
           {/* Far-Left Mini Crest & Wordmark */}
           <div className="inline-flex items-center gap-2 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -109,11 +109,10 @@ export default function WelcomeAnimation() {
           onClick={dismissSplash}
           role="dialog"
           aria-label="Welcome message: Be Alive, You Are Special"
-          className={`fixed inset-0 z-[100] flex items-center justify-center px-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${
-            isFadingOut
+          className={`fixed inset-0 z-[100] flex items-center justify-center px-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isFadingOut
               ? "opacity-0 scale-105 pointer-events-none"
               : "opacity-100 scale-100"
-          }`}
+            }`}
           style={{
             background:
               "radial-gradient(circle at 50% 35%, #065f46 0%, #022c22 52%, #020617 100%)",

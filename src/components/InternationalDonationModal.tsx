@@ -57,23 +57,26 @@ export function InternationalDonationTopBanner({
   onOpenModal: () => void;
 }) {
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-r from-sky-950 via-emerald-950 to-indigo-950 border-2 border-emerald-400/70 p-3.5 sm:p-4 shadow-[0_0_28px_rgba(16,185,129,0.28)] flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3.5">
-      <div className="space-y-2 min-w-0">
-        <div className="inline-flex flex-wrap items-center gap-2">
+    <div className="w-full rounded-2xl bg-gradient-to-r from-sky-950/95 via-emerald-950/95 to-indigo-950/95 border border-emerald-400/60 p-4 sm:p-5 shadow-lg flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+      <div className="space-y-2 min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 bg-emerald-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
             <Globe2 className="w-3.5 h-3.5" />
             INTERNATIONAL &amp; GLOBAL EDUCATION FUND
           </span>
-          <span className="text-[11px] font-bold text-amber-300 uppercase">
-            $1 TO MAXIMUM • REMITLY • SENDWAVE • WORLDREMIT • PAYPAL • BANK WIRE • STK PUSH
+          <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wide">
+            $1 TO MAXIMUM &bull; REMITLY &bull; SENDWAVE &bull; WORLDREMIT &bull; PAYPAL &bull; BANK WIRE &bull; STK PUSH
           </span>
         </div>
-        <p className="text-xs sm:text-sm text-emerald-50 font-semibold leading-relaxed">
-          <strong>Help Weak &amp; Poor Learners Continue Their Education:</strong> Donate any
-          amount from <strong>$1 USD upward</strong> so underprivileged children in Kenya stay
-          in school with books, revision materials, and tuition. Instant Bank-Settling STK Push,
-          plus Remitly, Sendwave, WorldRemit, PayPal &amp; International Bank Transfer upon
-          request — all routed one-way directly to the bank.
+        <p className="text-xs sm:text-sm text-emerald-50/95 font-medium leading-relaxed max-w-4xl">
+          <strong className="text-white font-extrabold">
+            Help Weak &amp; Poor Learners Continue Their Education:
+          </strong>{' '}
+          Donate any amount from <strong className="text-amber-300">$1 USD upward</strong> so
+          underprivileged children in Kenya stay in school with books, revision materials, and
+          tuition. Instant Bank-Settling STK Push, plus Remitly, Sendwave, WorldRemit, PayPal
+          &amp; International Bank Transfer upon request — all routed one-way directly to the
+          bank.
         </p>
 
         {/* OUTSIDE INTERNATIONAL WHATSAPP NUMBERS (U.K. & U.S.A./CANADA) */}
@@ -82,7 +85,7 @@ export function InternationalDonationTopBanner({
             href={DIRECT_UK_WA_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-emerald-300/60 text-white px-3 py-1.5 rounded-xl text-xs font-black tracking-wide transition"
+            className="h-9 inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-emerald-300/50 text-white px-3.5 rounded-xl text-xs font-black tracking-wide transition"
           >
             <MessageCircle className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
             <span>U.K. WHATSAPP: {DONATION_UK_WHATSAPP_DISPLAY}</span>
@@ -92,7 +95,7 @@ export function InternationalDonationTopBanner({
             href={DIRECT_USA_CANADA_WA_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-amber-300/60 text-amber-200 px-3 py-1.5 rounded-xl text-xs font-black tracking-wide transition"
+            className="h-9 inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-amber-300/50 text-amber-200 px-3.5 rounded-xl text-xs font-black tracking-wide transition"
           >
             <MessageCircle className="w-3.5 h-3.5 text-amber-300 shrink-0" />
             <span>U.S.A. / CANADA WHATSAPP: {DONATION_USA_CANADA_WHATSAPP_DISPLAY}</span>
@@ -100,17 +103,17 @@ export function InternationalDonationTopBanner({
         </div>
       </div>
 
-      <div className="w-full xl:w-auto shrink-0 flex flex-col items-stretch xl:items-end gap-1.5">
+      <div className="w-full xl:w-auto shrink-0 flex flex-col items-stretch xl:items-end justify-center gap-1.5">
         <button
           type="button"
           onClick={onOpenModal}
           style={{ fontSize: '15px' }}
-          className="w-full xl:w-auto bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(52,211,153,0.55)] transition cursor-pointer"
+          className="min-h-[48px] w-full xl:w-auto bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-2.5 rounded-xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
         >
           <HeartHandshake className="w-5 h-5 text-rose-700 shrink-0" />
           <span>DONATE TO HELP NEEDY LEARNERS ($1+)</span>
         </button>
-        <span className="text-[11px] font-black text-emerald-200 text-center xl:text-right">
+        <span className="text-[11px] font-bold text-emerald-200/95 text-center xl:text-right">
           U.K.: {DONATION_UK_WHATSAPP_DISPLAY} &bull; U.S.A./CANADA:{' '}
           {DONATION_USA_CANADA_WHATSAPP_DISPLAY}
         </span>

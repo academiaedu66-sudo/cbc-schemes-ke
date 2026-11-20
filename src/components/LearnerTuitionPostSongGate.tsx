@@ -426,10 +426,10 @@ export default function LearnerTuitionPostSongGate() {
   return (
     <>
       {/* PERSISTENT HIGH-VISIBILITY BUTTON APPEARING TO EVERYONE IMMEDIATELY AFTER LISTENING TO OPENING MUSIC */}
-      <div className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 border-b-2 border-slate-950 px-3 sm:px-6 py-2.5 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wide">
-            <span className="inline-flex items-center gap-1 bg-rose-600 text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase shadow-xs animate-pulse">
+      <div className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 border-b-2 border-slate-950 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wide">
+            <span className="inline-flex items-center gap-1 bg-rose-600 text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase shadow-xs animate-pulse shrink-0">
               <Flame className="w-3.5 h-3.5" />
               OFFER ACTIVE NOW
             </span>
@@ -442,7 +442,7 @@ export default function LearnerTuitionPostSongGate() {
           <button
             type="button"
             onClick={openLearnerOfferModal}
-            className="bg-slate-950 hover:bg-emerald-950 text-amber-300 border-2 border-white px-4 py-2 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-lg transition cursor-pointer shrink-0"
+            className="min-h-[40px] bg-slate-950 hover:bg-emerald-950 text-amber-300 border-2 border-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer shrink-0"
           >
             <GraduationCap className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>

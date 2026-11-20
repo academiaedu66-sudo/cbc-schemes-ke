@@ -142,7 +142,7 @@ export default function SeoKnowledgeSection() {
   return (
     <section
       aria-label="Kenya CBC, KNEC Examinations, Schemes of Work, Teachers Notes, TSC and Tuition Directory"
-      className="max-w-6xl mx-auto px-4 pt-10 space-y-6"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-6"
     >
       <script
         type="application/ld+json"

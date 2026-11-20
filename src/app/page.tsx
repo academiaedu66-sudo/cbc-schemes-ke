@@ -651,10 +651,10 @@ export default function HomePage() {
 
       {/* Header Bar — Logo Anchored Far Left, HOLIDAY TUITION Button Prominent on Far Right */}
       <header className="bg-gradient-to-r from-slate-950 via-emerald-900 to-indigo-950 text-white shadow-lg border-b-2 border-amber-400/50">
-        <div className="w-full px-3 sm:px-6 lg:px-8 py-5 space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4">
           {/* Top Row: Far-Left Brand Logo & Writings + Far-Right Visible HOLIDAY TUITION Button (Bold, Uppercase, Font 16) */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-            <div className="min-w-0">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
+            <div className="min-w-0 flex-1">
               <BrandLogoLockup
                 size="lg"
                 showTagline
@@ -663,7 +663,7 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="md:ml-auto self-end md:self-center shrink-0 flex flex-wrap items-center justify-end gap-2.5">
+            <div className="w-full xl:w-auto xl:ml-auto shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => {
@@ -674,10 +674,9 @@ export default function HomePage() {
                     );
                   }
                 }}
-                style={{ fontSize: '15px' }}
-                className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-[0_0_24px_rgba(244,63,94,0.65)] transition cursor-pointer"
+                className="min-h-[48px] bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-4 py-2.5 rounded-xl text-xs sm:text-[13px] font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
               >
-                <Sparkles className="w-5 h-5 text-amber-200 shrink-0" />
+                <Sparkles className="w-4 h-4 text-amber-200 shrink-0" />
                 <span>KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING</span>
               </button>
 
@@ -685,7 +684,7 @@ export default function HomePage() {
                 href="#holiday-tuition-hub"
                 onClick={() => trackInteraction('holiday_tuition_top_right_click')}
                 style={{ fontSize: '16px' }}
-                className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-6 py-3 rounded-2xl text-[16px] font-black uppercase tracking-wider inline-flex items-center gap-2.5 shadow-[0_0_28px_rgba(251,191,36,0.6)] transition"
+                className="min-h-[48px] bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-2.5 rounded-xl text-[16px] font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(251,191,36,0.5)] transition shrink-0"
               >
                 <GraduationCap className="w-5 h-5 text-emerald-900 shrink-0" />
                 <span>HOLIDAY TUITION</span>
@@ -701,181 +700,199 @@ export default function HomePage() {
             }}
           />
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() =>
-                setBookLaunch({
-                  bookType: 'GRADE_UP',
-                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
-                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
-                  tick: Date.now(),
-                })
-              }
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-white/70 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-emerald-900" />
-              <span>1. CBC GRADE UP (KSh 500)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setBookLaunch({
-                  bookType: 'MADE_FAMILIAR',
-                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
-                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
-                  tick: Date.now(),
-                })
-              }
-              className="bg-sky-400 hover:bg-sky-300 text-slate-950 border-2 border-white/70 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-indigo-950" />
-              <span>2. SUPER-LIGHT CBC COMPILATION (KSh 750)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setBookLaunch({
-                  bookType: 'COMPLETE_BUNDLE',
-                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
-                  subject: selectedSubject !== 'All' ? selectedSubject : undefined,
-                  tick: Date.now(),
-                })
-              }
-              className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border-2 border-amber-500 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-purple-900" />
-              <span>3. SMART CBC ALL SUBJECTS (KSh 1,500)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setKjseaModalTick((c) => c + 1)}
-              className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white border-2 border-amber-300 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-            >
-              <Award className="w-4 h-4 text-amber-200" />
-              <span>NATIONAL KJSEA EXAMINATION (ALL GRADES)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => jumpToCurriculumMaterials('All')}
-              className="bg-white hover:bg-amber-50 text-emerald-950 border-2 border-amber-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wide flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-emerald-700" />
-              <strong>ALL CURRICULUM MATERIALS</strong>
-            </button>
-            <button
-              type="button"
-              onClick={() => setGeminiOpenTick((c) => c + 1)}
-              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border border-amber-300/60 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Bot className="w-4 h-4 text-amber-300" />
-              ASK GEMINI (Q&amp;A)
-            </button>
-            <button
-              type="button"
-              onClick={() => setSideHustlesOpenTick((c) => c + 1)}
-              className="bg-emerald-400 hover:bg-emerald-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Briefcase className="w-4 h-4" />
-              HOLIDAY SIDE HUSTLES
-            </button>
-            <button
-              type="button"
-              onClick={() => setTscOpenTick((c) => c + 1)}
-              className="bg-sky-400 hover:bg-sky-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Landmark className="w-4 h-4" />
-              All TSC Services
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                trackInteraction('tutor_peter_videos_header_click');
-                setVideoModalItem(null);
-                setIsVideosModalOpen(true);
-              }}
-              className="bg-red-600 hover:bg-red-500 text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5 text-amber-300" />
-              <Video className="w-4 h-4" />
-              VIDEOS ($15)
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setGameLaunch({
-                  subject: selectedSubject !== 'All' ? selectedSubject : 'Mathematics',
-                  gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
-                  tick: Date.now(),
-                })
-              }
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Gamepad2 className="w-4 h-4" />
-              GAMING (ALL SUBJECTS)
-            </button>
-            <button
-              type="button"
-              onClick={() => setCounsellingOpenTick((c) => c + 1)}
-              className="bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <HeartHandshake className="w-4 h-4 text-purple-900" />
-              Guidance &amp; Counselling
-            </button>
-            <Link
-              href="/advertise"
-              className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs"
-            >
-              <Megaphone className="w-4 h-4" />
-              Advertise
-            </Link>
-            <Link
-              href="/admin"
-              className="bg-emerald-900/60 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
-            >
-              <UploadCloud className="w-4 h-4" />
-              Admin Studio
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(
-                    new CustomEvent('cbc-open-customer-auth', {
-                      detail: { mode: 'signup' },
-                    })
-                  );
+          {/* Symmetrical 4x4 Orderly Action Grid (Exact Same Positions 1–16, Uniform Height & Alignment) */}
+          <div className="bg-slate-950/35 backdrop-blur-xs border border-white/15 rounded-2xl p-3 sm:p-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <button
+                type="button"
+                onClick={() =>
+                  setBookLaunch({
+                    bookType: 'GRADE_UP',
+                    gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                    subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                    tick: Date.now(),
+                  })
                 }
-              }}
-              className="bg-gradient-to-r from-amber-300 to-emerald-300 hover:brightness-105 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              Sign Up / Login
-            </button>
-            <a
-              href="https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab"
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => trackInteraction('facebook_reels_header_click')}
-              className="bg-[#1877F2] hover:bg-[#166FE5] text-white px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-xs"
-            >
-              <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none">
-                f
-              </span>
-              Facebook &amp; Reels
-            </a>
-            <a
-              href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
-                'Hello, I need CBC curriculum materials'
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => trackInteraction('whatsapp_header_click')}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp {whatsappLocalPhone}
-            </a>
+                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/70 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <BookOpen className="w-4 h-4 text-emerald-900 shrink-0" />
+                <span className="truncate">1. CBC GRADE UP (KSh 500)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setBookLaunch({
+                    bookType: 'MADE_FAMILIAR',
+                    gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                    subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                    tick: Date.now(),
+                  })
+                }
+                className="min-h-[44px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/70 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <BookOpen className="w-4 h-4 text-indigo-950 shrink-0" />
+                <span className="truncate">2. SUPER-LIGHT CBC COMPILATION (KSh 750)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setBookLaunch({
+                    bookType: 'COMPLETE_BUNDLE',
+                    gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                    subject: selectedSubject !== 'All' ? selectedSubject : undefined,
+                    tick: Date.now(),
+                  })
+                }
+                className="min-h-[44px] w-full bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border border-amber-500 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <BookOpen className="w-4 h-4 text-purple-900 shrink-0" />
+                <span className="truncate">3. SMART CBC ALL SUBJECTS (KSh 1,500)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setKjseaModalTick((c) => c + 1)}
+                className="min-h-[44px] w-full bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white border border-amber-300 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Award className="w-4 h-4 text-amber-200 shrink-0" />
+                <span className="truncate">NATIONAL KJSEA EXAMINATION (ALL GRADES)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => jumpToCurriculumMaterials('All')}
+                className="min-h-[44px] w-full bg-white hover:bg-amber-50 text-emerald-950 border border-amber-300 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <BookOpen className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span className="truncate">ALL CURRICULUM MATERIALS</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGeminiOpenTick((c) => c + 1)}
+                className="min-h-[44px] w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border border-amber-300/60 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Bot className="w-4 h-4 text-amber-300 shrink-0" />
+                <span className="truncate">ASK GEMINI (Q&amp;A)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSideHustlesOpenTick((c) => c + 1)}
+                className="min-h-[44px] w-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Briefcase className="w-4 h-4 shrink-0" />
+                <span className="truncate">HOLIDAY SIDE HUSTLES</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTscOpenTick((c) => c + 1)}
+                className="min-h-[44px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Landmark className="w-4 h-4 shrink-0" />
+                <span className="truncate">ALL TSC SERVICES</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  trackInteraction('tutor_peter_videos_header_click');
+                  setVideoModalItem(null);
+                  setIsVideosModalOpen(true);
+                }}
+                className="min-h-[44px] w-full bg-red-600 hover:bg-red-500 text-white border border-amber-300/60 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <Video className="w-4 h-4 shrink-0" />
+                <span className="truncate">VIDEOS ($15)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setGameLaunch({
+                    subject: selectedSubject !== 'All' ? selectedSubject : 'Mathematics',
+                    gradeKey: selectedGrade !== 'All' ? selectedGrade : '7',
+                    tick: Date.now(),
+                  })
+                }
+                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span className="truncate">GAMING (ALL SUBJECTS)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCounsellingOpenTick((c) => c + 1)}
+                className="min-h-[44px] w-full bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <HeartHandshake className="w-4 h-4 text-purple-900 shrink-0" />
+                <span className="truncate">GUIDANCE &amp; COUNSELLING</span>
+              </button>
+
+              <Link
+                href="/advertise"
+                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs text-left"
+              >
+                <Megaphone className="w-4 h-4 shrink-0" />
+                <span className="truncate">ADVERTISE</span>
+              </Link>
+
+              <Link
+                href="/admin"
+                className="min-h-[44px] w-full bg-emerald-900/75 hover:bg-emerald-900 border border-emerald-500/60 text-emerald-100 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs text-left"
+              >
+                <UploadCloud className="w-4 h-4 shrink-0" />
+                <span className="truncate">ADMIN STUDIO</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(
+                      new CustomEvent('cbc-open-customer-auth', {
+                        detail: { mode: 'signup' },
+                      })
+                    );
+                  }
+                }}
+                className="min-h-[44px] w-full bg-gradient-to-r from-amber-300 to-emerald-300 hover:brightness-105 text-slate-950 border border-white/50 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+              >
+                <UserPlus className="w-4 h-4 shrink-0" />
+                <span className="truncate">SIGN UP / LOGIN</span>
+              </button>
+
+              <a
+                href="https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackInteraction('facebook_reels_header_click')}
+                className="min-h-[44px] w-full bg-[#1877F2] hover:bg-[#166FE5] text-white border border-white/30 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2 shadow-xs text-left"
+              >
+                <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none shrink-0">
+                  f
+                </span>
+                <span className="truncate">FACEBOOK &amp; REELS</span>
+              </a>
+
+              <a
+                href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+                  'Hello, I need CBC curriculum materials'
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackInteraction('whatsapp_header_click')}
+                className="min-h-[44px] w-full bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-300/50 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2 shadow-xs text-left"
+              >
+                <MessageCircle className="w-4 h-4 shrink-0" />
+                <span className="truncate">WHATSAPP {whatsappLocalPhone}</span>
+              </a>
+            </div>
           </div>
         </div>
       </header>
@@ -884,23 +901,23 @@ export default function HomePage() {
       <GeminiHomeworkHub externalOpenTick={geminiOpenTick} />
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
         {/* PRIMARY TOP BAR: ALL CURRICULUM MATERIALS (UPPERCASE BOLD) */}
         <section
           aria-label="Quick Jump to All Curriculum Materials"
-          className="mb-6 bg-white border-2 border-emerald-600 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3.5"
+          className="mb-6 bg-white border-2 border-emerald-600 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5"
         >
-          <button
-            type="button"
-            onClick={() => jumpToCurriculumMaterials('All')}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3.5 rounded-xl text-sm sm:text-base font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-md transition cursor-pointer shrink-0"
-          >
-            <BookOpen className="w-5 h-5 text-amber-300" />
-            <span>ALL CURRICULUM MATERIALS</span>
-            <ChevronDown className="w-4 h-4 text-emerald-200" />
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => jumpToCurriculumMaterials('All')}
+              className="min-h-[48px] w-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-sm transition cursor-pointer"
+            >
+              <BookOpen className="w-5 h-5 text-amber-300 shrink-0" />
+              <span>ALL CURRICULUM MATERIALS</span>
+              <ChevronDown className="w-4 h-4 text-emerald-200 shrink-0" />
+            </button>
 
-          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -908,21 +925,21 @@ export default function HomePage() {
                 setVideoModalItem(null);
                 setIsVideosModalOpen(true);
               }}
-              className="bg-red-600 hover:bg-red-700 text-white px-5 py-3.5 rounded-xl text-sm sm:text-base font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer shrink-0"
+              className="min-h-[48px] w-full bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
             >
-              <Lock className="w-4 h-4 text-amber-300" />
-              <Video className="w-5 h-5 text-amber-300" />
+              <Lock className="w-4 h-4 text-amber-300 shrink-0" />
+              <Video className="w-5 h-5 text-amber-300 shrink-0" />
               <span>VIDEOS — TUTOR PETER ($15)</span>
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {MATERIAL_AREAS.map((area) => (
               <button
                 key={area.id}
                 type="button"
                 onClick={() => jumpToCurriculumMaterials(area.filterCategory)}
-                className="px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wide border transition cursor-pointer hover:shadow-xs"
+                className="min-h-[38px] px-2.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wide border transition cursor-pointer hover:shadow-xs flex items-center justify-center text-center leading-tight"
                 style={{
                   backgroundColor: area.bg,
                   borderColor: area.borderColor,
