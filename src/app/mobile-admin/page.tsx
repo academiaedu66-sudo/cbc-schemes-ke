@@ -7,6 +7,7 @@ import WhatsAppAutoReplyPanel from '@/components/WhatsAppAutoReplyPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
+import AdminDonationsPanel from '@/components/AdminDonationsPanel';
 import {
   Activity,
   ArrowUpRight,
@@ -2548,6 +2549,11 @@ export default function MobileAdminAppPage() {
         {/* ================================================================= */}
         {activeTab === 'TRAFFIC' && (
           <div className="space-y-4">
+            <AdminDonationsPanel
+              password={password}
+              adminEmail={email}
+              darkTheme
+            />
             <WhatsAppAutoReplyPanel
               password={password}
               adminEmail={email}

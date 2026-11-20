@@ -42,6 +42,7 @@ import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
 import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
+import AdminDonationsPanel from '@/components/AdminDonationsPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
 import AdminTwoFactorGate, {
@@ -864,6 +865,9 @@ export default function AdminDashboardPage() {
 
         {/* SITE MONETIZATION, AD NETWORKS & CLICK / VIEW EARNINGS STUDIO */}
         <AdminMonetizationPanel password={password} />
+
+        {/* INTERNATIONAL LEARNER SUPPORT DONATIONS & ONE-WAY BANK REMITTANCE HUB */}
+        <AdminDonationsPanel password={password} />
 
         {/* HOLIDAY & PERSONAL TUITION REGISTRATIONS & WHATSAPP 0705759072 MATCHMAKER */}
         <AdminTuitionPanel password={password} />

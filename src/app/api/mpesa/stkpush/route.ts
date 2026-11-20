@@ -47,11 +47,18 @@ export async function POST(req: Request) {
       bookTitle,
       bookTerm,
       buyerName,
+      donationAmountUsd,
+      donationAmountKes,
     } = await req.json();
     const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
     const normTerm = normalizeBookTerm(bookTerm ?? 1);
     const termTag = formatBookTermLabel(normTerm);
     const cleanBuyerName = typeof buyerName === 'string' ? buyerName.trim().slice(0, 60) : '';
+    const parsedDonationUsd = Math.max(1, Number(donationAmountUsd) || 1);
+    const parsedDonationKes = Math.max(
+      130,
+      Math.round(Number(donationAmountKes) || parsedDonationUsd * 130)
+    );
 
     await recordPurchaseAttempt({
       channel: 'M-Pesa STK Push',
@@ -71,7 +78,9 @@ export async function POST(req: Request) {
               ? getBookPriceKes('COMPLETE_BUNDLE', normTerm)
               : serviceType === 'TUTOR_PETER_VIDEO'
                 ? 1950
-                : Number(testAmount) || 0,
+                : serviceType === 'LEARNER_DONATION'
+                  ? parsedDonationKes
+                  : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
     }).catch(() => { });
@@ -171,6 +180,16 @@ export async function POST(req: Request) {
         title:
           cleanBookTitle ||
           "Tutor Peter's Whiteboard Class Video Unlock ($15 / KSh 1,950)",
+      };
+    } else if (serviceType === 'LEARNER_DONATION') {
+      // Safaricom per-push STK ceiling is KSh 250,000; any amount from $1 (KSh 130) up to maximum settles directly to Bank
+      const stkPushKes = Math.min(250000, parsedDonationKes);
+      resource = {
+        id: null,
+        price: stkPushKes,
+        title:
+          cleanBookTitle ||
+          `Needy Learners Education Support Donation ($${parsedDonationUsd.toLocaleString()} / KSh ${stkPushKes.toLocaleString()})`,
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

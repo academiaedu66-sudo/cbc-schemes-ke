@@ -32,6 +32,8 @@ export async function POST(req: Request) {
       bookTitle,
       bookTerm,
       buyerName,
+      donationAmountUsd,
+      donationAmountKes,
     } = await req.json();
     const cleanBookTitle = typeof bookTitle === 'string' ? bookTitle.trim().slice(0, 140) : '';
     const normTerm = normalizeBookTerm(bookTerm ?? 1);
@@ -147,6 +149,16 @@ export async function POST(req: Request) {
         title:
           cleanBookTitle ||
           "Tutor Peter's Whiteboard Class Video Unlock ($15 / KSh 1,950)",
+      };
+    } else if (serviceType === 'LEARNER_DONATION') {
+      const usd = Math.max(1, Number(donationAmountUsd) || 1);
+      const kes = Math.max(130, Math.round(Number(donationAmountKes) || usd * 130));
+      resource = {
+        id: null,
+        price: kes,
+        title:
+          cleanBookTitle ||
+          `Needy Learners Education Support Donation ($${usd.toLocaleString()} / KSh ${kes.toLocaleString()})`,
       };
     } else {
       const { data: dbRes, error: resErr } = await supabaseAdmin

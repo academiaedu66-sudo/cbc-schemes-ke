@@ -747,6 +747,7 @@ export async function compileFullWebsiteBackup(): Promise<{
     '_system/monetization-config.json',
     '_system/monetization-stats.json',
     '_system/tuition-registrations.json',
+    '_system/donations-ledger.json',
     '_system/gaming-ledger.json',
     '_system/homework-qa-ledger.json',
     '_system/purchase-attempts.json',

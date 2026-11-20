@@ -47,6 +47,9 @@ import CbcBooksHub, {
 } from '@/components/CbcBooksHub';
 import NationalKjseaHub from '@/components/NationalKjseaHub';
 import TutorPeterVideosHubModal from '@/components/TutorPeterVideosHubModal';
+import InternationalDonationModal, {
+  InternationalDonationTopBanner,
+} from '@/components/InternationalDonationModal';
 import BrandLogoLockup from '@/components/BrandLogoLockup';
 import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
@@ -134,6 +137,7 @@ export default function HomePage() {
   const [previewItem, setPreviewItem] = useState<ResourceItem | null>(null);
   const [isVideosModalOpen, setIsVideosModalOpen] = useState(false);
   const [videoModalItem, setVideoModalItem] = useState<ResourceItem | null>(null);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
   // Checkout Modal State (PayHero Live STK Express primary + Direct M-Pesa Code backup)
   const [modalItem, setModalItem] = useState<ResourceItem | null>(null);
@@ -688,6 +692,14 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+
+          {/* Visible Top International & Global Community Donation Button + Description ($1 to Maximum -> One-Way Bank Settlement) */}
+          <InternationalDonationTopBanner
+            onOpenModal={() => {
+              trackInteraction('international_donation_top_btn_click');
+              setIsDonationModalOpen(true);
+            }}
+          />
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
@@ -1954,6 +1966,10 @@ export default function HomePage() {
         onClose={() => setIsVideosModalOpen(false)}
         resources={resources}
         initialResource={videoModalItem}
+      />
+      <InternationalDonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
       />
     </div>
   );

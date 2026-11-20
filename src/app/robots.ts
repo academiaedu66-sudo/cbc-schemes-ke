@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           '/materials/',
           '/videos/',
           '/videos',
+          '/donate',
           '/go',
           '/go/',
           '/whatsapp-ad',
