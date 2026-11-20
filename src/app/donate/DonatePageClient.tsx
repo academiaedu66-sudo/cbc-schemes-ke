@@ -2,12 +2,18 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Globe2, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, Globe2, HeartHandshake, MessageCircle } from 'lucide-react';
 import BrandLogoLockup from '@/components/BrandLogoLockup';
 import SiteFooter from '@/components/SiteFooter';
 import InternationalDonationModal, {
   InternationalDonationTopBanner,
 } from '@/components/InternationalDonationModal';
+import {
+  DONATION_UK_WHATSAPP_DIGITS,
+  DONATION_UK_WHATSAPP_DISPLAY,
+  DONATION_USA_CANADA_WHATSAPP_DIGITS,
+  DONATION_USA_CANADA_WHATSAPP_DISPLAY,
+} from '@/lib/donations';
 
 export default function DonatePageClient() {
   const [modalOpen, setModalOpen] = useState(true);
@@ -50,7 +56,7 @@ export default function DonatePageClient() {
               <strong>$1 USD upward</strong> directly sponsor learning materials, personal
               coaching, and school continuation for learners in need.
             </p>
-            <div className="pt-2">
+            <div className="pt-2 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
@@ -59,6 +65,26 @@ export default function DonatePageClient() {
                 <HeartHandshake className="w-5 h-5" />
                 <span>Open Donation &amp; International Remittance Window ($1+)</span>
               </button>
+
+              <a
+                href={`https://wa.me/${DONATION_UK_WHATSAPP_DIGITS}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-emerald-300 font-black text-xs uppercase inline-flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>U.K. WhatsApp: {DONATION_UK_WHATSAPP_DISPLAY}</span>
+              </a>
+
+              <a
+                href={`https://wa.me/${DONATION_USA_CANADA_WHATSAPP_DIGITS}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-3 rounded-2xl bg-indigo-950 hover:bg-indigo-900 text-amber-300 font-black text-xs uppercase inline-flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>U.S.A. / CANADA: {DONATION_USA_CANADA_WHATSAPP_DISPLAY}</span>
+              </a>
             </div>
           </section>
         </main>

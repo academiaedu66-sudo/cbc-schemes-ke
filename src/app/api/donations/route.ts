@@ -13,6 +13,10 @@ import {
   DONATION_REMITTANCE_MPESA_E164,
   DONATION_SUPPORT_WHATSAPP_INTL,
   DONATION_SUPPORT_WHATSAPP_LOCAL,
+  DONATION_UK_WHATSAPP_DIGITS,
+  DONATION_UK_WHATSAPP_DISPLAY,
+  DONATION_USA_CANADA_WHATSAPP_DIGITS,
+  DONATION_USA_CANADA_WHATSAPP_DISPLAY,
   getDonationsLedger,
   MIN_DONATION_USD,
   saveDonationsLedger,
@@ -97,6 +101,10 @@ export async function GET(req: NextRequest) {
     minDonationUsd: MIN_DONATION_USD,
     singleStkMaxKes: SINGLE_STK_MAX_KES,
     remittanceMpesaE164: DONATION_REMITTANCE_MPESA_E164,
+    ukWhatsappDisplay: DONATION_UK_WHATSAPP_DISPLAY,
+    ukWhatsappDigits: DONATION_UK_WHATSAPP_DIGITS,
+    usaCanadaWhatsappDisplay: DONATION_USA_CANADA_WHATSAPP_DISPLAY,
+    usaCanadaWhatsappDigits: DONATION_USA_CANADA_WHATSAPP_DIGITS,
     whatsappSupportLocal: DONATION_SUPPORT_WHATSAPP_LOCAL,
     whatsappSupportIntl: DONATION_SUPPORT_WHATSAPP_INTL,
     completedDonationsCount: completedCount,
@@ -283,7 +291,13 @@ export async function POST(req: NextRequest) {
       (dedicatedNote ? `• *Message:* ${dedicatedNote}\n` : '') +
       `Please confirm/assist with direct bank-routed settlement.`;
 
-    const whatsappRequestUrl = `https://wa.me/${DONATION_SUPPORT_WHATSAPP_INTL}?text=${encodeURIComponent(
+    const whatsappRequestUrl = `https://wa.me/${DONATION_USA_CANADA_WHATSAPP_DIGITS}?text=${encodeURIComponent(
+      waRequestMessage
+    )}`;
+    const whatsappUkRequestUrl = `https://wa.me/${DONATION_UK_WHATSAPP_DIGITS}?text=${encodeURIComponent(
+      waRequestMessage
+    )}`;
+    const whatsappUsaCanadaRequestUrl = `https://wa.me/${DONATION_USA_CANADA_WHATSAPP_DIGITS}?text=${encodeURIComponent(
       waRequestMessage
     )}`;
 
@@ -300,9 +314,13 @@ export async function POST(req: NextRequest) {
       ok: true,
       donation: record,
       whatsappRequestUrl,
+      whatsappUkRequestUrl,
+      whatsappUsaCanadaRequestUrl,
       uponRequestDetails: {
         remittanceMpesaE164: DONATION_REMITTANCE_MPESA_E164,
         remittanceMpesaLocal: DONATION_SUPPORT_WHATSAPP_LOCAL,
+        ukWhatsappDisplay: DONATION_UK_WHATSAPP_DISPLAY,
+        usaCanadaWhatsappDisplay: DONATION_USA_CANADA_WHATSAPP_DISPLAY,
         recipientAccountName: ledger.settings.bankAccountName,
         paypalHandleOrUrl: ledger.settings.paypalHandleOrUrl || null,
         bankName: ledger.settings.bankName,

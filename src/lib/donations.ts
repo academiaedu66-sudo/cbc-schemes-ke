@@ -10,6 +10,12 @@ export const DONATION_SUPPORT_WHATSAPP_INTL = '254728595160';
 export const DONATION_SUPPORT_WHATSAPP_LOCAL = '0728595160';
 export const DONATION_REMITTANCE_MPESA_E164 = '+254728595160';
 
+// Official International Donor WhatsApp Desks (Fixed Inside & Outside Donation Button)
+export const DONATION_UK_WHATSAPP_DISPLAY = '+447446315035';
+export const DONATION_UK_WHATSAPP_DIGITS = '447446315035';
+export const DONATION_USA_CANADA_WHATSAPP_DISPLAY = '+1(828)401-1513';
+export const DONATION_USA_CANADA_WHATSAPP_DIGITS = '18284011513';
+
 export type DonationPaymentMethod =
   | 'DIRECT_STK_BANK'
   | 'REMITLY'

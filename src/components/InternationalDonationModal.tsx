@@ -20,6 +20,10 @@ import {
 import {
   convertUsdToKes,
   DONATION_METHOD_LABELS,
+  DONATION_UK_WHATSAPP_DIGITS,
+  DONATION_UK_WHATSAPP_DISPLAY,
+  DONATION_USA_CANADA_WHATSAPP_DIGITS,
+  DONATION_USA_CANADA_WHATSAPP_DISPLAY,
   MIN_DONATION_USD,
   SINGLE_STK_MAX_KES,
   USD_TO_KES_DONATION_RATE,
@@ -28,9 +32,17 @@ import {
 
 const PRESET_USD_AMOUNTS = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
 
+const DEFAULT_INTL_WA_TEXT = encodeURIComponent(
+  'Hello CBCMATERIALS.SHOP! I would like to donate to help needy learners continue their education.'
+);
+const DIRECT_UK_WA_URL = `https://wa.me/${DONATION_UK_WHATSAPP_DIGITS}?text=${DEFAULT_INTL_WA_TEXT}`;
+const DIRECT_USA_CANADA_WA_URL = `https://wa.me/${DONATION_USA_CANADA_WHATSAPP_DIGITS}?text=${DEFAULT_INTL_WA_TEXT}`;
+
 interface UponRequestDetails {
   remittanceMpesaE164: string;
   remittanceMpesaLocal: string;
+  ukWhatsappDisplay?: string;
+  usaCanadaWhatsappDisplay?: string;
   recipientAccountName: string;
   paypalHandleOrUrl: string | null;
   bankName: string;
@@ -45,8 +57,8 @@ export function InternationalDonationTopBanner({
   onOpenModal: () => void;
 }) {
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-r from-sky-950 via-emerald-950 to-indigo-950 border-2 border-emerald-400/70 p-3.5 sm:p-4 shadow-[0_0_28px_rgba(16,185,129,0.28)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5">
-      <div className="space-y-1 min-w-0">
+    <div className="w-full rounded-2xl bg-gradient-to-r from-sky-950 via-emerald-950 to-indigo-950 border-2 border-emerald-400/70 p-3.5 sm:p-4 shadow-[0_0_28px_rgba(16,185,129,0.28)] flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3.5">
+      <div className="space-y-2 min-w-0">
         <div className="inline-flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 bg-emerald-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
             <Globe2 className="w-3.5 h-3.5" />
@@ -63,17 +75,46 @@ export function InternationalDonationTopBanner({
           plus Remitly, Sendwave, WorldRemit, PayPal &amp; International Bank Transfer upon
           request — all routed one-way directly to the bank.
         </p>
+
+        {/* OUTSIDE INTERNATIONAL WHATSAPP NUMBERS (U.K. & U.S.A./CANADA) */}
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <a
+            href={DIRECT_UK_WA_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-emerald-300/60 text-white px-3 py-1.5 rounded-xl text-xs font-black tracking-wide transition"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+            <span>U.K. WHATSAPP: {DONATION_UK_WHATSAPP_DISPLAY}</span>
+          </a>
+
+          <a
+            href={DIRECT_USA_CANADA_WA_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-amber-300/60 text-amber-200 px-3 py-1.5 rounded-xl text-xs font-black tracking-wide transition"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span>U.S.A. / CANADA WHATSAPP: {DONATION_USA_CANADA_WHATSAPP_DISPLAY}</span>
+          </a>
+        </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onOpenModal}
-        style={{ fontSize: '15px' }}
-        className="w-full lg:w-auto shrink-0 bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(52,211,153,0.55)] transition cursor-pointer"
-      >
-        <HeartHandshake className="w-5 h-5 text-rose-700 shrink-0" />
-        <span>DONATE TO HELP NEEDY LEARNERS ($1+)</span>
-      </button>
+      <div className="w-full xl:w-auto shrink-0 flex flex-col items-stretch xl:items-end gap-1.5">
+        <button
+          type="button"
+          onClick={onOpenModal}
+          style={{ fontSize: '15px' }}
+          className="w-full xl:w-auto bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-3 rounded-2xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(52,211,153,0.55)] transition cursor-pointer"
+        >
+          <HeartHandshake className="w-5 h-5 text-rose-700 shrink-0" />
+          <span>DONATE TO HELP NEEDY LEARNERS ($1+)</span>
+        </button>
+        <span className="text-[11px] font-black text-emerald-200 text-center xl:text-right">
+          U.K.: {DONATION_UK_WHATSAPP_DISPLAY} &bull; U.S.A./CANADA:{' '}
+          {DONATION_USA_CANADA_WHATSAPP_DISPLAY}
+        </span>
+      </div>
     </div>
   );
 }
@@ -118,7 +159,10 @@ export default function InternationalDonationModal({
   const [donationRef, setDonationRef] = useState('');
   const [uponRequestDetails, setUponRequestDetails] =
     useState<UponRequestDetails | null>(null);
-  const [whatsappRequestUrl, setWhatsappRequestUrl] = useState('');
+  const [whatsappUkUrl, setWhatsappUkUrl] = useState(DIRECT_UK_WA_URL);
+  const [whatsappUsaCanadaUrl, setWhatsappUsaCanadaUrl] = useState(
+    DIRECT_USA_CANADA_WA_URL
+  );
   const [remittanceTxCode, setRemittanceTxCode] = useState('');
   const [toppedUpSafaricomPhone, setToppedUpSafaricomPhone] = useState('');
   const [sweepDoneMsg, setSweepDoneMsg] = useState('');
@@ -293,7 +337,10 @@ export default function InternationalDonationModal({
       if (res.ok && data.ok) {
         setDonationRef(data.donation.referenceCode);
         setUponRequestDetails(data.uponRequestDetails);
-        setWhatsappRequestUrl(data.whatsappRequestUrl);
+        if (data.whatsappUkRequestUrl) setWhatsappUkUrl(data.whatsappUkRequestUrl);
+        if (data.whatsappUsaCanadaRequestUrl) {
+          setWhatsappUsaCanadaUrl(data.whatsappUsaCanadaRequestUrl);
+        }
         setStatusMsg(
           `Official Donation Request ${data.donation.referenceCode} approved for $${parsedUsd.toLocaleString()} USD (KSh ${computedKes.toLocaleString()})!`
         );
@@ -383,6 +430,71 @@ export default function InternationalDonationModal({
 
         {/* Body */}
         <div className="p-5 sm:p-6 max-h-[78vh] overflow-y-auto space-y-5">
+          {/* INSIDE MODAL INTERNATIONAL DONATION WHATSAPP DESKS (U.K. & U.S.A./CANADA) */}
+          <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 border border-emerald-400/50 space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>Official International Donation WhatsApp Desks (Direct Support &amp; Remittance Assistance)</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="rounded-xl bg-white/10 border border-emerald-400/40 px-3 py-2 flex items-center justify-between gap-2">
+                <a
+                  href={whatsappUkUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-black text-white hover:text-emerald-300 inline-flex items-center gap-1.5"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>U.K. WhatsApp: {DONATION_UK_WHATSAPP_DISPLAY}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => copyText('uk_wa', DONATION_UK_WHATSAPP_DISPLAY)}
+                  className="px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  {copiedKey === 'uk_wa' ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-300" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" /> Copy
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="rounded-xl bg-white/10 border border-amber-300/40 px-3 py-2 flex items-center justify-between gap-2">
+                <a
+                  href={whatsappUsaCanadaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-black text-amber-200 hover:text-amber-100 inline-flex items-center gap-1.5"
+                >
+                  <MessageCircle className="w-4 h-4 text-amber-300 shrink-0" />
+                  <span>U.S.A. / CANADA: {DONATION_USA_CANADA_WHATSAPP_DISPLAY}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyText('us_ca_wa', DONATION_USA_CANADA_WHATSAPP_DISPLAY)
+                  }
+                  className="px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  {copiedKey === 'us_ca_wa' ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-300" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" /> Copy
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* 1. Amount Picker ($1 to Maximum) */}
           <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -785,17 +897,26 @@ export default function InternationalDonationModal({
                     </div>
                   )}
 
-                  {whatsappRequestUrl && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <a
-                      href={whatsappRequestUrl}
+                      href={whatsappUkUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 border border-emerald-400 text-emerald-800 font-black text-xs uppercase inline-flex items-center justify-center gap-1.5"
+                      className="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 border border-emerald-400 text-emerald-800 font-black text-[11px] uppercase inline-flex items-center justify-center gap-1.5"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Instant Donor Assistance on WhatsApp (+254728595160)</span>
+                      <MessageCircle className="w-4 h-4 shrink-0" />
+                      <span>U.K. WhatsApp ({DONATION_UK_WHATSAPP_DISPLAY})</span>
                     </a>
-                  )}
+                    <a
+                      href={whatsappUsaCanadaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 border border-indigo-400 text-indigo-800 font-black text-[11px] uppercase inline-flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle className="w-4 h-4 shrink-0" />
+                      <span>U.S.A./CANADA ({DONATION_USA_CANADA_WHATSAPP_DISPLAY})</span>
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -916,20 +1037,31 @@ export default function InternationalDonationModal({
                     </div>
                   )}
 
-                  {whatsappRequestUrl && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <a
-                      href={whatsappRequestUrl}
+                      href={whatsappUkUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow"
+                      className="py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shadow"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-4 h-4 shrink-0" />
                       <span>
-                        Complete {intlRequestMethod === 'PAYPAL' ? 'PayPal' : 'Bank Wire'}{' '}
-                        Request ({donationRef}) on WhatsApp (+254728595160)
+                        Complete ({donationRef}) via U.K. WA: {DONATION_UK_WHATSAPP_DISPLAY}
                       </span>
                     </a>
-                  )}
+                    <a
+                      href={whatsappUsaCanadaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="py-3 px-3 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-black text-[11px] uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shadow"
+                    >
+                      <MessageCircle className="w-4 h-4 shrink-0" />
+                      <span>
+                        Complete ({donationRef}) via U.S.A./CANADA:{' '}
+                        {DONATION_USA_CANADA_WHATSAPP_DISPLAY}
+                      </span>
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
