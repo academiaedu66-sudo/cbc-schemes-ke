@@ -37,6 +37,7 @@ import {
 } from '@/lib/material-utils';
 import PreviewModal from '@/components/PreviewModal';
 import AdminMonetizationPanel from '@/components/AdminMonetizationPanel';
+import WhatsAppAutoReplyPanel from '@/components/WhatsAppAutoReplyPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
@@ -851,6 +852,9 @@ export default function AdminDashboardPage() {
 
         {/* LIVE SEARCH & CUSTOMER ARRIVAL SENSOR ("New customer is here PROFESSOR") + DAILY SEO RANKER */}
         <CustomerSensorAdminBanner password={password} />
+
+        {/* PAID-ADS WHATSAPP (+254728595160) AUTO-RESPONDER & WEBSITE REDIRECT LINK */}
+        <WhatsAppAutoReplyPanel password={password} />
 
         {/* CONNECTED WHATSAPP (0728595160) HOURLY STATUS AUTO-POSTER FOR ALL 18 WEBSITE BUTTONS */}
         <WhatsAppStatusAutoPanel password={password} />

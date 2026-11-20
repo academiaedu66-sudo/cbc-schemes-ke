@@ -752,6 +752,7 @@ export async function compileFullWebsiteBackup(): Promise<{
     '_system/purchase-attempts.json',
     '_system/wallet-ledger.json',
     '_system/whatsapp-status-autopost-ledger.json',
+    '_system/whatsapp-autoreply-ledger.json',
     '_system/omnichannel-social-seo.json',
     '_system/seo-customer-sensor-ledger.json',
     '_system/social-broadcaster-config.json',

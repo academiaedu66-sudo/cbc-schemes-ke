@@ -67,14 +67,71 @@ async function main() {
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect } = update;
     if (connection === 'open') {
-      console.log('✅ Connected to WhatsApp 0728595160! Hourly Status Auto-Poster is LIVE.');
+      console.log('✅ Connected to WhatsApp +254728595160! Hourly Status Auto-Poster + Paid-Ads Customer Auto-Reply are LIVE.');
       void pollAndPublishStatusQueue(sock);
       setInterval(() => void pollAndPublishStatusQueue(sock), 5 * 60 * 1000);
     } else if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       if (statusCode !== DisconnectReason.loggedOut) {
-        console.log('Reconnecting to WhatsApp 0728595160...');
+        console.log('Reconnecting to WhatsApp +254728595160...');
         setTimeout(() => void main(), 5000);
+      }
+    }
+  });
+
+  // Automatically reply to incoming Paid-Ads customer messages on +254728595160 with website redirect link!
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    if (type !== 'notify' || !Array.isArray(messages)) return;
+    for (const msg of messages) {
+      try {
+        const remoteJid = msg?.key?.remoteJid || '';
+        if (
+          !remoteJid ||
+          msg?.key?.fromMe ||
+          remoteJid === 'status@broadcast' ||
+          remoteJid.endsWith('@g.us') ||
+          remoteJid.endsWith('@newsletter')
+        ) {
+          continue;
+        }
+
+        const m = msg.message || {};
+        const incomingText =
+          m.conversation ||
+          m?.extendedTextMessage?.text ||
+          m?.buttonsResponseMessage?.selectedDisplayText ||
+          m?.listResponseMessage?.title ||
+          '';
+        if (!incomingText) continue;
+
+        const adReplyInfo =
+          m?.extendedTextMessage?.contextInfo?.externalAdReply || null;
+
+        const apiRes = await fetch(`${SITE_ORIGIN}/api/social/whatsapp-autoreply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'daemon_incoming',
+            daemonKey: ADMIN_PASSWORD,
+            senderPhone: remoteJid,
+            senderName: msg.pushName || '',
+            incomingMessage: incomingText,
+            referralHeadline: adReplyInfo?.title || '',
+            isPaidAdReferral: Boolean(adReplyInfo),
+          }),
+        });
+        if (!apiRes.ok) continue;
+        const payload = await apiRes.json();
+        if (payload?.replied && payload?.replyText) {
+          await sock.sendMessage(remoteJid, {
+            text: payload.replyText,
+          });
+          console.log(
+            `💬 Auto-replied on +254728595160 to ${remoteJid} -> ${payload.primaryRedirectUrl}`
+          );
+        }
+      } catch (err) {
+        console.warn('Incoming message auto-reply warning:', err.message);
       }
     }
   });

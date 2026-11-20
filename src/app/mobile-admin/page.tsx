@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import MobileSocialAutoPoster from '@/components/MobileSocialAutoPoster';
+import WhatsAppAutoReplyPanel from '@/components/WhatsAppAutoReplyPanel';
 import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
@@ -2547,6 +2548,11 @@ export default function MobileAdminAppPage() {
         {/* ================================================================= */}
         {activeTab === 'TRAFFIC' && (
           <div className="space-y-4">
+            <WhatsAppAutoReplyPanel
+              password={password}
+              adminEmail={email}
+              darkTheme
+            />
             <WhatsAppStatusAutoPanel
               password={password}
               adminEmail={email}
