@@ -67,8 +67,9 @@ export interface WalletOverview {
   smartlinkUrl: string;
   adsenseClientId: string;
   monetagConnected: boolean;
+  allowExternalCompanyAds: boolean;
   monetagSiteId: string;
-  monetagMode: 'clean_banners' | 'multitag_all';
+  monetagMode: 'ad_free_site' | 'clean_banners' | 'multitag_all';
   monetagVignetteZoneId: string;
   monetagInPagePushZoneId: string;
   monetagMultiTagZoneId: string;
@@ -272,8 +273,11 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     smartlinkUrl: monConfig.smartlinkUrl || DEFAULT_MONETAG_DIRECT_SMARTLINK,
     adsenseClientId: monConfig.adsenseClientId || '',
     monetagConnected,
+    allowExternalCompanyAds: Boolean(monConfig.allowExternalCompanyAds),
     monetagSiteId: monConfig.monetagSiteId || DEFAULT_MONETAG_SITE_ID,
-    monetagMode: monConfig.monetagMode || 'clean_banners',
+    monetagMode: monConfig.allowExternalCompanyAds
+      ? monConfig.monetagMode || 'clean_banners'
+      : 'ad_free_site',
     monetagVignetteZoneId:
       monConfig.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
     monetagInPagePushZoneId:
@@ -397,6 +401,9 @@ export async function createWalletWithdrawal(params: {
 
     if (rawToken) {
       try {
+        const chIdNum = Number(
+          (payCfg.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim()
+        );
         const res = await fetch('https://backend.payhero.co.ke/api/v2/withdraw', {
           method: 'POST',
           headers: {
@@ -406,6 +413,7 @@ export async function createWalletWithdrawal(params: {
           body: JSON.stringify({
             amount: Math.max(10, Math.floor(reqAmount)),
             phone_number: intlMpesa,
+            ...(chIdNum ? { channel_id: chIdNum } : {}),
             network_code: '63902',
             channel: 'mobile',
             external_reference: refCode,

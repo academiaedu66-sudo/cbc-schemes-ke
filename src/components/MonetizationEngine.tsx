@@ -34,6 +34,7 @@ import {
 
 export interface PublicMonetizationConfig {
   enabled: boolean;
+  allowExternalCompanyAds?: boolean;
   adsenseEnabled: boolean;
   adsenseClientId: string;
   adsenseAutoAds: boolean;
@@ -46,7 +47,7 @@ export interface PublicMonetizationConfig {
   adNetworkScriptUrl: string;
   adNetworkBannerScriptUrl: string;
   monetagDirectLinkUrl?: string;
-  monetagMode?: 'clean_banners' | 'multitag_all';
+  monetagMode?: 'ad_free_site' | 'clean_banners' | 'multitag_all';
   monetagVignetteZoneId?: string;
   monetagInPagePushZoneId?: string;
   monetagMultiTagZoneId?: string;
@@ -78,19 +79,20 @@ export interface PublicMonetizationConfig {
 
 const DEFAULT_PUBLIC_CONFIG: PublicMonetizationConfig = {
   enabled: true,
+  allowExternalCompanyAds: false,
   adsenseEnabled: false,
   adsenseClientId: '',
-  adsenseAutoAds: true,
+  adsenseAutoAds: false,
   adsenseTopSlotId: '',
   adsenseInFeedSlotId: '',
   adsensePreviewSlotId: '',
   adsenseStickySlotId: '',
-  adNetworkEnabled: true,
+  adNetworkEnabled: false,
   adNetworkProvider: 'monetag',
-  adNetworkScriptUrl: DEFAULT_MONETAG_INPAGE_PUSH_SRC,
-  adNetworkBannerScriptUrl: DEFAULT_MONETAG_VIGNETTE_SRC,
-  monetagDirectLinkUrl: DEFAULT_MONETAG_DIRECT_SMARTLINK,
-  monetagMode: 'clean_banners',
+  adNetworkScriptUrl: '',
+  adNetworkBannerScriptUrl: '',
+  monetagDirectLinkUrl: '',
+  monetagMode: 'ad_free_site',
   monetagVignetteZoneId: DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
   monetagInPagePushZoneId: DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
   monetagMultiTagZoneId: DEFAULT_MONETAG_MULTITAG_ZONE_ID,
@@ -173,20 +175,72 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   const viewRecordedRef = useRef(false);
   const lastInteractionTsRef = useRef<Record<string, number>>({});
 
-  // Site-Wide Anti-Hijack Button Shield: Permanently block & strip popunder scripts and click-hijacking overlays on ALL pages!
+  // STRICT ANTI-THIRD-PARTY-ADS FIREWALL: Block & immediately strip ALL unauthorized ads from other companies!
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (config.allowExternalCompanyAds) return;
 
-    // Purge only blocked legacy Adsterra click-hijack domains while allowing verified Monetag tags
-    const purgeLegacyAdsterraHijacks = () => {
-      const badScripts = document.querySelectorAll(
-        '#adsterra-main-unit, script[src*="afders.org"], script[src*="asiafilm.org"]'
+    // 1. Unregister any root third-party push Service Worker (/sw.js) while preserving /admin-sw.js
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => {
+          regs.forEach((reg) => {
+            const scriptUrl =
+              reg.active?.scriptURL ||
+              reg.waiting?.scriptURL ||
+              reg.installing?.scriptURL ||
+              '';
+            if (
+              scriptUrl &&
+              !scriptUrl.includes('admin-sw.js') &&
+              (scriptUrl.endsWith('/sw.js') || /3nbf4|monetag|nap5k|n6wxm|quge5/i.test(scriptUrl))
+            ) {
+              reg.unregister().catch(() => {});
+            }
+          });
+        })
+        .catch(() => {});
+    }
+
+    // 2. Actively purge any external third-party company ad scripts, iframes, or high-z-index injected overlays
+    const purgeExternalCompanyAds = () => {
+      const unauthorizedNodes = document.querySelectorAll(
+        '#adsterra-main-unit, #cbc-monetag-vignette-js, #cbc-monetag-inpagepush-js, #cbc-monetag-multitag-js, #cbc-custom-adnetwork-js, #cbc-adsense-script, #cbc-google-adsense-js, ins.adsbygoogle, ' +
+          'script[src*="afders.org"], script[src*="asiafilm.org"], script[src*="n6wxm.com"], script[src*="nap5k.com"], script[src*="quge5.com"], script[src*="3nbf4.com"], script[src*="uplcm.com"], script[src*="googlesyndication.com"], script[src*="doubleclick.net"], script[src*="onclickads"], ' +
+          'iframe[src*="n6wxm"], iframe[src*="nap5k"], iframe[src*="quge5"], iframe[src*="3nbf4"], iframe[src*="afders"], iframe[src*="asiafilm"], iframe[src*="doubleclick"], iframe[src*="googlesyndication"]'
       );
-      badScripts.forEach((el) => el.remove());
+      unauthorizedNodes.forEach((el) => el.remove());
+
+      // Strip unauthorized external ad overlays injected directly onto document.body/html with ultra-high z-index (>= 999999)
+      const bodyChildren = Array.from(document.body.children);
+      for (const el of bodyChildren) {
+        if (!(el instanceof HTMLElement)) continue;
+        if (el.tagName === 'MAIN' || el.tagName === 'HEADER' || el.tagName === 'FOOTER') continue;
+        if (el.dataset.nextjsScrollFocusBoundary !== undefined) continue;
+        const style = window.getComputedStyle(el);
+        const z = parseInt(style.zIndex || '0', 10);
+        if (
+          (style.position === 'fixed' || style.position === 'absolute') &&
+          Number.isFinite(z) &&
+          z >= 999999
+        ) {
+          el.remove();
+        }
+      }
     };
 
-    purgeLegacyAdsterraHijacks();
-  }, [pathname]);
+    purgeExternalCompanyAds();
+    const observer = new MutationObserver(() => {
+      purgeExternalCompanyAds();
+    });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
+  }, [pathname, config.allowExternalCompanyAds]);
 
   useEffect(() => {
     let active = true;
@@ -245,9 +299,16 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  // Inject Google AdSense Auto Ads script dynamically when configured
+  // Inject Google AdSense Auto Ads script dynamically ONLY when owner permits external ads
   useEffect(() => {
-    if (!config.enabled || !config.adsenseEnabled || !config.adsenseClientId) return;
+    if (
+      !config.enabled ||
+      !config.allowExternalCompanyAds ||
+      !config.adsenseEnabled ||
+      !config.adsenseClientId
+    ) {
+      return;
+    }
     if (typeof document === 'undefined') return;
     if (
       window.location.pathname.startsWith('/admin') ||
@@ -307,47 +368,31 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     config.facebookPublic?.metaPixelId,
   ]);
 
-  // Inject Verified Monetag Publisher Zones for www.cbcmaterials.shop (Site ID #3582026) on public pages
+  // External ad network scripts ONLY run if owner explicitly unlocks allowExternalCompanyAds === true
   useEffect(() => {
-    if (!config.enabled || !config.adNetworkEnabled) return;
+    if (
+      !config.enabled ||
+      !config.allowExternalCompanyAds ||
+      !config.adNetworkEnabled ||
+      config.monetagMode === 'ad_free_site'
+    ) {
+      return;
+    }
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     if (isProtectedAdminRoute) return;
 
-    // Wait until visitor completes the 1-minute Welcome Song (or immediately on subpages / once unlocked)
-    // so Monetag banners never overlap the Welcome Song Lounge!
-    const injectMonetagZones = () => {
-      if (isProtectedAdminRoute) return;
+    // 1. Register Monetag Push Service Worker (/sw.js -> Zone #12288320) immediately (0ms, zero UI obstruction)
+    if (config.adNetworkProvider === 'monetag' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
 
+    const injectInPagePushOrCustom = () => {
+      if (isProtectedAdminRoute) return;
       if (config.adNetworkProvider === 'monetag') {
         const mode = config.monetagMode || 'clean_banners';
+        if (mode === 'multitag_all') return; // handled by multitag injector below
 
-        if (mode === 'multitag_all') {
-          const mtId = 'cbc-monetag-multitag-js';
-          if (!document.getElementById(mtId)) {
-            const s = document.createElement('script');
-            s.id = mtId;
-            s.async = true;
-            s.setAttribute('data-cfasync', 'false');
-            s.dataset.zone =
-              config.monetagMultiTagZoneId || DEFAULT_MONETAG_MULTITAG_ZONE_ID;
-            s.src = DEFAULT_MONETAG_MULTITAG_SRC;
-            document.body.appendChild(s);
-          }
-          return;
-        }
-
-        // Default Clean Mode (No Popunders): Vignette Banner (#12318961) + In-Page Push (#12318967)
-        const vigId = 'cbc-monetag-vignette-js';
-        if (!document.getElementById(vigId)) {
-          const v = document.createElement('script');
-          v.id = vigId;
-          v.async = true;
-          v.dataset.zone =
-            config.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID;
-          v.src = config.adNetworkBannerScriptUrl || DEFAULT_MONETAG_VIGNETTE_SRC;
-          document.body.appendChild(v);
-        }
-
+        // In-Page Push (#12318967) is a non-blocking corner toast — load after 2.5s so 100% of visits monetize!
         const ippId = 'cbc-monetag-inpagepush-js';
         if (!document.getElementById(ippId)) {
           const p = document.createElement('script');
@@ -357,11 +402,6 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
             config.monetagInPagePushZoneId || DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID;
           p.src = config.adNetworkScriptUrl || DEFAULT_MONETAG_INPAGE_PUSH_SRC;
           document.body.appendChild(p);
-        }
-
-        // Register Monetag Push Service Worker (/sw.js -> Zone #12288320) cleanly when supported
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
       } else if (config.adNetworkScriptUrl) {
         const cleanSrc = extractScriptUrlIfTag(config.adNetworkScriptUrl);
@@ -375,6 +415,41 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
       }
     };
 
+    const injectVignetteOrMultiTag = () => {
+      if (isProtectedAdminRoute) return;
+      if (config.adNetworkProvider !== 'monetag') return;
+
+      const mode = config.monetagMode || 'clean_banners';
+      if (mode === 'multitag_all') {
+        const mtId = 'cbc-monetag-multitag-js';
+        if (!document.getElementById(mtId)) {
+          const s = document.createElement('script');
+          s.id = mtId;
+          s.async = true;
+          s.setAttribute('data-cfasync', 'false');
+          s.dataset.zone =
+            config.monetagMultiTagZoneId || DEFAULT_MONETAG_MULTITAG_ZONE_ID;
+          s.src = DEFAULT_MONETAG_MULTITAG_SRC;
+          document.body.appendChild(s);
+        }
+        return;
+      }
+
+      const vigId = 'cbc-monetag-vignette-js';
+      if (!document.getElementById(vigId)) {
+        const v = document.createElement('script');
+        v.id = vigId;
+        v.async = true;
+        v.dataset.zone =
+          config.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID;
+        v.src = config.adNetworkBannerScriptUrl || DEFAULT_MONETAG_VIGNETTE_SRC;
+        document.body.appendChild(v);
+      }
+    };
+
+    // Always fire non-blocking In-Page Push after 2.5s so short visits still earn USD
+    const ippTimer = window.setTimeout(injectInPagePushOrCustom, 2500);
+
     const win = window as unknown as { __cbcWelcomeSongCompletedAt?: number };
     let alreadyCompletedSong = Boolean(win.__cbcWelcomeSongCompletedAt);
     try {
@@ -387,16 +462,23 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
     } catch {}
 
     if (alreadyCompletedSong) {
-      injectMonetagZones();
-      return;
+      injectInPagePushOrCustom();
+      injectVignetteOrMultiTag();
+      return () => window.clearTimeout(ippTimer);
     }
 
+    // Fallback timer (12s) + instant trigger on double-click / song completion so Vignette never misses a visitor
+    const vigFallbackTimer = window.setTimeout(injectVignetteOrMultiTag, 12000);
     const onSongDone = () => {
-      injectMonetagZones();
+      injectVignetteOrMultiTag();
     };
     window.addEventListener('cbc-compulsory-song-completed', onSongDone);
+    window.addEventListener('dblclick', onSongDone, { once: true });
     return () => {
+      window.clearTimeout(ippTimer);
+      window.clearTimeout(vigFallbackTimer);
       window.removeEventListener('cbc-compulsory-song-completed', onSongDone);
+      window.removeEventListener('dblclick', onSongDone);
     };
   }, [
     isProtectedAdminRoute,
@@ -617,7 +699,7 @@ export function AdSlot({
                 {campaign.badge}
               </span>
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                Sponsored • Partner Network
+                Official CBCMATERIALS.SHOP Spotlight
               </span>
             </div>
             <p className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">
@@ -628,7 +710,21 @@ export function AdSlot({
             </p>
           </div>
 
-          <div className="shrink-0 flex items-center gap-2">
+          <div className="shrink-0 flex flex-wrap items-center gap-2">
+            {config.allowExternalCompanyAds &&
+              config.adNetworkEnabled &&
+              config.monetagDirectLinkUrl && (
+                <a
+                  href={config.monetagDirectLinkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  onClick={() => trackAdClick('smartlink')}
+                  className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-xs transition whitespace-nowrap"
+                >
+                  <span>Partner Offer</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             {isExternal ? (
               <a
                 href={destinationHref}
@@ -661,41 +757,38 @@ export function PartnerBonusStrip() {
 
   if (!config.enabled || !config.placements.partnerBonusStrip) return null;
 
-  const monetagDirectHref =
-    config.adNetworkEnabled && config.monetagDirectLinkUrl
-      ? config.monetagDirectLinkUrl
-      : '';
+  const fbReelsHref =
+    config.facebookPublic?.reelsUrl ||
+    'https://www.facebook.com/profile.php?id=61591027359399&sk=reels_tab';
 
   return (
     <div className="my-4 bg-slate-900 text-white rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
       <div className="flex items-center gap-2 text-xs">
-        <span className="inline-flex items-center gap-1 bg-amber-400 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">
+        <span className="inline-flex items-center gap-1 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase px-2 py-0.5 rounded">
           <Sparkles className="w-3 h-3" />
-          Partner Spotlight
+          CBCMATERIALS.SHOP Official
         </span>
         <span className="font-semibold text-slate-100">
-          Explore Verified Partner Offers &amp; Featured School / Tuition Slots &rarr;
+          100% Ad-Free Official CBC Portal • Watch Daily Revision Reels or Book an Approved School Spotlight &rarr;
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        {monetagDirectHref && (
-          <a
-            href={monetagDirectHref}
-            target="_blank"
-            rel="noopener noreferrer sponsored"
-            onClick={() => trackAdClick('smartlink')}
-            className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg transition"
-          >
-            <span>Open Featured Partner Offer</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        )}
+        <a
+          href={fbReelsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackAdClick('updates_hub')}
+          className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg transition"
+        >
+          <span>Watch Official CBC Reels</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
         <Link
           href="/advertise"
           onClick={() => trackAdClick('updates_hub')}
           className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
         >
-          Advertise With Us <TrendingUp className="w-3.5 h-3.5" />
+          List Your School (Owner Approval) <TrendingUp className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

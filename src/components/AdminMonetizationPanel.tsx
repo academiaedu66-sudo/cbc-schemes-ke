@@ -438,25 +438,35 @@ export default function AdminMonetizationPanel({ password }: { password: string 
 
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Monetag Ad Delivery Mode
+                    Website Third-Party Ads Firewall
                   </label>
                   <select
-                    value={config.monetagMode || 'clean_banners'}
-                    onChange={(e) =>
+                    value={
+                      config.allowExternalCompanyAds
+                        ? config.monetagMode || 'clean_banners'
+                        : 'ad_free_site'
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value as
+                        | 'ad_free_site'
+                        | 'clean_banners'
+                        | 'multitag_all';
                       setConfig({
                         ...config,
-                        monetagMode: e.target.value as
-                          | 'clean_banners'
-                          | 'multitag_all',
-                      })
-                    }
+                        allowExternalCompanyAds: val !== 'ad_free_site',
+                        monetagMode: val,
+                      });
+                    }}
                     className="w-full px-3 py-2 border border-emerald-300 rounded-xl text-sm bg-white font-semibold"
                   >
+                    <option value="ad_free_site">
+                      🛡️ Block ALL Other Companies&apos; Ads on Website (Active Default)
+                    </option>
                     <option value="clean_banners">
-                      Clean Banners Only (Recommended — No Popunders)
+                      Allow Monetag Clean Banners Only (Owner Permission)
                     </option>
                     <option value="multitag_all">
-                      All-in-One MultiTag (#311785 — Maximum Aggressive Ads)
+                      Allow Monetag MultiTag #311785 (Owner Permission)
                     </option>
                   </select>
                 </div>

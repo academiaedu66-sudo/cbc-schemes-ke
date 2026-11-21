@@ -30,26 +30,44 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Public storefront config (never exposes secret CAPI or Graph access tokens)
+  const externalAdsPermitted =
+    Boolean(config.allowExternalCompanyAds) &&
+    config.monetagMode !== 'ad_free_site';
+
+  const isFirstPartyCampaignUrl = (url?: string) => {
+    const u = String(url || '').trim();
+    if (!u || u.startsWith('/')) return true;
+    return /cbcmaterials\.shop|facebook\.com\/profile\.php\?id=61591027359399|wa\.me\/254728595160/i.test(
+      u
+    );
+  };
+
+  // Public storefront config (never exposes secret tokens, and blocks all third-party company ads unless explicitly permitted)
   return NextResponse.json({
     config: {
       enabled: config.enabled,
-      adsenseEnabled: config.adsenseEnabled,
-      adsenseClientId: config.adsenseClientId,
-      adsenseAutoAds: config.adsenseAutoAds,
-      adsenseTopSlotId: config.adsenseTopSlotId,
-      adsenseInFeedSlotId: config.adsenseInFeedSlotId,
-      adsensePreviewSlotId: config.adsensePreviewSlotId,
-      adsenseStickySlotId: config.adsenseStickySlotId,
-      adNetworkEnabled: config.adNetworkEnabled,
+      allowExternalCompanyAds: externalAdsPermitted,
+      adsenseEnabled: externalAdsPermitted ? config.adsenseEnabled : false,
+      adsenseClientId: externalAdsPermitted ? config.adsenseClientId : '',
+      adsenseAutoAds: externalAdsPermitted ? config.adsenseAutoAds : false,
+      adsenseTopSlotId: externalAdsPermitted ? config.adsenseTopSlotId : '',
+      adsenseInFeedSlotId: externalAdsPermitted ? config.adsenseInFeedSlotId : '',
+      adsensePreviewSlotId: externalAdsPermitted ? config.adsensePreviewSlotId : '',
+      adsenseStickySlotId: externalAdsPermitted ? config.adsenseStickySlotId : '',
+      adNetworkEnabled: externalAdsPermitted ? config.adNetworkEnabled : false,
       adNetworkProvider: config.adNetworkProvider,
-      adNetworkScriptUrl: config.adNetworkScriptUrl,
-      adNetworkBannerScriptUrl: config.adNetworkBannerScriptUrl,
-      monetagDirectLinkUrl:
-        config.smartlinkUrl && !config.smartlinkUrl.includes('facebook.com')
+      adNetworkScriptUrl: externalAdsPermitted ? config.adNetworkScriptUrl : '',
+      adNetworkBannerScriptUrl: externalAdsPermitted
+        ? config.adNetworkBannerScriptUrl
+        : '',
+      monetagDirectLinkUrl: externalAdsPermitted
+        ? config.smartlinkUrl && !config.smartlinkUrl.includes('facebook.com')
           ? config.smartlinkUrl
-          : DEFAULT_MONETAG_DIRECT_SMARTLINK,
-      monetagMode: config.monetagMode || 'clean_banners',
+          : DEFAULT_MONETAG_DIRECT_SMARTLINK
+        : '',
+      monetagMode: externalAdsPermitted
+        ? config.monetagMode || 'clean_banners'
+        : 'ad_free_site',
       monetagVignetteZoneId:
         config.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
       monetagInPagePushZoneId:
@@ -57,15 +75,10 @@ export async function GET(req: NextRequest) {
       monetagMultiTagZoneId:
         config.monetagMultiTagZoneId || DEFAULT_MONETAG_MULTITAG_ZONE_ID,
       smartlinkUrl:
-        config.facebookMonetization?.enabled &&
-        config.facebookMonetization?.routeAdClicksToFacebook
-          ? config.facebookMonetization.reelsUrl || config.facebookMonetization.profileUrl
-          : config.smartlinkUrl,
+        config.facebookMonetization.reelsUrl ||
+        config.facebookMonetization.profileUrl,
       smartlinkLabel:
-        config.facebookMonetization?.enabled &&
-        config.facebookMonetization?.routeAdClicksToFacebook
-          ? 'Follow Our Official Facebook Profile & Watch Daily CBC Revision Reels →'
-          : config.smartlinkLabel,
+        'Follow Our Official Facebook Profile & Watch Daily CBC Revision Reels →',
       placements: config.placements,
       facebookPublic: {
         enabled: config.facebookMonetization.enabled,
@@ -83,7 +96,11 @@ export async function GET(req: NextRequest) {
           shortBadge: p.shortBadge,
           url: p.profileUrl.trim(),
         })),
-      campaigns: config.campaigns.filter((c) => c.enabled),
+      campaigns: config.campaigns.filter(
+        (c) =>
+          c.enabled &&
+          (externalAdsPermitted || isFirstPartyCampaignUrl(c.targetUrl))
+      ),
     },
   });
 }

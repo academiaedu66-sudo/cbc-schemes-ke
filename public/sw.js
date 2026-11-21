@@ -1,6 +1,19 @@
-self.options = {
-  "domain": "3nbf4.com",
-  "zoneId": 12288320
-};
-self.lary = "";
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+// CBCMATERIALS.SHOP — Clean Zero-Third-Party-Ad Service Worker
+// Automatically clears any third-party ad push worker so no external company ads ever appear.
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    self.registration
+      .unregister()
+      .then(() => self.clients.matchAll())
+      .then((clients) => {
+        clients.forEach((client) => {
+          // Worker cleanly unregistered; no reload needed
+          void client;
+        });
+      })
+  );
+});

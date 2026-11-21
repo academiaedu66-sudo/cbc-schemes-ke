@@ -80,7 +80,13 @@ export async function POST(req: Request) {
                 ? 1950
                 : serviceType === 'LEARNER_DONATION'
                   ? parsedDonationKes
-                  : Number(testAmount) || 0,
+                  : serviceType === 'AD_PACKAGE_INFEED'
+                    ? 1500
+                    : serviceType === 'AD_PACKAGE_LEADERBOARD'
+                      ? 3500
+                      : serviceType === 'AD_PACKAGE_PREVIEW'
+                        ? 5000
+                        : Number(testAmount) || 0,
       buyerPhone: phoneNumber ? String(phoneNumber) : undefined,
       stage: 'SUBMITTED_PAYMENT',
     }).catch(() => { });
@@ -190,6 +196,30 @@ export async function POST(req: Request) {
         title:
           cleanBookTitle ||
           `Needy Learners Education Support Donation ($${parsedDonationUsd.toLocaleString()} / KSh ${stkPushKes.toLocaleString()})`,
+      };
+    } else if (serviceType === 'AD_PACKAGE_INFEED') {
+      resource = {
+        id: null,
+        price: 1500,
+        title:
+          cleanBookTitle ||
+          'Approved School/Tutor In-Feed Slot — 1 Week (Owner Review Required • KSh 1,500)',
+      };
+    } else if (serviceType === 'AD_PACKAGE_LEADERBOARD') {
+      resource = {
+        id: null,
+        price: 3500,
+        title:
+          cleanBookTitle ||
+          'Approved Top Homepage Spotlight — 1 Week (Owner Review Required • KSh 3,500)',
+      };
+    } else if (serviceType === 'AD_PACKAGE_PREVIEW') {
+      resource = {
+        id: null,
+        price: 5000,
+        title:
+          cleanBookTitle ||
+          'Approved Exclusive Preview Sponsor — 2 Weeks (Owner Review Required • KSh 5,000)',
       };
     } else if (resourceId) {
       const { data: dbRes, error: resourceError } = await supabaseAdmin

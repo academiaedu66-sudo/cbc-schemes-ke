@@ -168,8 +168,9 @@ interface MobileWalletOverview {
   smartlinkUrl: string;
   adsenseClientId: string;
   monetagConnected?: boolean;
+  allowExternalCompanyAds?: boolean;
   monetagSiteId?: string;
-  monetagMode?: 'clean_banners' | 'multitag_all';
+  monetagMode?: 'ad_free_site' | 'clean_banners' | 'multitag_all';
   monetagVignetteZoneId?: string;
   monetagInPagePushZoneId?: string;
   monetagMultiTagZoneId?: string;
@@ -292,8 +293,8 @@ export default function MobileAdminAppPage() {
   const [linkSmartlinkUrl, setLinkSmartlinkUrl] = useState('');
   const [linkAdsenseId, setLinkAdsenseId] = useState('');
   const [mobileMonetagMode, setMobileMonetagMode] = useState<
-    'clean_banners' | 'multitag_all'
-  >('clean_banners');
+    'ad_free_site' | 'clean_banners' | 'multitag_all'
+  >('ad_free_site');
   const [mobileMonetagPayoutMethod, setMobileMonetagPayoutMethod] = useState<
     'PAYPAL_MPESA' | 'SKRILL_MPESA' | 'WEBMONEY' | 'PAYONEER' | 'USDT'
   >('PAYPAL_MPESA');
@@ -622,7 +623,9 @@ export default function MobileAdminAppPage() {
               );
               setLinkAdsenseId(walJson.overview.adsenseClientId || '');
               setMobileMonetagMode(
-                walJson.overview.monetagMode || 'clean_banners'
+                walJson.overview.allowExternalCompanyAds
+                  ? walJson.overview.monetagMode || 'clean_banners'
+                  : 'ad_free_site'
               );
               setMobileMonetagPayoutMethod(
                 walJson.overview.monetagPayoutMethod || 'PAYPAL_MPESA'
@@ -1116,7 +1119,7 @@ export default function MobileAdminAppPage() {
   };
 
   const handleSaveMonetagQuickSettings = async (nextOverrides?: {
-    monetagMode?: 'clean_banners' | 'multitag_all';
+    monetagMode?: 'ad_free_site' | 'clean_banners' | 'multitag_all';
     monetagPayoutMethod?:
       | 'PAYPAL_MPESA'
       | 'SKRILL_MPESA'
@@ -1142,6 +1145,7 @@ export default function MobileAdminAppPage() {
         },
         body: JSON.stringify({
           enabled: true,
+          allowExternalCompanyAds: modeToSave !== 'ad_free_site',
           adNetworkEnabled: true,
           adNetworkProvider: 'monetag',
           monetagMode: modeToSave,
@@ -1151,9 +1155,11 @@ export default function MobileAdminAppPage() {
       });
       if (res.ok) {
         showToast(
-          modeToSave === 'multitag_all'
-            ? 'Monetag MultiTag (#311785) & Payout Route saved!'
-            : 'Monetag Clean Banners (#12318961 + #12318967) & Payout Route saved!'
+          modeToSave === 'ad_free_site'
+            ? 'Shield ACTIVE: All other companies’ ads blocked on website!'
+            : modeToSave === 'multitag_all'
+              ? 'Monetag MultiTag (#311785) & Payout Route saved!'
+              : 'Monetag Clean Banners & Payout Route saved!'
         );
         await fetchAllMobileData(email, password);
       }
@@ -2124,9 +2130,46 @@ export default function MobileAdminAppPage() {
                 </div>
               </div>
 
-              {/* Quick Mobile Monetag Mode + Saved Payout Route */}
+              {/* Strict Anti-Other-Company-Ads Shield + Off-Site Smartlink Copy */}
               <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 space-y-2.5 text-xs">
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex items-center justify-between gap-2 bg-emerald-950/60 border border-emerald-500/40 rounded-xl px-2.5 py-2">
+                  <span className="text-[10px] font-black text-emerald-300">
+                    {mobileMonetagMode === 'ad_free_site'
+                      ? '🛡️ SHIELD ON: Zero Other-Company Ads on Website'
+                      : '⚠️ External Monetag Ads Unlocked on Website'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const link =
+                        walletOverview?.monetagDirectLinkUrl ||
+                        'https://uplcm.com/4/12318973';
+                      navigator.clipboard?.writeText(link);
+                      showToast('Copied Off-Site Monetag Smartlink!');
+                    }}
+                    className="text-[10px] font-black bg-amber-400 text-slate-950 px-2 py-1 rounded-lg shrink-0 cursor-pointer"
+                  >
+                    Copy Off-Site Link
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    disabled={savingMonetagQuick}
+                    onClick={() => {
+                      setMobileMonetagMode('ad_free_site');
+                      void handleSaveMonetagQuickSettings({
+                        monetagMode: 'ad_free_site',
+                      });
+                    }}
+                    className={`py-2 px-1.5 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'ad_free_site'
+                        ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
+                        : 'border-slate-800 bg-slate-900 text-slate-400'
+                      }`}
+                  >
+                    Block Site Ads
+                  </button>
                   <button
                     type="button"
                     disabled={savingMonetagQuick}
@@ -2136,12 +2179,12 @@ export default function MobileAdminAppPage() {
                         monetagMode: 'clean_banners',
                       });
                     }}
-                    className={`py-2 px-2 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'clean_banners'
-                        ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
+                    className={`py-2 px-1.5 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'clean_banners'
+                        ? 'border-amber-400 bg-amber-400/20 text-amber-300'
                         : 'border-slate-800 bg-slate-900 text-slate-400'
                       }`}
                   >
-                    Clean Banners (Safe)
+                    Allow Banners
                   </button>
                   <button
                     type="button"
@@ -2152,12 +2195,12 @@ export default function MobileAdminAppPage() {
                         monetagMode: 'multitag_all',
                       });
                     }}
-                    className={`py-2 px-2 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'multitag_all'
-                        ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                    className={`py-2 px-1.5 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'multitag_all'
+                        ? 'border-rose-400 bg-rose-500/20 text-rose-300'
                         : 'border-slate-800 bg-slate-900 text-slate-400'
                       }`}
                   >
-                    MultiTag All (#311785)
+                    Allow MultiTag
                   </button>
                 </div>
 

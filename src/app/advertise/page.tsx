@@ -12,17 +12,28 @@ import {
   Users,
 } from 'lucide-react';
 import SiteFooter from '@/components/SiteFooter';
+import AdvertiseCheckoutButton from '@/components/AdvertiseCheckoutButton';
 
 export const metadata: Metadata = {
-  title: 'Advertise With Us | CBC Kenya Resource Hub',
+  title: 'List Your School or Education Service | CBCMATERIALS.SHOP',
   description:
-    'Promote your school, college, bookshop, EdTech platform, or tuition service to Kenyan teachers, principals, and parents across PP1 to Grade 12.',
+    'Request owner-approved placement for your Kenyan school, college, bookshop, or tuition service on CBCMATERIALS.SHOP with instant M-Pesa STK Push.',
 };
 
-const PACKAGES = [
+const PACKAGES: Array<{
+  name: string;
+  priceKes: string;
+  priceKesNumber: number;
+  serviceType: 'AD_PACKAGE_INFEED' | 'AD_PACKAGE_LEADERBOARD' | 'AD_PACKAGE_PREVIEW';
+  period: string;
+  badge: string;
+  highlights: string[];
+}> = [
   {
     name: 'In-Feed Subject & Grade Card',
     priceKes: '1,500',
+    priceKesNumber: 1500,
+    serviceType: 'AD_PACKAGE_INFEED',
     period: 'per week',
     badge: 'POPULAR FOR BOOKSHOPS & TUTORS',
     highlights: [
@@ -35,6 +46,8 @@ const PACKAGES = [
   {
     name: 'Top Homepage Leaderboard Spotlight',
     priceKes: '3,500',
+    priceKesNumber: 3500,
+    serviceType: 'AD_PACKAGE_LEADERBOARD',
     period: 'per week',
     badge: 'HIGHEST VISIBILITY',
     highlights: [
@@ -47,6 +60,8 @@ const PACKAGES = [
   {
     name: 'Preview Modal Exclusive Sponsor',
     priceKes: '5,000',
+    priceKesNumber: 5000,
+    serviceType: 'AD_PACKAGE_PREVIEW',
     period: 'per 2 weeks',
     badge: 'MAXIMUM ENGAGEMENT & CLICKS',
     highlights: [
@@ -129,9 +144,6 @@ export default function AdvertisePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {PACKAGES.map((pkg) => {
-              const waHref = `https://wa.me/254728595160?text=${encodeURIComponent(
-                `Hello! I want to book the "${pkg.name}" (KES ${pkg.priceKes} ${pkg.period}) ad slot on CBC Kenya Resource Hub.`
-              )}`;
               return (
                 <div
                   key={pkg.name}
@@ -163,47 +175,45 @@ export default function AdvertisePage() {
                     </ul>
                   </div>
 
-                  <a
-                    href={waHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-3 px-4 rounded-xl transition"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Book via WhatsApp (0728595160)
-                  </a>
+                  <AdvertiseCheckoutButton
+                    packageName={pkg.name}
+                    priceKesNumber={pkg.priceKesNumber}
+                    priceKesDisplay={pkg.priceKes}
+                    period={pkg.period}
+                    serviceType={pkg.serviceType}
+                  />
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* Direct M-Pesa Payment Box */}
+        {/* Direct M-Pesa STK Push & Strict Owner-Permission Notice */}
         <section className="bg-slate-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-extrabold uppercase">
+            <div className="inline-flex items-center gap-1.5 text-emerald-400 text-xs font-extrabold uppercase">
               <Smartphone className="w-4 h-4" />
-              Temporary Payment Maintenance Notice
+              Live Instant M-Pesa Settlement • Strict Owner Permission Required
             </div>
             <h3 className="text-lg font-black">
-              We Are Sorry — Payment Channels Resume in 72 Hours or Less!
+              100% Clean Education Portal — Zero Unauthorized Third-Party Ads
             </h3>
             <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-              All M-Pesa payment methods are currently undergoing scheduled maintenance
-              and will be back online shortly within the next{' '}
-              <strong className="text-amber-300">72 hours or less</strong>. You can still
-              reserve your sponsored slot right now via WhatsApp{' '}
-              <strong className="text-emerald-300">0728595160</strong>!
+              No external ad networks or unapproved company ads ever appear on{' '}
+              <strong className="text-amber-300">CBCMATERIALS.SHOP</strong>. Every school,
+              bookshop, or tutor spotlight is paid directly via live M-Pesa STK Push and
+              personally reviewed and approved by management via{' '}
+              <strong className="text-emerald-300">WhatsApp 0728595160</strong>.
             </p>
           </div>
           <a
-            href="https://wa.me/254728595160?text=Hello%2C%20I%20would%20like%20to%20place%20an%20ad%20on%20CBC%20Kenya%20Resource%20Hub"
+            href="https://wa.me/254728595160?text=Hello%2C%20I%20would%20like%20to%20request%20owner%20approval%20for%20a%20school%20listing%20on%20CBCMATERIALS.SHOP"
             target="_blank"
             rel="noreferrer"
             className="shrink-0 inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-5 py-3.5 rounded-xl transition"
           >
             <MessageCircle className="w-4 h-4" />
-            Chat with Ad Desk: 0728595160
+            Chat with Owner Desk: 0728595160
           </a>
         </section>
       </main>

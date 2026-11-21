@@ -48,7 +48,8 @@ export interface MonetizationConfig {
   adNetworkBannerScriptUrl: string; // Optional vignette / native banner script URL
   smartlinkUrl: string; // Direct link / smartlink URL for high-value reward/partner clicks
   smartlinkLabel: string; // Button CTA shown on free bonus/partner click bar
-  monetagMode?: 'clean_banners' | 'multitag_all';
+  allowExternalCompanyAds?: boolean; // STRICT OWNER LOCK: false = ZERO other companies' ads allowed on website
+  monetagMode?: 'ad_free_site' | 'clean_banners' | 'multitag_all';
   monetagSiteId?: string;
   monetagVignetteZoneId?: string;
   monetagInPagePushZoneId?: string;
@@ -281,8 +282,9 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
     adNetworkScriptUrl: DEFAULT_MONETAG_INPAGE_PUSH_SRC,
     adNetworkBannerScriptUrl: DEFAULT_MONETAG_VIGNETTE_SRC,
     smartlinkUrl: DEFAULT_MONETAG_DIRECT_SMARTLINK,
-    smartlinkLabel: 'Explore Recommended Student & Teacher Partner Offer →',
-    monetagMode: 'clean_banners',
+    smartlinkLabel: 'Follow Official CBCMATERIALS.SHOP Updates →',
+    allowExternalCompanyAds: false,
+    monetagMode: 'ad_free_site',
     monetagSiteId: DEFAULT_MONETAG_SITE_ID,
     monetagVignetteZoneId: DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
     monetagInPagePushZoneId: DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
@@ -432,7 +434,7 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
     merged.adNetworkBannerScriptUrl = sanitizeAdUrl(merged.adNetworkBannerScriptUrl);
     merged.smartlinkUrl = sanitizeAdUrl(merged.smartlinkUrl);
 
-    // Auto-upgrade legacy empty Adsterra/custom config to verified Monetag zones for www.cbcmaterials.shop (#3582026)
+    // Auto-upgrade legacy empty Adsterra/custom config to verified Monetag Site #3582026 while keeping website 100% free of other companies' ads
     if (
       !merged.monetagVignetteZoneId ||
       (merged.adNetworkProvider === 'adsterra' && !merged.adNetworkScriptUrl)
@@ -444,12 +446,18 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
       if (!merged.smartlinkUrl || merged.smartlinkUrl.includes('facebook.com')) {
         merged.smartlinkUrl = DEFAULT_MONETAG_DIRECT_SMARTLINK;
       }
-      merged.monetagMode = merged.monetagMode || 'clean_banners';
+      merged.allowExternalCompanyAds = false;
+      merged.monetagMode = 'ad_free_site';
       merged.monetagSiteId = DEFAULT_MONETAG_SITE_ID;
       merged.monetagVignetteZoneId = DEFAULT_MONETAG_VIGNETTE_ZONE_ID;
       merged.monetagInPagePushZoneId = DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID;
       merged.monetagMultiTagZoneId = DEFAULT_MONETAG_MULTITAG_ZONE_ID;
       merged.monetagPushSwZoneId = DEFAULT_MONETAG_PUSH_SW_ZONE_ID;
+    }
+
+    // Enforce strict owner lock: unless allowExternalCompanyAds is explicitly true, force ad_free_site mode
+    if (!merged.allowExternalCompanyAds) {
+      merged.monetagMode = 'ad_free_site';
     }
 
     cachedConfig = { data: merged, expiresAt: Date.now() + 15000 };
