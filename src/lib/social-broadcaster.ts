@@ -186,10 +186,13 @@ export async function getSocialBroadcasterConfig(): Promise<SocialBroadcasterCon
           typeof existing.allowPosting === 'boolean'
             ? existing.allowPosting
             : def.allowPosting,
-        profileUrl:
+        profileUrl: (
           existing.profileUrl !== undefined && existing.profileUrl !== ''
             ? existing.profileUrl
-            : def.profileUrl,
+            : def.profileUrl
+        )
+          .replace(/254705759072/g, '254728595160')
+          .replace(/0705759072/g, '0728595160'),
       };
     });
 

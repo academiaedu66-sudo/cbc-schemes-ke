@@ -341,34 +341,63 @@ export default function AdminMonetizationPanel({ password }: { password: string 
           {/* TAB 1: MONETAG / ADSTERRA INSTANT EARNINGS */}
           {activeTab === 'networks' && (
             <div className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-slate-700 space-y-1.5">
-                <p className="font-black text-amber-950 uppercase">
-                  Fastest Way to Earn From Every Click, View &amp; Interaction in Kenya (5-Minute Approval):
-                </p>
-                <p>
-                  Sign up free as a Publisher on{' '}
-                  <a
-                    href="https://monetag.com/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-bold text-emerald-700 underline"
-                  >
-                    Monetag.com
-                  </a>{' '}
-                  or{' '}
-                  <a
-                    href="https://adsterra.com/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-bold text-emerald-700 underline"
-                  >
-                    Adsterra.com
-                  </a>{' '}
-                  (instant approval, pays out via M-Pesa / PayPal / Airtm / USDT from $5).
-                  Add <code className="bg-white px-1.5 py-0.5 rounded font-mono">cbc-schemes-ke.vercel.app</code>,
-                  copy your <strong>MultiTag / Social Bar Script URL</strong> and{' '}
-                  <strong>Direct Smartlink URL</strong>, and paste them below!
-                </p>
+              <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 text-xs text-slate-800 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <p className="font-black text-emerald-950 uppercase flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      Monetag Verified &amp; Linked to CBC Admin Mobile App (Site #{config.monetagSiteId || '3582026'})
+                    </p>
+                    <p className="text-slate-700">
+                      Domain <code className="bg-white px-1.5 py-0.5 rounded font-mono font-bold">www.cbcmaterials.shop</code> is verified with Clean Post-Welcome-Song Banners &amp; Direct Link active. Linked directly to your <strong>CBC Admin Mobile App Wallet</strong> for easy withdrawal from <strong>$5.00 USD (0% fee via PayPal → M-Pesa 0728595160)</strong>.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href="/mobile-admin"
+                      className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black px-3 py-2 rounded-xl shadow-sm"
+                    >
+                      <span>Open Admin Mobile App Wallet</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+                    <a
+                      href="https://publishers.monetag.com/payments"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3 py-2 rounded-xl shadow-sm"
+                    >
+                      <span>Monetag Cashout ($5 Min)</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href="https://paypal-mobilemoney.com/m-pesa"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-emerald-400 text-emerald-800 font-black px-3 py-2 rounded-xl"
+                    >
+                      <span>PayPal → M-Pesa</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1 font-mono text-[11px]">
+                  <span className="bg-white border border-emerald-200 text-emerald-900 px-2.5 py-1 rounded-lg font-bold">
+                    Vignette Zone #{config.monetagVignetteZoneId || '12318961'}
+                  </span>
+                  <span className="bg-white border border-emerald-200 text-emerald-900 px-2.5 py-1 rounded-lg font-bold">
+                    In-Page Push #{config.monetagInPagePushZoneId || '12318967'}
+                  </span>
+                  <span className="bg-white border border-emerald-200 text-emerald-900 px-2.5 py-1 rounded-lg font-bold">
+                    Push SW /sw.js #{config.monetagPushSwZoneId || '12288320'}
+                  </span>
+                  <span className="bg-white border border-emerald-200 text-emerald-900 px-2.5 py-1 rounded-lg font-bold">
+                    Direct Smartlink #12318973
+                  </span>
+                  <span className="bg-white border border-amber-200 text-amber-900 px-2.5 py-1 rounded-lg font-bold">
+                    Optional MultiTag #{config.monetagMultiTagZoneId || '311785'}
+                  </span>
+                </div>
               </div>
 
               <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
@@ -401,24 +430,49 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                     }
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white"
                   >
-                    <option value="monetag">Monetag (MultiTag + Direct Link)</option>
+                    <option value="monetag">Monetag (Verified Site #3582026)</option>
                     <option value="adsterra">Adsterra (Social Bar + Smartlink)</option>
                     <option value="custom">Custom CPM / CPC Ad Script</option>
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Global CPM / In-Page Push / Vignette Script URL (Optional)
+                    Monetag Ad Delivery Mode
+                  </label>
+                  <select
+                    value={config.monetagMode || 'clean_banners'}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        monetagMode: e.target.value as
+                          | 'clean_banners'
+                          | 'multitag_all',
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-emerald-300 rounded-xl text-sm bg-white font-semibold"
+                  >
+                    <option value="clean_banners">
+                      Clean Banners Only (Recommended — No Popunders)
+                    </option>
+                    <option value="multitag_all">
+                      All-in-One MultiTag (#311785 — Maximum Aggressive Ads)
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    In-Page Push Script URL
                   </label>
                   <input
                     type="url"
-                    placeholder="https://.../tag.min.js"
+                    placeholder="https://nap5k.com/tag.min.js"
                     value={config.adNetworkScriptUrl}
                     onChange={(e) =>
                       setConfig({ ...config, adNetworkScriptUrl: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-mono"
                   />
                 </div>
               </div>
@@ -430,12 +484,12 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                   </label>
                   <input
                     type="url"
-                    placeholder="https://... (Paste Monetag / Adsterra Direct Link or Affiliate URL)"
+                    placeholder="https://uplcm.com/4/12318973"
                     value={config.smartlinkUrl}
                     onChange={(e) =>
                       setConfig({ ...config, smartlinkUrl: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-mono"
                   />
                 </div>
 
@@ -450,6 +504,57 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                       setConfig({ ...config, smartlinkLabel: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    Linked Mobile App Payout Route ($5 Min)
+                  </label>
+                  <select
+                    value={config.monetagPayoutMethod || 'PAYPAL_MPESA'}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        monetagPayoutMethod: e.target.value as
+                          | 'PAYPAL_MPESA'
+                          | 'SKRILL_MPESA'
+                          | 'WEBMONEY'
+                          | 'PAYONEER'
+                          | 'USDT',
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white"
+                  >
+                    <option value="PAYPAL_MPESA">
+                      PayPal USD ($5 Min • 0% Fee) → M-Pesa 0728595160
+                    </option>
+                    <option value="SKRILL_MPESA">
+                      Skrill EUR (€5 Min • 0% Fee) → M-Pesa Wallet
+                    </option>
+                    <option value="WEBMONEY">WebMoney USD ($5 Min • 0% Fee)</option>
+                    <option value="PAYONEER">Payoneer USD ($20 Min)</option>
+                    <option value="USDT">USDT Crypto TRC-20/BEP-20 ($100 Min)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    Saved PayPal / Skrill Email or Payout Account
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. your-paypal@email.com (synced to Mobile App)"
+                    value={config.monetagPayoutAccount || ''}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        monetagPayoutAccount: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-mono"
                   />
                 </div>
               </div>

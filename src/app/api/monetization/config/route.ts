@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthorized } from '@/lib/admin-auth';
 import { triggerAutomaticBackup } from '@/lib/security';
 import {
+  DEFAULT_MONETAG_DIRECT_SMARTLINK,
+  DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
+  DEFAULT_MONETAG_MULTITAG_ZONE_ID,
+  DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
   getStoredMonetizationConfig,
   saveStoredMonetizationConfig,
   type MonetizationConfig,
@@ -17,7 +21,13 @@ export async function GET(req: NextRequest) {
   ]);
 
   if (isAdmin) {
-    return NextResponse.json({ config });
+    return NextResponse.json({
+      config: {
+        ...config,
+        monetagSspApiToken: config.monetagSspApiToken ? '••••••••' : '',
+        hasMonetagSspApiToken: Boolean(config.monetagSspApiToken?.trim()),
+      },
+    });
   }
 
   // Public storefront config (never exposes secret CAPI or Graph access tokens)
@@ -35,6 +45,17 @@ export async function GET(req: NextRequest) {
       adNetworkProvider: config.adNetworkProvider,
       adNetworkScriptUrl: config.adNetworkScriptUrl,
       adNetworkBannerScriptUrl: config.adNetworkBannerScriptUrl,
+      monetagDirectLinkUrl:
+        config.smartlinkUrl && !config.smartlinkUrl.includes('facebook.com')
+          ? config.smartlinkUrl
+          : DEFAULT_MONETAG_DIRECT_SMARTLINK,
+      monetagMode: config.monetagMode || 'clean_banners',
+      monetagVignetteZoneId:
+        config.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
+      monetagInPagePushZoneId:
+        config.monetagInPagePushZoneId || DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
+      monetagMultiTagZoneId:
+        config.monetagMultiTagZoneId || DEFAULT_MONETAG_MULTITAG_ZONE_ID,
       smartlinkUrl:
         config.facebookMonetization?.enabled &&
         config.facebookMonetization?.routeAdClicksToFacebook
@@ -76,9 +97,25 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as Partial<MonetizationConfig>;
     const existing = await getStoredMonetizationConfig();
 
+    const incomingToken =
+      typeof body.monetagSspApiToken === 'string' &&
+      body.monetagSspApiToken.trim() &&
+      !body.monetagSspApiToken.includes('••••')
+        ? body.monetagSspApiToken.trim()
+        : existing.monetagSspApiToken || '';
+
     const updated: MonetizationConfig = {
       ...existing,
       ...body,
+      adNetworkScriptUrl:
+        typeof body.adNetworkScriptUrl === 'string' && body.adNetworkScriptUrl.trim()
+          ? body.adNetworkScriptUrl.trim()
+          : existing.adNetworkScriptUrl,
+      smartlinkUrl:
+        typeof body.smartlinkUrl === 'string' && body.smartlinkUrl.trim()
+          ? body.smartlinkUrl.trim()
+          : existing.smartlinkUrl,
+      monetagSspApiToken: incomingToken,
       placements: {
         ...existing.placements,
         ...(body.placements || {}),

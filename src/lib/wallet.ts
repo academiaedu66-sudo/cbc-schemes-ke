@@ -1,5 +1,11 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import {
+  DEFAULT_MONETAG_DIRECT_SMARTLINK,
+  DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
+  DEFAULT_MONETAG_MULTITAG_ZONE_ID,
+  DEFAULT_MONETAG_PUSH_SW_ZONE_ID,
+  DEFAULT_MONETAG_SITE_ID,
+  DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
   computeEstimatedEarnings,
   getStoredMonetizationConfig,
   getStoredMonetizationStats,
@@ -12,7 +18,11 @@ const BUCKET_NAME = 'cbc-materials';
 const WALLET_LEDGER_PATH = '_system/wallet-ledger.json';
 
 export type WithdrawalSource = 'COMBINED' | 'CLIENT_PAYMENTS' | 'MONETIZATION';
-export type WithdrawalMethod = 'MPESA' | 'BANK';
+export type WithdrawalMethod =
+  | 'MPESA'
+  | 'PAYPAL_MPESA'
+  | 'SKRILL_MPESA'
+  | 'BANK';
 
 export interface WalletWithdrawalRecord {
   id: string;
@@ -56,6 +66,26 @@ export interface WalletOverview {
   adNetworkScriptUrl: string;
   smartlinkUrl: string;
   adsenseClientId: string;
+  monetagConnected: boolean;
+  monetagSiteId: string;
+  monetagMode: 'clean_banners' | 'multitag_all';
+  monetagVignetteZoneId: string;
+  monetagInPagePushZoneId: string;
+  monetagMultiTagZoneId: string;
+  monetagPushSwZoneId: string;
+  monetagDirectLinkUrl: string;
+  monetagPayoutMethod:
+    | 'PAYPAL_MPESA'
+    | 'SKRILL_MPESA'
+    | 'WEBMONEY'
+    | 'PAYONEER'
+    | 'USDT';
+  monetagPayoutAccount: string;
+  hasMonetagApiToken: boolean;
+  availableMonetizationUsd: number;
+  monetagMinPayoutUsd: number;
+  monetagReadyForPayout: boolean;
+  monetagProgressPct: number;
   defaultMpesaPhone: string;
   withdrawals: WalletWithdrawalRecord[];
 }
@@ -185,8 +215,33 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
 
   const adNetworkConnected = Boolean(
     (monConfig.adNetworkScriptUrl || '').trim() ||
+      (monConfig.adNetworkBannerScriptUrl || '').trim() ||
       (monConfig.smartlinkUrl || '').trim() ||
+      (monConfig.monetagSiteId || '').trim() ||
       (monConfig.adsenseClientId || '').trim()
+  );
+
+  const monetagConnected = Boolean(
+    monConfig.adNetworkEnabled &&
+      monConfig.adNetworkProvider === 'monetag' &&
+      (monConfig.monetagSiteId || DEFAULT_MONETAG_SITE_ID)
+  );
+
+  const usdRate = Math.max(100, Number(monConfig.ratesKes?.usdToKesRate) || 129.5);
+  const availableMonetizationUsd = Number(
+    (availableMonetizationKes / usdRate).toFixed(2)
+  );
+  const monetagPayoutMethod = monConfig.monetagPayoutMethod || 'PAYPAL_MPESA';
+  const monetagMinPayoutUsd =
+    monetagPayoutMethod === 'USDT'
+      ? 100
+      : monetagPayoutMethod === 'PAYONEER'
+        ? 20
+        : 5;
+  const monetagReadyForPayout = availableMonetizationUsd >= monetagMinPayoutUsd;
+  const monetagProgressPct = Math.min(
+    100,
+    Math.max(0, Math.round((availableMonetizationUsd / monetagMinPayoutUsd) * 100))
   );
 
   const defaultMpesaPhone = toLocalKenyanFormat(
@@ -214,8 +269,30 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
     adNetworkConnected,
     adNetworkProvider: monConfig.adNetworkProvider || 'monetag',
     adNetworkScriptUrl: monConfig.adNetworkScriptUrl || '',
-    smartlinkUrl: monConfig.smartlinkUrl || '',
+    smartlinkUrl: monConfig.smartlinkUrl || DEFAULT_MONETAG_DIRECT_SMARTLINK,
     adsenseClientId: monConfig.adsenseClientId || '',
+    monetagConnected,
+    monetagSiteId: monConfig.monetagSiteId || DEFAULT_MONETAG_SITE_ID,
+    monetagMode: monConfig.monetagMode || 'clean_banners',
+    monetagVignetteZoneId:
+      monConfig.monetagVignetteZoneId || DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
+    monetagInPagePushZoneId:
+      monConfig.monetagInPagePushZoneId || DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
+    monetagMultiTagZoneId:
+      monConfig.monetagMultiTagZoneId || DEFAULT_MONETAG_MULTITAG_ZONE_ID,
+    monetagPushSwZoneId:
+      monConfig.monetagPushSwZoneId || DEFAULT_MONETAG_PUSH_SW_ZONE_ID,
+    monetagDirectLinkUrl:
+      monConfig.smartlinkUrl && !monConfig.smartlinkUrl.includes('facebook.com')
+        ? monConfig.smartlinkUrl
+        : DEFAULT_MONETAG_DIRECT_SMARTLINK,
+    monetagPayoutMethod,
+    monetagPayoutAccount: monConfig.monetagPayoutAccount || '',
+    hasMonetagApiToken: Boolean((monConfig.monetagSspApiToken || '').trim()),
+    availableMonetizationUsd,
+    monetagMinPayoutUsd,
+    monetagReadyForPayout,
+    monetagProgressPct,
     defaultMpesaPhone,
     withdrawals: ledger.withdrawals,
   };
@@ -449,6 +526,13 @@ export async function createWalletWithdrawal(params: {
     }
   } else {
     status = 'PENDING_SETTLEMENT';
+    if (params.method === 'PAYPAL_MPESA') {
+      const approxUsd = (reqAmount / 129.5).toFixed(2);
+      gatewayMessage = `Monetag → PayPal USD ($${approxUsd}) → M-Pesa (0728595160) withdrawal logged (${refCode}, Destination: ${cleanDest})! Minimum Monetag payout is $5 USD with 0% fee — tap "Open Monetag Cashout ($5 Min)" & "PayPal → M-Pesa Bridge" below to complete instant settlement.`;
+    } else if (params.method === 'SKRILL_MPESA') {
+      const approxUsd = (reqAmount / 129.5).toFixed(2);
+      gatewayMessage = `Monetag → Skrill (€5 Min, ~$${approxUsd}) → M-Pesa (0728595160) withdrawal logged (${refCode}, Destination: ${cleanDest})! Tap "Open Monetag Cashout" below to complete payout.`;
+    }
   }
 
   const record: WalletWithdrawalRecord = {

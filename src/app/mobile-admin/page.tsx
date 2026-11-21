@@ -138,7 +138,7 @@ interface MobileWithdrawalRecord {
   fromClientPaymentsKes: number;
   fromMonetizationKes: number;
   source: 'COMBINED' | 'CLIENT_PAYMENTS' | 'MONETIZATION';
-  method: 'MPESA' | 'BANK';
+  method: 'MPESA' | 'PAYPAL_MPESA' | 'SKRILL_MPESA' | 'BANK';
   destination: string;
   status: 'COMPLETED' | 'PENDING_SETTLEMENT' | 'CANCELLED';
   gatewayDisbursed: boolean;
@@ -167,6 +167,26 @@ interface MobileWalletOverview {
   adNetworkScriptUrl: string;
   smartlinkUrl: string;
   adsenseClientId: string;
+  monetagConnected?: boolean;
+  monetagSiteId?: string;
+  monetagMode?: 'clean_banners' | 'multitag_all';
+  monetagVignetteZoneId?: string;
+  monetagInPagePushZoneId?: string;
+  monetagMultiTagZoneId?: string;
+  monetagPushSwZoneId?: string;
+  monetagDirectLinkUrl?: string;
+  monetagPayoutMethod?:
+    | 'PAYPAL_MPESA'
+    | 'SKRILL_MPESA'
+    | 'WEBMONEY'
+    | 'PAYONEER'
+    | 'USDT';
+  monetagPayoutAccount?: string;
+  hasMonetagApiToken?: boolean;
+  availableMonetizationUsd?: number;
+  monetagMinPayoutUsd?: number;
+  monetagReadyForPayout?: boolean;
+  monetagProgressPct?: number;
   defaultMpesaPhone: string;
   withdrawals: MobileWithdrawalRecord[];
 }
@@ -249,9 +269,9 @@ export default function MobileAdminAppPage() {
   const [withdrawSource, setWithdrawSource] = useState<
     'COMBINED' | 'CLIENT_PAYMENTS' | 'MONETIZATION'
   >('COMBINED');
-  const [withdrawMethod, setWithdrawMethod] = useState<'MPESA' | 'BANK'>(
-    'MPESA'
-  );
+  const [withdrawMethod, setWithdrawMethod] = useState<
+    'MPESA' | 'PAYPAL_MPESA' | 'SKRILL_MPESA' | 'BANK'
+  >('MPESA');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawDest, setWithdrawDest] = useState('0728595160');
   const [withdrawing, setWithdrawing] = useState(false);
@@ -271,6 +291,15 @@ export default function MobileAdminAppPage() {
   const [linkAdScriptUrl, setLinkAdScriptUrl] = useState('');
   const [linkSmartlinkUrl, setLinkSmartlinkUrl] = useState('');
   const [linkAdsenseId, setLinkAdsenseId] = useState('');
+  const [mobileMonetagMode, setMobileMonetagMode] = useState<
+    'clean_banners' | 'multitag_all'
+  >('clean_banners');
+  const [mobileMonetagPayoutMethod, setMobileMonetagPayoutMethod] = useState<
+    'PAYPAL_MPESA' | 'SKRILL_MPESA' | 'WEBMONEY' | 'PAYONEER' | 'USDT'
+  >('PAYPAL_MPESA');
+  const [mobileMonetagPayoutAccount, setMobileMonetagPayoutAccount] =
+    useState('');
+  const [savingMonetagQuick, setSavingMonetagQuick] = useState(false);
   const [savingRealLinks, setSavingRealLinks] = useState(false);
   const linkerHydratedRef = useRef<boolean>(false);
   const [voiceAlertEnabled, setVoiceAlertEnabled] = useState(true);
@@ -582,9 +611,25 @@ export default function MobileAdminAppPage() {
               setLinkPayheroAccountId(walJson.overview.payheroAccountId || '');
               setLinkPayheroChannelId(walJson.overview.payheroChannelId || '');
               setLinkAdProvider(walJson.overview.adNetworkProvider || 'monetag');
-              setLinkAdScriptUrl(walJson.overview.adNetworkScriptUrl || '');
-              setLinkSmartlinkUrl(walJson.overview.smartlinkUrl || '');
+              setLinkAdScriptUrl(
+                walJson.overview.adNetworkScriptUrl ||
+                  'https://nap5k.com/tag.min.js'
+              );
+              setLinkSmartlinkUrl(
+                walJson.overview.monetagDirectLinkUrl ||
+                  walJson.overview.smartlinkUrl ||
+                  'https://uplcm.com/4/12318973'
+              );
               setLinkAdsenseId(walJson.overview.adsenseClientId || '');
+              setMobileMonetagMode(
+                walJson.overview.monetagMode || 'clean_banners'
+              );
+              setMobileMonetagPayoutMethod(
+                walJson.overview.monetagPayoutMethod || 'PAYPAL_MPESA'
+              );
+              setMobileMonetagPayoutAccount(
+                walJson.overview.monetagPayoutAccount || ''
+              );
               linkerHydratedRef.current = true;
             }
           }
@@ -1043,12 +1088,15 @@ export default function MobileAdminAppPage() {
           headers,
           body: JSON.stringify({
             enabled: true,
-            adNetworkEnabled: Boolean(
-              linkAdScriptUrl.trim() || linkSmartlinkUrl.trim()
-            ),
+            adNetworkEnabled: true,
             adNetworkProvider: linkAdProvider,
-            adNetworkScriptUrl: linkAdScriptUrl.trim(),
-            smartlinkUrl: linkSmartlinkUrl.trim(),
+            adNetworkScriptUrl:
+              linkAdScriptUrl.trim() || 'https://nap5k.com/tag.min.js',
+            smartlinkUrl:
+              linkSmartlinkUrl.trim() || 'https://uplcm.com/4/12318973',
+            monetagMode: mobileMonetagMode,
+            monetagPayoutMethod: mobileMonetagPayoutMethod,
+            monetagPayoutAccount: mobileMonetagPayoutAccount.trim(),
             adsenseEnabled: Boolean(linkAdsenseId.trim()),
             adsenseClientId: linkAdsenseId.trim(),
           }),
@@ -1058,12 +1106,61 @@ export default function MobileAdminAppPage() {
       await Promise.all(promises);
       setLinkPaystackSecret('');
       setLinkPayheroToken('');
-      showToast('Real M-Pesa B2C & Paid Ad Network links saved live!');
+      showToast('Real M-Pesa B2C & Monetag links saved live!');
       await fetchAllMobileData(email, password);
     } catch {
       showToast('Failed to save links. Check your connection.');
     } finally {
       setSavingRealLinks(false);
+    }
+  };
+
+  const handleSaveMonetagQuickSettings = async (nextOverrides?: {
+    monetagMode?: 'clean_banners' | 'multitag_all';
+    monetagPayoutMethod?:
+      | 'PAYPAL_MPESA'
+      | 'SKRILL_MPESA'
+      | 'WEBMONEY'
+      | 'PAYONEER'
+      | 'USDT';
+    monetagPayoutAccount?: string;
+  }) => {
+    setSavingMonetagQuick(true);
+    try {
+      const modeToSave = nextOverrides?.monetagMode ?? mobileMonetagMode;
+      const methodToSave =
+        nextOverrides?.monetagPayoutMethod ?? mobileMonetagPayoutMethod;
+      const acctToSave =
+        nextOverrides?.monetagPayoutAccount ?? mobileMonetagPayoutAccount;
+
+      const res = await fetch('/api/monetization/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': email.trim(),
+          'x-admin-password': password.trim(),
+        },
+        body: JSON.stringify({
+          enabled: true,
+          adNetworkEnabled: true,
+          adNetworkProvider: 'monetag',
+          monetagMode: modeToSave,
+          monetagPayoutMethod: methodToSave,
+          monetagPayoutAccount: acctToSave.trim(),
+        }),
+      });
+      if (res.ok) {
+        showToast(
+          modeToSave === 'multitag_all'
+            ? 'Monetag MultiTag (#311785) & Payout Route saved!'
+            : 'Monetag Clean Banners (#12318961 + #12318967) & Payout Route saved!'
+        );
+        await fetchAllMobileData(email, password);
+      }
+    } catch {
+      showToast('Failed to update Monetag settings.');
+    } finally {
+      setSavingMonetagQuick(false);
     }
   };
 
@@ -1865,9 +1962,251 @@ export default function MobileAdminAppPage() {
                     {walletOverview?.liveB2cReady &&
                       walletOverview?.adNetworkConnected
                       ? 'ALL LINKED ✓'
-                      : 'SETUP'}
+                      : walletOverview?.monetagConnected
+                        ? 'MONETAG LIVE ✓'
+                        : 'SETUP'}
                   </span>
                 </button>
+              </div>
+            </div>
+
+            {/* DEDICATED MONETAG PUBLISHER HUB & EASY MOBILE WITHDRAWAL CARD */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border-2 border-amber-400/50 rounded-3xl p-4 space-y-3.5 shadow-xl">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Monetag Linked ✓
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full">
+                      Site #{walletOverview?.monetagSiteId || '3582026'}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-black text-white pt-0.5">
+                    Monetag Easy Withdrawal &amp; M-Pesa Bridge
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Verified on <code className="text-slate-200">www.cbcmaterials.shop</code> • 0% fee from $5 USD
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] font-bold uppercase text-amber-300 block">
+                    Monetag Est.
+                  </span>
+                  <span className="text-lg font-black text-white">
+                    ${(walletOverview?.availableMonetizationUsd ?? (monetization?.totalEstimatedUsd || 0)).toFixed(2)}
+                  </span>
+                  <span className="block text-[10px] font-mono text-emerald-300">
+                    KES {(walletOverview?.availableMonetizationKes ?? (monetization?.totalEstimatedKes || 0)).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* $5.00 USD Minimum Withdrawal Progress Meter */}
+              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-300">
+                    Min Cashout Threshold (${walletOverview?.monetagMinPayoutUsd || 5}.00 USD)
+                  </span>
+                  <span
+                    className={`font-black ${walletOverview?.monetagReadyForPayout
+                        ? 'text-emerald-400'
+                        : 'text-amber-300'
+                      }`}
+                  >
+                    {walletOverview?.monetagReadyForPayout
+                      ? 'READY TO CASH OUT ✓'
+                      : `${walletOverview?.monetagProgressPct || 0}% of $${walletOverview?.monetagMinPayoutUsd || 5}`}
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-500"
+                    style={{
+                      width: `${Math.max(4, walletOverview?.monetagProgressPct || 0)}%`,
+                    }}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-slate-400">
+                  <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg">
+                    Vignette #{walletOverview?.monetagVignetteZoneId || '12318961'}
+                  </span>
+                  <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg">
+                    In-Page #{walletOverview?.monetagInPagePushZoneId || '12318967'}
+                  </span>
+                  <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg">
+                    SW #{walletOverview?.monetagPushSwZoneId || '12288320'}
+                  </span>
+                  <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg">
+                    Link #12318973
+                  </span>
+                </div>
+              </div>
+
+              {/* 1-Tap Monetag Cashout & Safaricom PayPal->M-Pesa Buttons */}
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const availMon =
+                      walletOverview?.availableMonetizationKes ??
+                      (monetization?.totalEstimatedKes || 0);
+                    setWithdrawSource('MONETIZATION');
+                    setWithdrawMethod(
+                      mobileMonetagPayoutMethod === 'SKRILL_MPESA'
+                        ? 'SKRILL_MPESA'
+                        : mobileMonetagPayoutMethod === 'PAYPAL_MPESA' &&
+                            mobileMonetagPayoutAccount.trim()
+                          ? 'PAYPAL_MPESA'
+                          : 'MPESA'
+                    );
+                    if (
+                      mobileMonetagPayoutAccount.trim() &&
+                      mobileMonetagPayoutMethod === 'PAYPAL_MPESA'
+                    ) {
+                      setWithdrawDest(mobileMonetagPayoutAccount.trim());
+                    } else {
+                      setWithdrawDest('0728595160');
+                    }
+                    if (availMon >= 10) {
+                      setWithdrawAmount(String(Math.floor(availMon)));
+                    }
+                    setWithdrawFeedback(null);
+                    setShowWithdrawForm(true);
+                  }}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-slate-950 font-black text-xs py-3 px-3 rounded-2xl shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>1-Tap Withdraw Monetag Coin in App</span>
+                </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href="https://publishers.monetag.com/payments"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[11px] py-2.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 text-center shadow"
+                  >
+                    <span>Monetag Cashout ($5)</span>
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  </a>
+                  <a
+                    href="https://paypal-mobilemoney.com/m-pesa"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-slate-950 hover:bg-slate-800 border border-emerald-500/50 text-emerald-300 font-black text-[11px] py-2.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 text-center"
+                  >
+                    <span>PayPal → M-Pesa</span>
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  </a>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href="https://publishers.monetag.com/paymentTypes"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-slate-950/90 border border-slate-800 text-slate-200 font-bold text-[11px] py-2 px-2.5 rounded-xl flex items-center justify-between"
+                  >
+                    <span>Set Payout Option</span>
+                    <ExternalLink className="w-3 h-3 text-amber-300 shrink-0" />
+                  </a>
+                  <a
+                    href="https://publishers.monetag.com/statistics"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-slate-950/90 border border-slate-800 text-slate-200 font-bold text-[11px] py-2 px-2.5 rounded-xl flex items-center justify-between"
+                  >
+                    <span>Live Monetag Stats</span>
+                    <ExternalLink className="w-3 h-3 text-emerald-400 shrink-0" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Quick Mobile Monetag Mode + Saved Payout Route */}
+              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 space-y-2.5 text-xs">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    disabled={savingMonetagQuick}
+                    onClick={() => {
+                      setMobileMonetagMode('clean_banners');
+                      void handleSaveMonetagQuickSettings({
+                        monetagMode: 'clean_banners',
+                      });
+                    }}
+                    className={`py-2 px-2 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'clean_banners'
+                        ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300'
+                        : 'border-slate-800 bg-slate-900 text-slate-400'
+                      }`}
+                  >
+                    Clean Banners (Safe)
+                  </button>
+                  <button
+                    type="button"
+                    disabled={savingMonetagQuick}
+                    onClick={() => {
+                      setMobileMonetagMode('multitag_all');
+                      void handleSaveMonetagQuickSettings({
+                        monetagMode: 'multitag_all',
+                      });
+                    }}
+                    className={`py-2 px-2 rounded-xl border text-[10px] font-black transition cursor-pointer ${mobileMonetagMode === 'multitag_all'
+                        ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                        : 'border-slate-800 bg-slate-900 text-slate-400'
+                      }`}
+                  >
+                    MultiTag All (#311785)
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  <select
+                    value={mobileMonetagPayoutMethod}
+                    onChange={(e) =>
+                      setMobileMonetagPayoutMethod(
+                        e.target.value as
+                          | 'PAYPAL_MPESA'
+                          | 'SKRILL_MPESA'
+                          | 'WEBMONEY'
+                          | 'PAYONEER'
+                          | 'USDT'
+                      )
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-[11px] font-bold"
+                  >
+                    <option value="PAYPAL_MPESA">
+                      PayPal USD ($5 Min • 0% Fee) → M-Pesa 0728595160
+                    </option>
+                    <option value="SKRILL_MPESA">
+                      Skrill EUR (€5 Min • 0% Fee) → M-Pesa Wallet
+                    </option>
+                    <option value="WEBMONEY">WebMoney USD ($5 Min • 0% Fee)</option>
+                    <option value="PAYONEER">Payoneer USD ($20 Min)</option>
+                    <option value="USDT">USDT Crypto TRC-20/BEP-20 ($100 Min)</option>
+                  </select>
+
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="Save your PayPal / Skrill email or USDT wallet..."
+                      value={mobileMonetagPayoutAccount}
+                      onChange={(e) =>
+                        setMobileMonetagPayoutAccount(e.target.value)
+                      }
+                      className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-[11px] font-mono"
+                    />
+                    <button
+                      type="button"
+                      disabled={savingMonetagQuick}
+                      onClick={() => void handleSaveMonetagQuickSettings()}
+                      className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[11px] px-3 py-2 rounded-xl shrink-0 cursor-pointer"
+                    >
+                      {savingMonetagQuick ? '...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2195,16 +2534,43 @@ export default function MobileAdminAppPage() {
                           : 'border-slate-800 bg-slate-950 text-slate-400'
                         }`}
                     >
-                      M-Pesa Instant
+                      M-Pesa (0728595160)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWithdrawMethod('PAYPAL_MPESA');
+                        setWithdrawDest(
+                          mobileMonetagPayoutAccount.trim() || '0728595160'
+                        );
+                      }}
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${withdrawMethod === 'PAYPAL_MPESA'
+                          ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                        }`}
+                    >
+                      PayPal → M-Pesa ($5)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWithdrawMethod('SKRILL_MPESA');
+                        setWithdrawDest(
+                          mobileMonetagPayoutAccount.trim() || '0728595160'
+                        );
+                      }}
+                      className={`py-2 rounded-xl border text-xs font-black cursor-pointer ${withdrawMethod === 'SKRILL_MPESA'
+                          ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                        }`}
+                    >
+                      Skrill → M-Pesa (€5)
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setWithdrawMethod('BANK');
-                        if (
-                          withdrawDest === '0728595160' ||
-                          withdrawDest === '0705759072'
-                        ) {
+                        if (withdrawDest === '0728595160') {
                           setWithdrawDest('');
                         }
                       }}
@@ -2219,19 +2585,16 @@ export default function MobileAdminAppPage() {
 
                   {withdrawMethod === 'MPESA' && (
                     <div className="flex items-center gap-1.5">
-                      {(['0728595160', '0705759072'] as const).map((ph) => (
-                        <button
-                          key={ph}
-                          type="button"
-                          onClick={() => setWithdrawDest(ph)}
-                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${withdrawDest === ph
-                              ? 'border-amber-400 bg-amber-400/20 text-amber-300'
-                              : 'border-slate-800 bg-slate-950 text-slate-400'
-                            }`}
-                        >
-                          Use {ph.slice(0, 4)}***{ph.slice(-3)}
-                        </button>
-                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawDest('0728595160')}
+                        className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border cursor-pointer ${withdrawDest === '0728595160'
+                            ? 'border-amber-400 bg-amber-400/20 text-amber-300'
+                            : 'border-slate-800 bg-slate-950 text-slate-400'
+                          }`}
+                      >
+                        Use Official M-Pesa 0728***160
+                      </button>
                     </div>
                   )}
 
@@ -2241,7 +2604,11 @@ export default function MobileAdminAppPage() {
                     placeholder={
                       withdrawMethod === 'MPESA'
                         ? 'Enter M-Pesa phone (e.g. 0728595160)'
-                        : 'Enter Bank Name & Account / Paybill...'
+                        : withdrawMethod === 'PAYPAL_MPESA'
+                          ? 'Enter PayPal email or M-Pesa 0728595160...'
+                          : withdrawMethod === 'SKRILL_MPESA'
+                            ? 'Enter Skrill email or M-Pesa 0728595160...'
+                            : 'Enter Bank Name & Account / Paybill...'
                     }
                     value={withdrawDest}
                     onChange={(e) => setWithdrawDest(e.target.value)}
@@ -2569,17 +2936,48 @@ export default function MobileAdminAppPage() {
               adminEmail={email}
               darkTheme
             />
-            <div className="bg-slate-900 border border-amber-400/40 rounded-3xl p-5 space-y-1">
-              <span className="text-[10px] font-black uppercase text-amber-300">
-                Monetization Coin Earned (Clicks + Views + Interactions)
-              </span>
-              <p className="text-2xl font-black text-white">
-                KES {(monetization?.totalEstimatedKes || 0).toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-400">
-                ${(monetization?.totalEstimatedUsd || 0).toFixed(2)} USD • CTR:{' '}
-                {monetization?.ctrPercent || 0}%
-              </p>
+            <div className="bg-slate-900 border border-amber-400/40 rounded-3xl p-5 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-amber-300">
+                    Monetization Coin Earned (Monetag Site #{walletOverview?.monetagSiteId || '3582026'})
+                  </span>
+                  <p className="text-2xl font-black text-white mt-0.5">
+                    KES {(monetization?.totalEstimatedKes || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    ${(monetization?.totalEstimatedUsd || 0).toFixed(2)} USD • CTR:{' '}
+                    {monetization?.ctrPercent || 0}%
+                  </p>
+                </div>
+                <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full shrink-0">
+                  MONETAG LIVE ✓
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWithdrawSource('MONETIZATION');
+                    setShowWithdrawForm(true);
+                    setActiveTab('WALLET');
+                  }}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  <span>Withdraw in Wallet</span>
+                </button>
+                <a
+                  href="https://publishers.monetag.com/payments"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-slate-950 border border-amber-400/40 text-amber-300 font-black text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5"
+                >
+                  <span>Monetag Cashout</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

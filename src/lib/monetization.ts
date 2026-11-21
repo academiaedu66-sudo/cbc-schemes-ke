@@ -44,10 +44,24 @@ export interface MonetizationConfig {
   // 2. Instant-Approval CPM / Click / Interaction Networks (Monetag / Adsterra / Custom)
   adNetworkEnabled: boolean;
   adNetworkProvider: 'monetag' | 'adsterra' | 'custom';
-  adNetworkScriptUrl: string; // External multitag / social bar / vignette script URL
-  adNetworkBannerScriptUrl: string; // Optional native banner script URL
+  adNetworkScriptUrl: string; // External multitag / in-page push script URL
+  adNetworkBannerScriptUrl: string; // Optional vignette / native banner script URL
   smartlinkUrl: string; // Direct link / smartlink URL for high-value reward/partner clicks
   smartlinkLabel: string; // Button CTA shown on free bonus/partner click bar
+  monetagMode?: 'clean_banners' | 'multitag_all';
+  monetagSiteId?: string;
+  monetagVignetteZoneId?: string;
+  monetagInPagePushZoneId?: string;
+  monetagMultiTagZoneId?: string;
+  monetagPushSwZoneId?: string;
+  monetagPayoutMethod?:
+    | 'PAYPAL_MPESA'
+    | 'SKRILL_MPESA'
+    | 'WEBMONEY'
+    | 'PAYONEER'
+    | 'USDT';
+  monetagPayoutAccount?: string;
+  monetagSspApiToken?: string;
 
   // 3. Placement Toggles
   placements: {
@@ -221,7 +235,18 @@ export const DEFAULT_SPONSORED_CAMPAIGNS: SponsoredCampaign[] = [
 export const DEFAULT_ADSTERRA_UNIT_SRC = '';
 export const DEFAULT_ADSTERRA_SMARTLINK_URL = '';
 
-const BLOCKED_HIJACK_AD_PATTERNS = /afders\.org|asiafilm\.org|popunder|onclickads/i;
+// Verified Monetag Zones for www.cbcmaterials.shop (Site ID: 3582026)
+export const DEFAULT_MONETAG_SITE_ID = '3582026';
+export const DEFAULT_MONETAG_VIGNETTE_ZONE_ID = '12318961';
+export const DEFAULT_MONETAG_VIGNETTE_SRC = 'https://n6wxm.com/vignette.min.js';
+export const DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID = '12318967';
+export const DEFAULT_MONETAG_INPAGE_PUSH_SRC = 'https://nap5k.com/tag.min.js';
+export const DEFAULT_MONETAG_MULTITAG_ZONE_ID = '311785';
+export const DEFAULT_MONETAG_MULTITAG_SRC = 'https://quge5.com/88/tag.min.js';
+export const DEFAULT_MONETAG_PUSH_SW_ZONE_ID = '12288320';
+export const DEFAULT_MONETAG_DIRECT_SMARTLINK = 'https://uplcm.com/4/12318973';
+
+const BLOCKED_HIJACK_AD_PATTERNS = /afders\.org|asiafilm\.org|onclickads/i;
 
 export function sanitizeAdUrl(rawInput?: string): string {
   const clean = extractScriptUrlIfTag(rawInput);
@@ -251,12 +276,21 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
     adsenseStickySlotId: '',
     adsTxtCustomLines: '',
 
-    adNetworkEnabled: false,
-    adNetworkProvider: 'custom',
-    adNetworkScriptUrl: '',
-    adNetworkBannerScriptUrl: '',
-    smartlinkUrl: '',
-    smartlinkLabel: 'Want Your School, Bookshop or Tuition Program Featured Here? View Ad Packages →',
+    adNetworkEnabled: true,
+    adNetworkProvider: 'monetag',
+    adNetworkScriptUrl: DEFAULT_MONETAG_INPAGE_PUSH_SRC,
+    adNetworkBannerScriptUrl: DEFAULT_MONETAG_VIGNETTE_SRC,
+    smartlinkUrl: DEFAULT_MONETAG_DIRECT_SMARTLINK,
+    smartlinkLabel: 'Explore Recommended Student & Teacher Partner Offer →',
+    monetagMode: 'clean_banners',
+    monetagSiteId: DEFAULT_MONETAG_SITE_ID,
+    monetagVignetteZoneId: DEFAULT_MONETAG_VIGNETTE_ZONE_ID,
+    monetagInPagePushZoneId: DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
+    monetagMultiTagZoneId: DEFAULT_MONETAG_MULTITAG_ZONE_ID,
+    monetagPushSwZoneId: DEFAULT_MONETAG_PUSH_SW_ZONE_ID,
+    monetagPayoutMethod: 'PAYPAL_MPESA',
+    monetagPayoutAccount: '',
+    monetagSspApiToken: (process.env.MONETAG_SSP_API_TOKEN || '').trim(),
 
     placements: {
       topLeaderboard: true,
@@ -397,9 +431,27 @@ export async function getStoredMonetizationConfig(): Promise<MonetizationConfig>
     merged.adNetworkScriptUrl = sanitizeAdUrl(merged.adNetworkScriptUrl);
     merged.adNetworkBannerScriptUrl = sanitizeAdUrl(merged.adNetworkBannerScriptUrl);
     merged.smartlinkUrl = sanitizeAdUrl(merged.smartlinkUrl);
-    if (!merged.adNetworkScriptUrl && !merged.smartlinkUrl) {
-      merged.adNetworkEnabled = false;
+
+    // Auto-upgrade legacy empty Adsterra/custom config to verified Monetag zones for www.cbcmaterials.shop (#3582026)
+    if (
+      !merged.monetagVignetteZoneId ||
+      (merged.adNetworkProvider === 'adsterra' && !merged.adNetworkScriptUrl)
+    ) {
+      merged.adNetworkEnabled = true;
+      merged.adNetworkProvider = 'monetag';
+      merged.adNetworkScriptUrl = DEFAULT_MONETAG_INPAGE_PUSH_SRC;
+      merged.adNetworkBannerScriptUrl = DEFAULT_MONETAG_VIGNETTE_SRC;
+      if (!merged.smartlinkUrl || merged.smartlinkUrl.includes('facebook.com')) {
+        merged.smartlinkUrl = DEFAULT_MONETAG_DIRECT_SMARTLINK;
+      }
+      merged.monetagMode = merged.monetagMode || 'clean_banners';
+      merged.monetagSiteId = DEFAULT_MONETAG_SITE_ID;
+      merged.monetagVignetteZoneId = DEFAULT_MONETAG_VIGNETTE_ZONE_ID;
+      merged.monetagInPagePushZoneId = DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID;
+      merged.monetagMultiTagZoneId = DEFAULT_MONETAG_MULTITAG_ZONE_ID;
+      merged.monetagPushSwZoneId = DEFAULT_MONETAG_PUSH_SW_ZONE_ID;
     }
+
     cachedConfig = { data: merged, expiresAt: Date.now() + 15000 };
     return merged;
   } catch {
