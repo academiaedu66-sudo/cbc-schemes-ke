@@ -232,7 +232,7 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
   const availableMonetizationUsd = Number(
     (availableMonetizationKes / usdRate).toFixed(2)
   );
-  const monetagPayoutMethod = monConfig.monetagPayoutMethod || 'PAYPAL_MPESA';
+  const monetagPayoutMethod = monConfig.monetagPayoutMethod || 'SKRILL_MPESA';
   const monetagMinPayoutUsd =
     monetagPayoutMethod === 'USDT'
       ? 100
@@ -291,7 +291,8 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
         ? monConfig.smartlinkUrl
         : DEFAULT_MONETAG_DIRECT_SMARTLINK,
     monetagPayoutMethod,
-    monetagPayoutAccount: monConfig.monetagPayoutAccount || '',
+    monetagPayoutAccount:
+      monConfig.monetagPayoutAccount || 'academia.edu55@gmail.com',
     hasMonetagApiToken: Boolean((monConfig.monetagSspApiToken || '').trim()),
     availableMonetizationUsd,
     monetagMinPayoutUsd,

@@ -290,8 +290,8 @@ export function getDefaultMonetizationConfig(): MonetizationConfig {
     monetagInPagePushZoneId: DEFAULT_MONETAG_INPAGE_PUSH_ZONE_ID,
     monetagMultiTagZoneId: DEFAULT_MONETAG_MULTITAG_ZONE_ID,
     monetagPushSwZoneId: DEFAULT_MONETAG_PUSH_SW_ZONE_ID,
-    monetagPayoutMethod: 'PAYPAL_MPESA',
-    monetagPayoutAccount: '',
+    monetagPayoutMethod: 'SKRILL_MPESA',
+    monetagPayoutAccount: 'academia.edu55@gmail.com',
     monetagSspApiToken: (process.env.MONETAG_SSP_API_TOKEN || '').trim(),
 
     placements: {

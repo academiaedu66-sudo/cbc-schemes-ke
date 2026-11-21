@@ -349,7 +349,7 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                       Monetag Verified &amp; Linked to CBC Admin Mobile App (Site #{config.monetagSiteId || '3582026'})
                     </p>
                     <p className="text-slate-700">
-                      Domain <code className="bg-white px-1.5 py-0.5 rounded font-mono font-bold">www.cbcmaterials.shop</code> is verified with Clean Post-Welcome-Song Banners &amp; Direct Link active. Linked directly to your <strong>CBC Admin Mobile App Wallet</strong> for easy withdrawal from <strong>$5.00 USD (0% fee via PayPal → M-Pesa 0728595160)</strong>.
+                      Domain <code className="bg-white px-1.5 py-0.5 rounded font-mono font-bold">www.cbcmaterials.shop</code> is verified with your <strong>Strict Anti-Third-Party-Ads Shield ON</strong>. Linked to Skrill (<code className="bg-white px-1.5 py-0.5 rounded font-mono font-bold">{config.monetagPayoutAccount || 'academia.edu55@gmail.com'}</code>, €5 min • 0% fee → Direct M-Pesa 0728595160) &amp; your <strong>CBC Admin Mobile App Wallet</strong>.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -366,16 +366,16 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3 py-2 rounded-xl shadow-sm"
                     >
-                      <span>Monetag Cashout ($5 Min)</span>
+                      <span>Monetag → Skrill (€5 Min)</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <a
-                      href="https://paypal-mobilemoney.com/m-pesa"
+                      href="https://account.skrill.com"
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-emerald-400 text-emerald-800 font-black px-3 py-2 rounded-xl"
                     >
-                      <span>PayPal → M-Pesa</span>
+                      <span>Skrill → M-Pesa 0728595160</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
@@ -524,7 +524,7 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                     Linked Mobile App Payout Route ($5 Min)
                   </label>
                   <select
-                    value={config.monetagPayoutMethod || 'PAYPAL_MPESA'}
+                    value={config.monetagPayoutMethod || 'SKRILL_MPESA'}
                     onChange={(e) =>
                       setConfig({
                         ...config,
@@ -538,11 +538,11 @@ export default function AdminMonetizationPanel({ password }: { password: string 
                     }
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white"
                   >
+                    <option value="SKRILL_MPESA">
+                      Skrill EUR (€5 Min • 0% Fee) → M-Pesa 0728595160
+                    </option>
                     <option value="PAYPAL_MPESA">
                       PayPal USD ($5 Min • 0% Fee) → M-Pesa 0728595160
-                    </option>
-                    <option value="SKRILL_MPESA">
-                      Skrill EUR (€5 Min • 0% Fee) → M-Pesa Wallet
                     </option>
                     <option value="WEBMONEY">WebMoney USD ($5 Min • 0% Fee)</option>
                     <option value="PAYONEER">Payoneer USD ($20 Min)</option>
@@ -552,12 +552,12 @@ export default function AdminMonetizationPanel({ password }: { password: string 
 
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Saved PayPal / Skrill Email or Payout Account
+                    Saved Skrill / PayPal Email or Payout Account
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. your-paypal@email.com (synced to Mobile App)"
-                    value={config.monetagPayoutAccount || ''}
+                    placeholder="academia.edu55@gmail.com"
+                    value={config.monetagPayoutAccount || 'academia.edu55@gmail.com'}
                     onChange={(e) =>
                       setConfig({
                         ...config,

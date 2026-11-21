@@ -297,9 +297,9 @@ export default function MobileAdminAppPage() {
   >('ad_free_site');
   const [mobileMonetagPayoutMethod, setMobileMonetagPayoutMethod] = useState<
     'PAYPAL_MPESA' | 'SKRILL_MPESA' | 'WEBMONEY' | 'PAYONEER' | 'USDT'
-  >('PAYPAL_MPESA');
+  >('SKRILL_MPESA');
   const [mobileMonetagPayoutAccount, setMobileMonetagPayoutAccount] =
-    useState('');
+    useState('academia.edu55@gmail.com');
   const [savingMonetagQuick, setSavingMonetagQuick] = useState(false);
   const [savingRealLinks, setSavingRealLinks] = useState(false);
   const linkerHydratedRef = useRef<boolean>(false);
@@ -628,10 +628,10 @@ export default function MobileAdminAppPage() {
                   : 'ad_free_site'
               );
               setMobileMonetagPayoutMethod(
-                walJson.overview.monetagPayoutMethod || 'PAYPAL_MPESA'
+                walJson.overview.monetagPayoutMethod || 'SKRILL_MPESA'
               );
               setMobileMonetagPayoutAccount(
-                walJson.overview.monetagPayoutAccount || ''
+                walJson.overview.monetagPayoutAccount || 'academia.edu55@gmail.com'
               );
               linkerHydratedRef.current = true;
             }
@@ -2069,7 +2069,8 @@ export default function MobileAdminAppPage() {
                     );
                     if (
                       mobileMonetagPayoutAccount.trim() &&
-                      mobileMonetagPayoutMethod === 'PAYPAL_MPESA'
+                      (mobileMonetagPayoutMethod === 'SKRILL_MPESA' ||
+                        mobileMonetagPayoutMethod === 'PAYPAL_MPESA')
                     ) {
                       setWithdrawDest(mobileMonetagPayoutAccount.trim());
                     } else {
@@ -2087,6 +2088,15 @@ export default function MobileAdminAppPage() {
                   <span>1-Tap Withdraw Monetag Coin in App</span>
                 </button>
 
+                <div className="bg-emerald-950/50 border border-emerald-500/40 rounded-xl px-3 py-2 text-[11px] text-emerald-200 flex items-center justify-between gap-2">
+                  <span className="truncate">
+                    Skrill Linked: <strong className="font-mono text-white">{mobileMonetagPayoutAccount || 'academia.edu55@gmail.com'}</strong>
+                  </span>
+                  <span className="text-[10px] font-black text-amber-300 shrink-0">
+                    → M-Pesa 0728***160
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <a
                     href="https://publishers.monetag.com/payments"
@@ -2094,16 +2104,16 @@ export default function MobileAdminAppPage() {
                     rel="noreferrer"
                     className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[11px] py-2.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 text-center shadow"
                   >
-                    <span>Monetag Cashout ($5)</span>
+                    <span>Monetag → Skrill (€5)</span>
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
                   <a
-                    href="https://paypal-mobilemoney.com/m-pesa"
+                    href="https://account.skrill.com"
                     target="_blank"
                     rel="noreferrer"
                     className="bg-slate-950 hover:bg-slate-800 border border-emerald-500/50 text-emerald-300 font-black text-[11px] py-2.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 text-center"
                   >
-                    <span>PayPal → M-Pesa</span>
+                    <span>Skrill → M-Pesa</span>
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
                 </div>
