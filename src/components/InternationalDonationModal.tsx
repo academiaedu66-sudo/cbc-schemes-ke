@@ -29,6 +29,7 @@ import {
   USD_TO_KES_DONATION_RATE,
   type DonationPaymentMethod,
 } from '@/lib/donations';
+import ButtonEmblemBadge from './ButtonEmblemBadge';
 
 const PRESET_USD_AMOUNTS = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
 
@@ -108,9 +109,9 @@ export function InternationalDonationTopBanner({
           type="button"
           onClick={onOpenModal}
           style={{ fontSize: '15px' }}
-          className="min-h-[48px] w-full xl:w-auto bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-2.5 rounded-xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
+          className="min-h-[50px] w-full xl:w-auto bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-2.5 rounded-xl font-black uppercase tracking-wider inline-flex items-center justify-center gap-2.5 shadow-md transition cursor-pointer"
         >
-          <HeartHandshake className="w-5 h-5 text-rose-700 shrink-0" />
+          <ButtonEmblemBadge variant="global_donate" size="md" />
           <span>DONATE TO HELP NEEDY LEARNERS ($1+)</span>
         </button>
         <span className="text-[11px] font-bold text-emerald-200/95 text-center xl:text-right">

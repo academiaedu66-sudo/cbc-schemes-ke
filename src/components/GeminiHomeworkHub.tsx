@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { AdSlot, useMonetization } from '@/components/MonetizationEngine';
+import ButtonEmblemBadge from './ButtonEmblemBadge';
 import { ALL_GRADE_KEYS, formatGradeLabel } from '@/lib/material-utils';
 import PurchaseThankYouBanner from './PurchaseThankYouBanner';
 
@@ -158,7 +159,7 @@ export default function GeminiHomeworkHub({
       if (savedTok) {
         setSubToken(savedTok);
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // Verify subscription status with server when modal opens
@@ -179,7 +180,7 @@ export default function GeminiHomeworkHub({
         } else if (subExpiresAt && Date.now() > subExpiresAt) {
           setSubExpiresAt(null);
         }
-      } catch {}
+      } catch { }
     },
     [subExpiresAt]
   );
@@ -238,10 +239,10 @@ export default function GeminiHomeworkHub({
           setPaymentStatus('FAILED');
           setPaymentMsg(
             data.error ||
-              'Could not verify M-Pesa code. Please double-check your code and resubmit.'
+            'Could not verify M-Pesa code. Please double-check your code and resubmit.'
           );
         }
-      } catch {}
+      } catch { }
     }, 1200);
 
     return () => window.clearInterval(timer);
@@ -271,7 +272,7 @@ export default function GeminiHomeworkHub({
           phone: phone.trim(),
         })
       );
-    } catch {}
+    } catch { }
     setProfileConfirmed(true);
     checkSubscriptionStatus(subToken, phone.trim());
   };
@@ -350,7 +351,7 @@ export default function GeminiHomeworkHub({
         buyerPhone: phone.trim() || undefined,
         stage: 'OPENED_CHECKOUT',
       }),
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   const handleInitiateKsh20Stk = async (e: React.FormEvent) => {
@@ -380,7 +381,7 @@ export default function GeminiHomeworkHub({
         setPaymentStatus('FAILED');
         setPaymentMsg(
           data.error ||
-            `Could not send STK prompt. Switch to "2. Send Money & Paste Code" to unlock immediately.`
+          `Could not send STK prompt. Switch to "2. Send Money & Paste Code" to unlock immediately.`
         );
         return;
       }
@@ -476,9 +477,9 @@ export default function GeminiHomeworkHub({
           <button
             type="button"
             onClick={openGeminiModal}
-            className="w-full lg:w-auto shrink-0 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-300 hover:to-yellow-200 text-slate-950 font-black text-sm px-6 py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2.5 transition cursor-pointer"
+            className="w-full lg:w-auto shrink-0 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-300 hover:to-yellow-200 text-slate-950 font-black text-sm px-6 py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2.5 transition cursor-pointer"
           >
-            <Bot className="w-5 h-5 text-indigo-950" />
+            <ButtonEmblemBadge variant="gemini_ai" size="md" />
             <span>ASK GEMINI A QUESTION NOW</span>
           </button>
         </div>
@@ -680,9 +681,8 @@ export default function GeminiHomeworkHub({
                       <textarea
                         rows={3}
                         required
-                        placeholder={`Hi ${
-                          fullName.split(' ')[0] || 'Learner'
-                        }, type any ${gradeLabel} question here (e.g. Maths calculation, Science process, Kiswahili sarufi, Essay prompt)...`}
+                        placeholder={`Hi ${fullName.split(' ')[0] || 'Learner'
+                          }, type any ${gradeLabel} question here (e.g. Maths calculation, Science process, Kiswahili sarufi, Essay prompt)...`}
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
                         className="w-full px-3.5 py-3 border border-slate-300 rounded-xl text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -850,11 +850,10 @@ export default function GeminiHomeworkHub({
                                         setPaymentMsg('');
                                         setPayTab('STK');
                                       }}
-                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${
-                                        payTab === 'STK'
-                                          ? 'bg-emerald-500 text-slate-950 shadow'
-                                          : 'text-slate-400 hover:text-white'
-                                      }`}
+                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${payTab === 'STK'
+                                        ? 'bg-emerald-500 text-slate-950 shadow'
+                                        : 'text-slate-400 hover:text-white'
+                                        }`}
                                     >
                                       1. M-Pesa STK Push (KSh {WEEKLY_FEE_KES})
                                     </button>
@@ -864,11 +863,10 @@ export default function GeminiHomeworkHub({
                                         setPaymentMsg('');
                                         setPayTab('DIRECT');
                                       }}
-                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${
-                                        payTab === 'DIRECT'
-                                          ? 'bg-amber-400 text-slate-950 shadow'
-                                          : 'text-slate-400 hover:text-white'
-                                      }`}
+                                      className={`py-2 rounded-lg text-[11px] font-black transition cursor-pointer ${payTab === 'DIRECT'
+                                        ? 'bg-amber-400 text-slate-950 shadow'
+                                        : 'text-slate-400 hover:text-white'
+                                        }`}
                                     >
                                       2. Pochi la Biashara ({merchantPhone})
                                     </button>
@@ -898,11 +896,10 @@ export default function GeminiHomeworkHub({
 
                                       {paymentMsg && (
                                         <div
-                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${
-                                            paymentStatus === 'FAILED'
-                                              ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
-                                              : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
-                                          }`}
+                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${paymentStatus === 'FAILED'
+                                            ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
+                                            : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
+                                            }`}
                                         >
                                           {paymentStatus === 'PENDING' ? (
                                             <Loader2 className="w-4 h-4 animate-spin text-amber-300 shrink-0 mt-0.5" />
@@ -995,11 +992,10 @@ export default function GeminiHomeworkHub({
 
                                       {paymentMsg && (
                                         <div
-                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${
-                                            paymentStatus === 'FAILED'
-                                              ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
-                                              : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
-                                          }`}
+                                          className={`rounded-xl p-3 font-semibold flex items-start gap-2 ${paymentStatus === 'FAILED'
+                                            ? 'bg-rose-950/80 border border-rose-700 text-rose-200'
+                                            : 'bg-emerald-950/80 border border-emerald-600 text-emerald-200'
+                                            }`}
                                         >
                                           {paymentStatus === 'PENDING' ? (
                                             <Loader2 className="w-4 h-4 animate-spin text-amber-300 shrink-0 mt-0.5" />

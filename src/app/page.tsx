@@ -50,6 +50,7 @@ import TutorPeterVideosHubModal from '@/components/TutorPeterVideosHubModal';
 import InternationalDonationModal, {
   InternationalDonationTopBanner,
 } from '@/components/InternationalDonationModal';
+import ButtonEmblemBadge from '@/components/ButtonEmblemBadge';
 import BrandLogoLockup from '@/components/BrandLogoLockup';
 import PurchaseThankYouBanner from '@/components/PurchaseThankYouBanner';
 import SeoKnowledgeSection from '@/components/SeoKnowledgeSection';
@@ -674,9 +675,9 @@ export default function HomePage() {
                     );
                   }
                 }}
-                className="min-h-[48px] bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-4 py-2.5 rounded-xl text-xs sm:text-[13px] font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
+                className="min-h-[50px] bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-md transition cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-amber-200 shrink-0" />
+                <ButtonEmblemBadge variant="tuition_1on1" size="md" />
                 <span>BOOK 1-ON-1 LESSONS &amp; PERSONAL TUTOR (KSH 1,000 ONLY)</span>
               </button>
 
@@ -684,9 +685,9 @@ export default function HomePage() {
                 href="#holiday-tuition-hub"
                 onClick={() => trackInteraction('holiday_tuition_top_right_click')}
                 style={{ fontSize: '16px' }}
-                className="min-h-[48px] bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-5 py-2.5 rounded-xl text-[16px] font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(251,191,36,0.5)] transition shrink-0"
+                className="min-h-[50px] bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:brightness-105 text-slate-950 border-2 border-white px-4 py-2 rounded-xl text-[16px] font-black uppercase tracking-wider inline-flex items-center justify-center gap-2.5 shadow-[0_0_24px_rgba(251,191,36,0.5)] transition shrink-0"
               >
-                <GraduationCap className="w-5 h-5 text-emerald-900 shrink-0" />
+                <ButtonEmblemBadge variant="holiday_tuition" size="md" />
                 <span>HOLIDAY TUITION</span>
               </a>
             </div>
@@ -700,7 +701,7 @@ export default function HomePage() {
             }}
           />
 
-          {/* Symmetrical 4x4 Orderly Action Grid (Exact Same Positions 1–16, Uniform Height & Alignment) */}
+          {/* Symmetrical 4x4 Orderly Action Grid with Unique Glossy App-Style Emblem Logos (Exact Same Positions 1–16) */}
           <div className="bg-slate-950/35 backdrop-blur-xs border border-white/15 rounded-2xl p-3 sm:p-3.5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
               <button
@@ -713,9 +714,9 @@ export default function HomePage() {
                     tick: Date.now(),
                   })
                 }
-                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/70 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/70 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <BookOpen className="w-4 h-4 text-emerald-900 shrink-0" />
+                <ButtonEmblemBadge variant="book_1" />
                 <span className="truncate">1. CBC GRADE UP (KSh 500)</span>
               </button>
 
@@ -729,9 +730,9 @@ export default function HomePage() {
                     tick: Date.now(),
                   })
                 }
-                className="min-h-[44px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/70 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/70 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <BookOpen className="w-4 h-4 text-indigo-950 shrink-0" />
+                <ButtonEmblemBadge variant="book_2" />
                 <span className="truncate">2. SUPER-LIGHT CBC COMPILATION (KSh 750)</span>
               </button>
 
@@ -745,54 +746,54 @@ export default function HomePage() {
                     tick: Date.now(),
                   })
                 }
-                className="min-h-[44px] w-full bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border border-amber-500 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-300 hover:from-amber-200 hover:to-emerald-200 text-slate-950 border border-amber-500 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <BookOpen className="w-4 h-4 text-purple-900 shrink-0" />
+                <ButtonEmblemBadge variant="book_3" />
                 <span className="truncate">3. SMART CBC ALL SUBJECTS (KSh 1,500)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setKjseaModalTick((c) => c + 1)}
-                className="min-h-[44px] w-full bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white border border-amber-300 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white border border-amber-300 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <Award className="w-4 h-4 text-amber-200 shrink-0" />
+                <ButtonEmblemBadge variant="kjsea_exam" />
                 <span className="truncate">NATIONAL KJSEA EXAMINATION (ALL GRADES)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => jumpToCurriculumMaterials('All')}
-                className="min-h-[44px] w-full bg-white hover:bg-amber-50 text-emerald-950 border border-amber-300 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-white hover:bg-amber-50 text-emerald-950 border border-amber-300 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <BookOpen className="w-4 h-4 text-emerald-700 shrink-0" />
+                <ButtonEmblemBadge variant="all_materials" />
                 <span className="truncate">ALL CURRICULUM MATERIALS</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setGeminiOpenTick((c) => c + 1)}
-                className="min-h-[44px] w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border border-amber-300/60 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border border-amber-300/60 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <Bot className="w-4 h-4 text-amber-300 shrink-0" />
+                <ButtonEmblemBadge variant="gemini_ai" />
                 <span className="truncate">ASK GEMINI (Q&amp;A)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSideHustlesOpenTick((c) => c + 1)}
-                className="min-h-[44px] w-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 border border-white/40 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <Briefcase className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="side_hustles" />
                 <span className="truncate">HOLIDAY SIDE HUSTLES</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setTscOpenTick((c) => c + 1)}
-                className="min-h-[44px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-sky-400 hover:bg-sky-300 text-slate-950 border border-white/40 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <Landmark className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="tsc_services" />
                 <span className="truncate">ALL TSC SERVICES</span>
               </button>
 
@@ -803,10 +804,10 @@ export default function HomePage() {
                   setVideoModalItem(null);
                   setIsVideosModalOpen(true);
                 }}
-                className="min-h-[44px] w-full bg-red-600 hover:bg-red-500 text-white border border-amber-300/60 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-red-600 hover:bg-red-500 text-white border border-amber-300/60 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
               >
+                <ButtonEmblemBadge variant="tutor_videos" />
                 <Lock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <Video className="w-4 h-4 shrink-0" />
                 <span className="truncate">VIDEOS ($15)</span>
               </button>
 
@@ -819,34 +820,34 @@ export default function HomePage() {
                     tick: Date.now(),
                   })
                 }
-                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="gaming" />
                 <span className="truncate">GAMING (ALL SUBJECTS)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setCounsellingOpenTick((c) => c + 1)}
-                className="min-h-[44px] w-full bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-gradient-to-r from-pink-400 to-amber-300 hover:from-pink-300 hover:to-amber-200 text-slate-950 border border-white/40 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <HeartHandshake className="w-4 h-4 text-purple-900 shrink-0" />
+                <ButtonEmblemBadge variant="counselling" />
                 <span className="truncate">GUIDANCE &amp; COUNSELLING</span>
               </button>
 
               <Link
                 href="/advertise"
-                className="min-h-[44px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs text-left"
+                className="min-h-[48px] w-full bg-amber-400 hover:bg-amber-300 text-slate-950 border border-white/40 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs text-left"
               >
-                <Megaphone className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="advertise" />
                 <span className="truncate">ADVERTISE</span>
               </Link>
 
               <Link
                 href="/admin"
-                className="min-h-[44px] w-full bg-emerald-900/75 hover:bg-emerald-900 border border-emerald-500/60 text-emerald-100 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs text-left"
+                className="min-h-[48px] w-full bg-emerald-900/75 hover:bg-emerald-900 border border-emerald-500/60 text-emerald-100 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs text-left"
               >
-                <UploadCloud className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="admin_studio" />
                 <span className="truncate">ADMIN STUDIO</span>
               </Link>
 
@@ -861,9 +862,9 @@ export default function HomePage() {
                     );
                   }
                 }}
-                className="min-h-[44px] w-full bg-gradient-to-r from-amber-300 to-emerald-300 hover:brightness-105 text-slate-950 border border-white/50 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2 transition shadow-xs cursor-pointer text-left"
+                className="min-h-[48px] w-full bg-gradient-to-r from-amber-300 to-emerald-300 hover:brightness-105 text-slate-950 border border-white/50 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide flex items-center gap-2.5 transition shadow-xs cursor-pointer text-left"
               >
-                <UserPlus className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="member_auth" />
                 <span className="truncate">SIGN UP / LOGIN</span>
               </button>
 
@@ -872,11 +873,9 @@ export default function HomePage() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => trackInteraction('facebook_reels_header_click')}
-                className="min-h-[44px] w-full bg-[#1877F2] hover:bg-[#166FE5] text-white border border-white/30 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2 shadow-xs text-left"
+                className="min-h-[48px] w-full bg-[#1877F2] hover:bg-[#166FE5] text-white border border-white/30 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2.5 shadow-xs text-left"
               >
-                <span className="w-4 h-4 rounded-full bg-white text-[#1877F2] font-black text-[11px] inline-flex items-center justify-center leading-none shrink-0">
-                  f
-                </span>
+                <ButtonEmblemBadge variant="facebook_reels" />
                 <span className="truncate">FACEBOOK &amp; REELS</span>
               </a>
 
@@ -887,9 +886,9 @@ export default function HomePage() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => trackInteraction('whatsapp_header_click')}
-                className="min-h-[44px] w-full bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-300/50 px-3.5 py-2.5 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2 shadow-xs text-left"
+                className="min-h-[48px] w-full bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-300/50 px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wide transition flex items-center gap-2.5 shadow-xs text-left"
               >
-                <MessageCircle className="w-4 h-4 shrink-0" />
+                <ButtonEmblemBadge variant="whatsapp_chat" />
                 <span className="truncate">WHATSAPP {whatsappLocalPhone}</span>
               </a>
             </div>
@@ -911,9 +910,9 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => jumpToCurriculumMaterials('All')}
-              className="min-h-[48px] w-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-sm transition cursor-pointer"
+              className="min-h-[50px] w-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-sm transition cursor-pointer"
             >
-              <BookOpen className="w-5 h-5 text-amber-300 shrink-0" />
+              <ButtonEmblemBadge variant="all_materials" size="md" />
               <span>ALL CURRICULUM MATERIALS</span>
               <ChevronDown className="w-4 h-4 text-emerald-200 shrink-0" />
             </button>
@@ -925,10 +924,10 @@ export default function HomePage() {
                 setVideoModalItem(null);
                 setIsVideosModalOpen(true);
               }}
-              className="min-h-[48px] w-full bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+              className="min-h-[50px] w-full bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-wide inline-flex items-center justify-center gap-2.5 shadow-sm transition cursor-pointer"
             >
+              <ButtonEmblemBadge variant="tutor_videos" size="md" />
               <Lock className="w-4 h-4 text-amber-300 shrink-0" />
-              <Video className="w-5 h-5 text-amber-300 shrink-0" />
               <span>VIDEOS — TUTOR PETER ($15)</span>
             </button>
           </div>
