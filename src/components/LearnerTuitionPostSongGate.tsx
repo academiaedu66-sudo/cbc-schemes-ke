@@ -434,8 +434,8 @@ export default function LearnerTuitionPostSongGate() {
               OFFER ACTIVE NOW
             </span>
             <span>
-              KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING (PP1 – GRADE 12 • ALL 47
-              COUNTIES)!
+              TURN WEAK SUBJECTS INTO TOP SCORES! GET YOUR OWN 1-ON-1 HOME OR ONLINE CBC
+              TUTOR (PP1 – GRADE 12 • ALL 47 COUNTIES) — KSH 1,000 ONLY!
             </span>
           </div>
 
@@ -447,8 +447,8 @@ export default function LearnerTuitionPostSongGate() {
             <GraduationCap className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
               {alreadyRegisteredRef
-                ? `LEARNER TUITION REGISTERED (${alreadyRegisteredRef})`
-                : 'REGISTER LEARNER NOW — KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING'}
+                ? `MY LESSONS BOOKED (${alreadyRegisteredRef})`
+                : 'START 1-ON-1 LESSONS NOW (KSH 1,000 ONLY)'}
             </span>
           </button>
         </div>
@@ -482,22 +482,36 @@ export default function LearnerTuitionPostSongGate() {
             </div>
 
             {/* BOLD UPPERCASE HERO HEADER */}
-            <div className="bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white px-5 sm:px-7 py-5 border-b border-emerald-500/40 space-y-2">
+            <div className="bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white px-5 sm:px-7 py-5 border-b border-emerald-500/40 space-y-2.5">
               <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider shadow">
                 <GraduationCap className="w-4 h-4 shrink-0" />
-                <span>KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING</span>
+                <span>
+                  UNLOCK YOUR BEST GRADES • FULL ACCESS &amp; TUTOR MATCH AT KSH 1,000 ONLY
+                </span>
               </div>
               <h2
                 id="learner-tuition-offer-title"
                 className="text-base sm:text-xl font-black uppercase leading-snug tracking-wide text-amber-300"
               >
-                REGISTER NOW AS A LEARNER FOR PERSONAL &amp; HOLIDAY TUITION WHENEVER THIS
-                OFFER IS STILL ACTIVE!
+                DON&apos;T STRUGGLE ALONE — REGISTER NOW FOR 1-ON-1 PERSONALIZED LESSONS
+                WHILE THIS OFFER IS STILL ACTIVE!
               </h2>
               <p className="text-xs sm:text-sm font-extrabold uppercase text-emerald-100 leading-relaxed">
-                KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING • VERIFIED 1-ON-1 HOME
-                OR ONLINE CBC TEACHERS ACROSS ALL 47 COUNTIES (PP1 – GRADE 12)!
+                TURN TOUGH TOPICS INTO EASY MARKS, BUILD UNSTOPPABLE EXAM CONFIDENCE &amp;
+                GET A HANDPICKED HOME OR ONLINE CBC TUTOR NEAR YOU (PP1 – GRADE 12 • ALL
+                47 COUNTIES) — ALL FOR KSH 1,000 ONLY!
               </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1">
+                <span className="rounded-lg bg-white/10 border border-emerald-400/40 px-2.5 py-1 text-[10px] font-black uppercase text-emerald-200">
+                  ✓ 1-ON-1 MENTOR FOR YOUR WEAKEST SUBJECTS
+                </span>
+                <span className="rounded-lg bg-white/10 border border-amber-300/40 px-2.5 py-1 text-[10px] font-black uppercase text-amber-200">
+                  ✓ HOME OR ONLINE LESSONS AT YOUR PACE
+                </span>
+                <span className="rounded-lg bg-white/10 border border-sky-300/40 px-2.5 py-1 text-[10px] font-black uppercase text-sky-200">
+                  ✓ KSH 1,000 ONLY — ZERO EXTRA MATCH FEES
+                </span>
+              </div>
             </div>
 
             {/* BODY */}
@@ -639,8 +653,7 @@ export default function LearnerTuitionPostSongGate() {
                         <>
                           <Smartphone className="w-4 h-4 text-amber-300 shrink-0" />
                           <span>
-                            REGISTER NOW — KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER
-                            MATCHING
+                            CLAIM MY 1-ON-1 TUTOR &amp; START LESSONS NOW — KSH 1,000 ONLY
                           </span>
                         </>
                       )}

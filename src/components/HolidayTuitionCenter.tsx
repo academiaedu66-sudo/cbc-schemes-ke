@@ -429,15 +429,15 @@ export default function HolidayTuitionCenter({
                   For Students &amp; Parents
                 </span>
                 <span className="bg-emerald-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-lg">
-                  Ksh 1000 Only for subscription and teacher matching
+                  1-on-1 Tutor Match: KSh 1,000 Only
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
-                <strong>Book a Personal or Holiday Tuition Teacher:</strong> Select your
-                grade level and <strong>all the CBC subjects</strong> you need a teacher
-                for during school holidays, weekends, or at your convenient time. We
-                match your subjects to verified teachers and connect you through
-                Coordinator WhatsApp <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>.
+                <strong>Turn Weak Subjects Into Your Highest Grades:</strong> Get matched
+                with a dedicated, patient <strong>1-on-1 Home or Online CBC Tutor</strong>{' '}
+                who teaches at your exact pace across PP1–Grade 12 (all 47 counties) for{' '}
+                <strong className="text-amber-300">KSh 1,000 Only</strong> — coordinated
+                directly via WhatsApp <strong>{COORDINATOR_WHATSAPP_LOCAL}</strong>.
               </p>
             </div>
 

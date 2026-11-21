@@ -677,7 +677,7 @@ export default function HomePage() {
                 className="min-h-[48px] bg-gradient-to-r from-rose-600 via-red-600 to-amber-500 hover:brightness-110 text-white border-2 border-amber-300 px-4 py-2.5 rounded-xl text-xs sm:text-[13px] font-black uppercase tracking-wide inline-flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-amber-200 shrink-0" />
-                <span>KSH 1000 ONLY FOR SUBSCRIPTION AND TEACHER MATCHING</span>
+                <span>BOOK 1-ON-1 LESSONS &amp; PERSONAL TUTOR (KSH 1,000 ONLY)</span>
               </button>
 
               <a
