@@ -178,7 +178,7 @@ export default function InternationalDonationModal({
       .then((d) => {
         if (d?.usdToKesRate) setRate(Number(d.usdToKesRate));
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [isOpen]);
 
   const parsedUsd = Math.max(
@@ -203,8 +203,7 @@ export default function InternationalDonationModal({
           window.clearInterval(timer);
           setStkStatus('COMPLETED');
           setStatusMsg(
-            `Thank you ${
-              donorName || 'kind supporter'
+            `Thank you ${donorName || 'kind supporter'
             }! Your $${parsedUsd.toLocaleString()} USD donation has settled directly into the Learner Support Bank Account!`
           );
         } else if (data.status === 'FAILED') {
@@ -214,7 +213,7 @@ export default function InternationalDonationModal({
             'STK prompt was cancelled or timed out. You can retry STK Push or use Remitly / Sendwave / WorldRemit / PayPal / Bank Transfer.'
           );
         }
-      } catch {}
+      } catch { }
     }, 1400);
     return () => window.clearInterval(timer);
   }, [isOpen, stkStatus, checkoutRequestId, donorName, parsedUsd]);
@@ -261,7 +260,7 @@ export default function InternationalDonationModal({
         setStkStatus('FAILED');
         setErrorMsg(
           stkData.error ||
-            'Could not initiate STK on this number. If donating from abroad without a Safaricom roaming SIM, select Remitly, Sendwave, WorldRemit, PayPal, or Bank Transfer above!'
+          'Could not initiate STK on this number. If donating from abroad without a Safaricom roaming SIM, select Remitly, Sendwave, WorldRemit, PayPal, or Bank Transfer above!'
         );
         return;
       }
@@ -518,11 +517,10 @@ export default function InternationalDonationModal({
                     key={amt}
                     type="button"
                     onClick={() => setAmountUsdInput(String(amt))}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${
-                      active
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${active
                         ? 'bg-emerald-600 text-white shadow'
                         : 'bg-white border border-slate-300 text-slate-800 hover:bg-emerald-50'
-                    }`}
+                      }`}
                   >
                     ${amt.toLocaleString()}
                   </button>
@@ -629,11 +627,10 @@ export default function InternationalDonationModal({
                   setErrorMsg('');
                   setStatusMsg('');
                 }}
-                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${
-                  tab === 'STK_DIRECT'
+                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${tab === 'STK_DIRECT'
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase">
                   <Smartphone className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -652,11 +649,10 @@ export default function InternationalDonationModal({
                   setErrorMsg('');
                   setStatusMsg('');
                 }}
-                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${
-                  tab === 'REMITTANCE_STK'
+                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${tab === 'REMITTANCE_STK'
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase">
                   <Send className="w-4 h-4 text-indigo-600 shrink-0" />
@@ -675,11 +671,10 @@ export default function InternationalDonationModal({
                   setErrorMsg('');
                   setStatusMsg('');
                 }}
-                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${
-                  tab === 'PAYPAL_BANK'
+                className={`p-3 rounded-xl border-2 text-left transition cursor-pointer ${tab === 'PAYPAL_BANK'
                     ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-black uppercase">
                   <Building2 className="w-4 h-4 text-amber-600 shrink-0" />
@@ -762,11 +757,10 @@ export default function InternationalDonationModal({
                       setRemittanceMethod(rm);
                       setUponRequestDetails(null);
                     }}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer ${
-                      remittanceMethod === rm
+                    className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer ${remittanceMethod === rm
                         ? 'bg-indigo-600 text-white shadow'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
+                      }`}
                   >
                     {rm}
                   </button>
@@ -936,11 +930,10 @@ export default function InternationalDonationModal({
                     setIntlRequestMethod('PAYPAL');
                     setUponRequestDetails(null);
                   }}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase inline-flex items-center gap-1.5 cursor-pointer ${
-                    intlRequestMethod === 'PAYPAL'
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase inline-flex items-center gap-1.5 cursor-pointer ${intlRequestMethod === 'PAYPAL'
                       ? 'bg-sky-700 text-white shadow'
                       : 'bg-slate-100 text-slate-700'
-                  }`}
+                    }`}
                 >
                   <CreditCard className="w-3.5 h-3.5" />
                   <span>PayPal (Upon Request)</span>
@@ -951,11 +944,10 @@ export default function InternationalDonationModal({
                     setIntlRequestMethod('INTERNATIONAL_BANK_TRANSFER');
                     setUponRequestDetails(null);
                   }}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase inline-flex items-center gap-1.5 cursor-pointer ${
-                    intlRequestMethod === 'INTERNATIONAL_BANK_TRANSFER'
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase inline-flex items-center gap-1.5 cursor-pointer ${intlRequestMethod === 'INTERNATIONAL_BANK_TRANSFER'
                       ? 'bg-amber-600 text-white shadow'
                       : 'bg-slate-100 text-slate-700'
-                  }`}
+                    }`}
                 >
                   <Building2 className="w-3.5 h-3.5" />
                   <span>International Bank Transfer / SWIFT (Upon Request)</span>

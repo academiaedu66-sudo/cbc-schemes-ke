@@ -71,27 +71,134 @@ export default function LuxuryWelcomeSong({
   externalReplayTick?: number;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const promptAudioRef = useRef<HTMLAudioElement | null>(null);
+  const promptRepeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
   const activePlaybackTimerRef = useRef<ReturnType<typeof setInterval> | null>(
     null
   );
   const compulsoryActiveRef = useRef(false);
   const completedCompulsoryRef = useRef(false);
+  const songStartedRef = useRef(false);
   const playInFlightRef = useRef(false);
   const maxReachedTimeRef = useRef(0);
   const wallClockPlayedSecRef = useRef(0);
+  const lastTapMsRef = useRef(0);
 
   const [gateMode, setGateMode] = useState<GateMode>('IDLE');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [isAdminRoute, setIsAdminRoute] = useState(false);
+  const [singleTapHint, setSingleTapHint] = useState(false);
+
+  const stopSoftPromptAudio = useCallback(() => {
+    if (promptRepeatTimerRef.current) {
+      clearInterval(promptRepeatTimerRef.current);
+      promptRepeatTimerRef.current = null;
+    }
+    const p = promptAudioRef.current;
+    if (p) {
+      p.pause();
+      p.currentTime = 0;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+  }, []);
+
+  const playGentleHarpChime = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        void ctx.resume().catch(() => {});
+      }
+      const notes = [523.25, 659.25, 783.99]; // Warm C5 - E5 - G5 sanctuary chime
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.14);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + idx * 0.14);
+        gain.gain.exponentialRampToValueAtTime(
+          0.045,
+          ctx.currentTime + idx * 0.14 + 0.05
+        );
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          ctx.currentTime + idx * 0.14 + 1.15
+        );
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.14);
+        osc.stop(ctx.currentTime + idx * 0.14 + 1.2);
+      });
+      setTimeout(() => {
+        void ctx.close().catch(() => {});
+      }, 1800);
+    } catch {}
+  }, []);
+
+  const playSoftDoubleClickPrompt = useCallback(async (): Promise<boolean> => {
+    if (songStartedRef.current || completedCompulsoryRef.current) return false;
+    try {
+      let promptAudio = promptAudioRef.current;
+      if (!promptAudio) {
+        promptAudio = new Audio('/audio/welcome-double-click-prompt.mp3');
+        promptAudio.preload = 'auto';
+        promptAudio.volume = 0.62;
+        promptAudioRef.current = promptAudio;
+      }
+      if (!promptAudio.paused && promptAudio.currentTime > 0.1) {
+        return true;
+      }
+      promptAudio.currentTime = 0;
+      promptAudio.volume = 0.62;
+      promptAudio.muted = false;
+      await promptAudio.play();
+      playGentleHarpChime();
+
+      // Arm a gentle 12-second repeat reminder until the visitor double-clicks
+      if (!promptRepeatTimerRef.current) {
+        promptRepeatTimerRef.current = setInterval(() => {
+          if (
+            songStartedRef.current ||
+            completedCompulsoryRef.current ||
+            !compulsoryActiveRef.current
+          ) {
+            stopSoftPromptAudio();
+            return;
+          }
+          const pa = promptAudioRef.current;
+          if (pa && pa.paused) {
+            pa.currentTime = 0;
+            pa.play().catch(() => {});
+            playGentleHarpChime();
+          }
+        }, 12500);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }, [playGentleHarpChime, stopSoftPromptAudio]);
 
   const clearTimers = useCallback(() => {
     if (activePlaybackTimerRef.current) {
       clearInterval(activePlaybackTimerRef.current);
       activePlaybackTimerRef.current = null;
     }
-  }, []);
+    stopSoftPromptAudio();
+  }, [stopSoftPromptAudio]);
 
   const completeCompulsoryGate = useCallback(() => {
     if (completedCompulsoryRef.current) return;
@@ -256,6 +363,8 @@ export default function LuxuryWelcomeSong({
       playInFlightRef.current = true;
 
       try {
+        stopSoftPromptAudio();
+        songStartedRef.current = true;
         const audio = ensureAudioInstance();
         audio.volume = 0.85;
         audio.muted = false;
@@ -269,13 +378,14 @@ export default function LuxuryWelcomeSong({
         startWallClockTicker(true);
         return true;
       } catch {
+        songStartedRef.current = false;
         playInFlightRef.current = false;
         setIsPlaying(false);
         setGateMode('COMPULSORY_WAITING_GESTURE');
         return false;
       }
     },
-    [ensureAudioInstance, startWallClockTicker]
+    [ensureAudioInstance, startWallClockTicker, stopSoftPromptAudio]
   );
 
   const startOptionalReplay = useCallback(async () => {
@@ -314,43 +424,39 @@ export default function LuxuryWelcomeSong({
 
     compulsoryActiveRef.current = true;
     completedCompulsoryRef.current = false;
+    songStartedRef.current = false;
     maxReachedTimeRef.current = 0;
     wallClockPlayedSecRef.current = 0;
+    lastTapMsRef.current = 0;
     setElapsedSec(0);
+    setSingleTapHint(false);
     setGateMode('COMPULSORY_WAITING_GESTURE');
 
     // Lock background browsing & scrolling until the full 1-minute song finishes
     document.body.style.overflow = 'hidden';
 
-    // Preload audio immediately
+    // Preload both the welcome song and the soft double-click voice prompt immediately
     ensureAudioInstance();
-
-    // Valid browser user-activation events ONLY
-    const activationEvents: Array<keyof WindowEventMap> = [
-      'pointerdown',
-      'touchstart',
-      'mousedown',
-      'click',
-      'keydown',
-    ];
+    if (!promptAudioRef.current) {
+      const pa = new Audio('/audio/welcome-double-click-prompt.mp3');
+      pa.preload = 'auto';
+      pa.volume = 0.62;
+      promptAudioRef.current = pa;
+    }
 
     const removeGestureListeners = () => {
-      for (const ev of activationEvents) {
-        window.removeEventListener(ev, onFirstUserActivation, { capture: true });
-      }
+      window.removeEventListener('pointerdown', onScreenTapOrClick, {
+        capture: true,
+      });
+      window.removeEventListener('dblclick', onScreenDoubleClick, {
+        capture: true,
+      });
+      window.removeEventListener('keydown', onKeyDownHandler, {
+        capture: true,
+      });
     };
 
-    const onFirstUserActivation = (e: Event) => {
-      if (
-        e.type === 'keydown' &&
-        e instanceof KeyboardEvent &&
-        (e.key === ' ' ||
-          e.key === 'ArrowDown' ||
-          e.key === 'PageDown' ||
-          e.key === 'Escape')
-      ) {
-        e.preventDefault();
-      }
+    const startWelcomeSongNow = () => {
       if (!compulsoryActiveRef.current || completedCompulsoryRef.current) {
         removeGestureListeners();
         return;
@@ -362,41 +468,93 @@ export default function LuxuryWelcomeSong({
       });
     };
 
-    for (const ev of activationEvents) {
-      window.addEventListener(ev, onFirstUserActivation, {
-        capture: true,
-        passive: false,
-      });
-    }
+    const onScreenDoubleClick = () => {
+      startWelcomeSongNow();
+    };
 
-    // Attempt zero-click autoplay immediately on arrival; if browser awaits first touch,
-    // listeners remain armed and trigger instantaneously on first interaction!
-    void attemptCompulsoryPlay(false).then((startedImmediately) => {
-      if (startedImmediately) {
+    const onScreenTapOrClick = () => {
+      if (songStartedRef.current || completedCompulsoryRef.current) {
         removeGestureListeners();
+        return;
       }
+      const now = Date.now();
+      const delta = now - lastTapMsRef.current;
+      lastTapMsRef.current = now;
+
+      // Double-click / Double-tap detected within 650ms -> Start 1-Minute Welcome Song!
+      if (delta > 35 && delta <= 650) {
+        setSingleTapHint(false);
+        startWelcomeSongNow();
+        return;
+      }
+
+      // Single click / First touch -> Play the soft voice + harp chime asking them to double-click!
+      setSingleTapHint(true);
+      void playSoftDoubleClickPrompt();
+    };
+
+    const onKeyDownHandler = (e: KeyboardEvent) => {
+      if (
+        e.key === ' ' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'PageDown' ||
+        e.key === 'Escape'
+      ) {
+        e.preventDefault();
+      }
+      if (e.key === 'Enter') {
+        onScreenTapOrClick();
+      } else if (!songStartedRef.current) {
+        void playSoftDoubleClickPrompt();
+      }
+    };
+
+    window.addEventListener('pointerdown', onScreenTapOrClick, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener('dblclick', onScreenDoubleClick, {
+      capture: true,
+    });
+    window.addEventListener('keydown', onKeyDownHandler, {
+      capture: true,
+      passive: false,
     });
 
-    // Resume automatically when returning to visible tab
+    // Immediately play the soft concierge prompt on arrival if browser allows autoplay;
+    // otherwise it triggers softly on the visitor's very first touch and starts the song on double-click!
+    void playSoftDoubleClickPrompt();
+
+    // Resume song automatically when returning to visible tab if already started
     const onVisibilityChange = () => {
       if (
         !document.hidden &&
         compulsoryActiveRef.current &&
         !completedCompulsoryRef.current
       ) {
-        void attemptCompulsoryPlay();
+        if (songStartedRef.current) {
+          void attemptCompulsoryPlay();
+        } else {
+          void playSoftDoubleClickPrompt();
+        }
       }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       removeGestureListeners();
+      stopSoftPromptAudio();
       document.removeEventListener('visibilitychange', onVisibilityChange);
       if (!completedCompulsoryRef.current) {
         document.body.style.overflow = '';
       }
     };
-  }, [attemptCompulsoryPlay, ensureAudioInstance]);
+  }, [
+    attemptCompulsoryPlay,
+    ensureAudioInstance,
+    playSoftDoubleClickPrompt,
+    stopSoftPromptAudio,
+  ]);
 
   // Listen for manual replay from the top ribbon (either prop or global custom event)
   useEffect(() => {
@@ -483,13 +641,10 @@ export default function LuxuryWelcomeSong({
         role="dialog"
         aria-modal="true"
         aria-label="5-Star Concierge Compulsory 1-Minute Welcome Song"
-        onPointerDown={() => {
+        onDoubleClick={() => {
           if (waitingForFirstTouch) void attemptCompulsoryPlay(true);
         }}
-        onClick={() => {
-          if (waitingForFirstTouch) void attemptCompulsoryPlay(true);
-        }}
-        className={`fixed inset-0 z-[130] flex items-center justify-center px-5 py-8 overflow-hidden select-none transition-all duration-700 ${
+        className={`fixed inset-0 z-[130] flex items-center justify-center px-5 py-8 overflow-hidden select-none touch-manipulation transition-all duration-700 ${
           isUnlocking
             ? 'opacity-0 scale-105 pointer-events-none'
             : 'opacity-100 scale-100'
@@ -599,23 +754,28 @@ export default function LuxuryWelcomeSong({
             </p>
           </div>
 
-          {/* Immediate Start CTA (if browser requires initial touch) OR Compulsory Countdown Progress */}
+          {/* Double-Click Start CTA (with Soft Voice + Harp Chime Prompt) OR Compulsory Countdown Progress */}
           {waitingForFirstTouch ? (
             <div className="space-y-3 pt-1">
               <button
                 type="button"
-                onClick={(e) => {
+                onDoubleClick={(e) => {
                   e.stopPropagation();
                   void attemptCompulsoryPlay(true);
                 }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-emerald-300 text-slate-950 font-black text-sm sm:text-base tracking-wide shadow-[0_0_35px_rgba(251,191,36,0.55)] hover:brightness-105 active:scale-[0.99] transition cursor-pointer animate-bounce"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-emerald-300 text-slate-950 font-black text-sm sm:text-base uppercase tracking-wide shadow-[0_0_35px_rgba(251,191,36,0.55)] hover:brightness-105 active:scale-[0.99] transition cursor-pointer animate-bounce"
               >
                 <Volume2 className="w-5 h-5 shrink-0" />
-                <span>Tap Anywhere to Start Your 1-Minute Welcome Song</span>
+                <span>
+                  {singleTapHint
+                    ? 'Tap / Click Once More (Double-Click) to Start Song!'
+                    : 'Double-Click the Screen to Listen to Welcome Song'}
+                </span>
               </button>
-              <p className="text-[11px] sm:text-xs font-semibold text-amber-200/85">
-                Auto-plays on your very first touch • Compulsory 1:00 welcome
-                experience before browsing
+              <p className="text-[11px] sm:text-xs font-semibold text-amber-200/90">
+                🔊 Soft voice guide active • Please double-click (or double-tap)
+                anywhere on the screen to listen to our 1-minute welcome song before
+                browsing to the main site
               </p>
             </div>
           ) : (
