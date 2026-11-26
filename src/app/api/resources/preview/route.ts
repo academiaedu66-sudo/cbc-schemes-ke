@@ -130,34 +130,34 @@ function buildFallbackDetails(resource: {
         : `Official Confidential Marking Scheme & Scoring Guide: KENYA NATIONAL KJSEA TEST (${gradeLabel} ${resource.subject} • 100 Marks • KSh 50). Includes the Academic Assessment Crest Seal, CBC Performance Level Rubric (EE, ME, AE, BE), and Complete Step-by-Step Worked Solutions for Section A (Q1–10) & Section B (Q11–20).`;
       strands = isKis
         ? [
-            'Nyaraka Rasmi ya Mtahini: Mwongozo wa Kusahihisha Maswali 1 hadi 20 (Alama 100)',
-            'Majibu na Ufafanuzi wa Sehemu A (Maswali 1–10, Alama 20)',
-            'Hatua za Utuzaji Alama kwa Sehemu B (Maswali 11–20, Alama 80)',
-            'Inatolewa katika miundo MIWILI: .PDF + Editable Word (.DOCX) — KSh 50',
-          ]
+          'Nyaraka Rasmi ya Mtahini: Mwongozo wa Kusahihisha Maswali 1 hadi 20 (Alama 100)',
+          'Majibu na Ufafanuzi wa Sehemu A (Maswali 1–10, Alama 20)',
+          'Hatua za Utuzaji Alama kwa Sehemu B (Maswali 11–20, Alama 80)',
+          'Inatolewa katika miundo MIWILI: .PDF + Editable Word (.DOCX) — KSh 50',
+        ]
         : [
-            'Confidential Examiner Scoring Guide matching Questions 1–20 (Total: 100 Marks)',
-            'Section A Complete Answer Key & Explanations (Q1–10 = 20 Marks)',
-            'Section B Step-by-Step Worked Solutions & Mark Breakdown (Q11–20 = 80 Marks)',
-            'Dual Format Included: Print-Ready .PDF + Editable Word (.DOCX) — KSh 50',
-          ];
+          'Confidential Examiner Scoring Guide matching Questions 1–20 (Total: 100 Marks)',
+          'Section A Complete Answer Key & Explanations (Q1–10 = 20 Marks)',
+          'Section B Step-by-Step Worked Solutions & Mark Breakdown (Q11–20 = 80 Marks)',
+          'Dual Format Included: Print-Ready .PDF + Editable Word (.DOCX) — KSh 50',
+        ];
     } else if (isJamoKjsea) {
       description = isKis
         ? `Karatasi Rasmi ya Maswali ya Mtihani: KENYA NATIONAL KJSEA TEST (${gradeLabel} ${resource.subject} • MUDA: SAA 2 • KSh 50). Imeundwa kwa muundo kamili wa KNEC ikiwa na Nembo ya Tathmini, Maagizo kwa Watahiniwa kwenye ukurasa wa kwanza, na Maswali 20 yasiyo na urudiaji yanayofunika Mada Kuu zote za silabasi (Mwongozo wa Kusahihisha unapatikana kando kwa KSh 50).`
         : `Official Question Paper Booklet: KENYA NATIONAL KJSEA TEST (${gradeLabel} ${resource.subject} • TIME: 2 HOURS • KSh 50). Features an authentic KNEC-style First-Page Cover with Academic Assessment Seal, Instructions to Candidates, Examiner's Scoring Grid, and 20 zero-repetition questions covering ALL syllabus strands (Official Marking Scheme available separately at KSh 50).`;
       strands = isKis
         ? [
-            'Ukurasa wa Kwanza (Muundo wa KNEC): Nembo Rasmi, Maagizo kwa Watahiniwa & Jedwali la Mtahini',
-            'Muda wa Mtihani: SAA 2 • Maswali 20 Yenye Alama 100 (Bila Urudiaji Wowote)',
-            'Inatahini Mada Kuu Zote za Silabasi kwa Lugha ya Kiswahili Sanifu',
-            'Karatasi ya Maswali (.PDF + .DOCX): KSh 50 • Mwongozo wa Kusahihisha unapatikana kwa KSh 50',
-          ]
+          'Ukurasa wa Kwanza (Muundo wa KNEC): Nembo Rasmi, Maagizo kwa Watahiniwa & Jedwali la Mtahini',
+          'Muda wa Mtihani: SAA 2 • Maswali 20 Yenye Alama 100 (Bila Urudiaji Wowote)',
+          'Inatahini Mada Kuu Zote za Silabasi kwa Lugha ya Kiswahili Sanifu',
+          'Karatasi ya Maswali (.PDF + .DOCX): KSh 50 • Mwongozo wa Kusahihisha unapatikana kwa KSh 50',
+        ]
         : [
-            "Page 1 (KNEC Cover Format): Academic Seal, Instructions to Candidates & Examiner's Grid",
-            'Duration: 2 HOURS • 20 Zero-Repetition Questions Covering ALL Strands (100 Marks)',
-            'Section A (Q1–10 Multiple Choice, 20 Marks) + Section B (Q11–20 Structured, 80 Marks)',
-            'Question Paper (.PDF + .DOCX): KSh 50 • Separate Official Marking Scheme: KSh 50',
-          ];
+          "Page 1 (KNEC Cover Format): Academic Seal, Instructions to Candidates & Examiner's Grid",
+          'Duration: 2 HOURS • 20 Zero-Repetition Questions Covering ALL Strands (100 Marks)',
+          'Section A (Q1–10 Multiple Choice, 20 Marks) + Section B (Q11–20 Structured, 80 Marks)',
+          'Question Paper (.PDF + .DOCX): KSh 50 • Separate Official Marking Scheme: KSh 50',
+        ];
     } else {
       description = `Competency-Based ${gradeLabel} ${resource.subject} (${termText}) Assessment Paper & Official Marking Scheme aligned to ${book.lbTitle} (${book.publisher}) — includes BOTH Editable Word (.DOCX to customize your school header) and Print-Ready (.PDF).`;
       strands = [

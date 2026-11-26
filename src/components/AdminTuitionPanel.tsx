@@ -122,17 +122,16 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
               key={r}
               type="button"
               onClick={() => setFilterRole(r)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                filterRole === r
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterRole === r
+                ? 'bg-slate-900 text-white'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
             >
               {r === 'ALL'
                 ? `All (${entries.length})`
                 : r === 'LEARNER'
-                ? `Students (${learners.length})`
-                : `Teachers (${entries.filter((x) => x.role === 'TEACHER').length})`}
+                  ? `Students (${learners.length})`
+                  : `Teachers (${entries.filter((x) => x.role === 'TEACHER').length})`}
             </button>
           ))}
           <button
@@ -224,8 +223,8 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
               const cleanIntlPhone = item.phone.replace(/^\+/, '');
               const waHref = !isSeed
                 ? `https://wa.me/${cleanIntlPhone}?text=${encodeURIComponent(
-                    `Hello ${item.fullName}! Calling/messaging from CBC Kenya Resource Hub Tuition Desk (0728595160) regarding your ${item.referenceCode} registration for: ${item.subjects.join(', ')}.`
-                  )}`
+                  `Hello ${item.fullName}! Calling/messaging from CBC Kenya Resource Hub Tuition Desk (0728595160) regarding your ${item.referenceCode} registration for: ${item.subjects.join(', ')}.`
+                )}`
                 : undefined;
 
               return (
@@ -235,11 +234,10 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
                       {item.referenceCode}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded mt-1 ${
-                        item.role === 'LEARNER'
-                          ? 'bg-amber-100 text-amber-900'
-                          : 'bg-emerald-100 text-emerald-900'
-                      }`}
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded mt-1 ${item.role === 'LEARNER'
+                        ? 'bg-amber-100 text-amber-900'
+                        : 'bg-emerald-100 text-emerald-900'
+                        }`}
                     >
                       {item.role === 'LEARNER' ? (
                         <GraduationCap className="w-3 h-3" />
@@ -275,11 +273,10 @@ export default function AdminTuitionPanel({ password }: { password: string }) {
                       KSh {item.feeKes.toLocaleString()}
                     </p>
                     <span
-                      className={`inline-block text-[10px] font-black px-2 py-0.5 rounded mt-0.5 ${
-                        item.paymentStatus === 'COMPLETED'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
+                      className={`inline-block text-[10px] font-black px-2 py-0.5 rounded mt-0.5 ${item.paymentStatus === 'COMPLETED'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-amber-100 text-amber-800'
+                        }`}
                     >
                       {item.mpesaReceipt || item.paymentStatus}
                     </span>
