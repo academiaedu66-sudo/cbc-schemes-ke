@@ -21,6 +21,7 @@ export default function robots(): MetadataRoute.Robots {
           '/video-sitemap.xml',
           '/opensearch.xml',
           '/ads.txt',
+          '/llms.txt',
           '/sw.js',
           '/advertise',
           '/privacy-policy',

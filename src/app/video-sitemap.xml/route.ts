@@ -43,6 +43,10 @@ export async function GET() {
           )}</video:content_loc>`
         : '';
 
+      const playerLocUrl =
+        pub?.youtubeWatchUrl ||
+        `${lesson.watchPageUrl}${lesson.watchPageUrl.includes('?') ? '&' : '?'}player=embed`;
+
       return `  <url>
     <loc>${escapeXml(lesson.watchPageUrl)}</loc>
     <video:video>
@@ -51,8 +55,8 @@ export async function GET() {
       <video:description>${escapeXml(
         lesson.youtubeDescription.slice(0, 950)
       )}</video:description>${contentLocXml}
-      <video:player_loc>${escapeXml(
-        pub?.youtubeWatchUrl || lesson.watchPageUrl
+      <video:player_loc allow_embed="yes">${escapeXml(
+        playerLocUrl
       )}</video:player_loc>
       <video:duration>${lesson.durationSeconds}</video:duration>
       <video:publication_date>${escapeXml(

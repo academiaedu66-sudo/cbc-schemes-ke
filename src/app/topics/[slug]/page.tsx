@@ -42,7 +42,9 @@ async function getCachedTopicSampleMaterials(
         'id, title, grade, level, category, subject, term, price, format, file_path, created_at'
       );
 
-    if (pillar.dbCategoryFilter) {
+    if (pillar.slug === 'senior-school-pathways') {
+      query = query.gte('grade', 10);
+    } else if (pillar.dbCategoryFilter) {
       query = query.eq('category', pillar.dbCategoryFilter);
     }
     if (pillar.dbSearchKeyword) {
@@ -313,6 +315,59 @@ export default async function TopicPillarSeoPage({ params }: Props) {
               </div>
             </section>
           )}
+
+          {/* Structured KICD & TSC Alignment Overview (Boosts Search Engine Depth & Indexing) */}
+          <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-slate-900">
+              2026 KICD Rationalized &amp; TSC Compliance Structure — {pillar.navLabel}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Every file linked under <strong>{pillar.navLabel}</strong> on{' '}
+              <strong>CBCMATERIALS.SHOP (www.cbcmaterials.shop)</strong> is authored
+              for Kenyan teachers, principals, HODs, parents, and learners from Pre-Primary
+              (PP1 &amp; PP2) through Senior School (Grades 10–12). Unlocking any item via
+              M-Pesa STK Push (<strong>0728595160</strong>) delivers both Editable Word
+              (.DOCX) and Print-Ready PDF formats within seconds.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-emerald-50 text-emerald-950 border-y border-emerald-200">
+                    <th className="py-2.5 px-3 font-black">CBC Level</th>
+                    <th className="py-2.5 px-3 font-black">Grades Covered</th>
+                    <th className="py-2.5 px-3 font-black">Lesson Duration</th>
+                    <th className="py-2.5 px-3 font-black">Formats Unlocked</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td className="py-2 px-3 font-bold">Pre-Primary (ECDE)</td>
+                    <td className="py-2 px-3">PP1 &amp; PP2</td>
+                    <td className="py-2 px-3">30 Minutes / Lesson</td>
+                    <td className="py-2 px-3">Editable DOCX + Print PDF</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-bold">Lower &amp; Upper Primary</td>
+                    <td className="py-2 px-3">Grades 1–3 (KEYA) &amp; Grades 4–6 (KPSEA)</td>
+                    <td className="py-2 px-3">30–35 Minutes / Lesson</td>
+                    <td className="py-2 px-3">Editable DOCX + Print PDF</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-bold">Junior School (JSS)</td>
+                    <td className="py-2 px-3">Grades 7, 8 &amp; 9 (KJSEA)</td>
+                    <td className="py-2 px-3">40 Minutes / Lesson</td>
+                    <td className="py-2 px-3">Editable DOCX + Print PDF</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-bold">Senior School Pathways</td>
+                    <td className="py-2 px-3">Grades 10, 11 &amp; 12 (STEM, Social, Arts)</td>
+                    <td className="py-2 px-3">40 Minutes / Lesson</td>
+                    <td className="py-2 px-3">Editable DOCX + Print PDF</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           {/* Direct Grade Hubs (PP1 – Grade 12) */}
           <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">

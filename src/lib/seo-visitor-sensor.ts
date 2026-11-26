@@ -174,6 +174,9 @@ export async function runDailyAutomatedSeoRankSync(): Promise<{
 }> {
   const urls = [
     `${SITE_URL}/`,
+    `${SITE_URL}/videos`,
+    `${SITE_URL}/donate`,
+    `${SITE_URL}/llms.txt`,
     ...SEO_TOPIC_PILLARS.map((t) => `${SITE_URL}/topics/${t.slug}`),
     `${SITE_URL}/grades/pp1`,
     `${SITE_URL}/grades/pp2`,
@@ -183,14 +186,23 @@ export async function runDailyAutomatedSeoRankSync(): Promise<{
 
   const statuses: Record<string, number | string> = {};
 
-  // Warm sitemap.xml so Googlebot always receives an instant hot edge response
-  await fetch(`${SITE_URL}/sitemap.xml`, { cache: 'no-store' })
-    .then((r) => {
-      statuses['sitemap_warm'] = r.status;
-    })
-    .catch(() => {
-      statuses['sitemap_warm'] = 'skipped';
-    });
+  // Warm both sitemaps so Googlebot always receives an instant hot edge response
+  await Promise.all([
+    fetch(`${SITE_URL}/sitemap.xml`, { cache: 'no-store' })
+      .then((r) => {
+        statuses['sitemap_warm'] = r.status;
+      })
+      .catch(() => {
+        statuses['sitemap_warm'] = 'skipped';
+      }),
+    fetch(`${SITE_URL}/video-sitemap.xml`, { cache: 'no-store' })
+      .then((r) => {
+        statuses['video_sitemap_warm'] = r.status;
+      })
+      .catch(() => {
+        statuses['video_sitemap_warm'] = 'skipped';
+      }),
+  ]);
 
   for (const endpoint of [
     'https://api.indexnow.org/indexnow',

@@ -1,16 +1,24 @@
 {
   "crons": [
     {
+      "path": "/api/social/whatsapp-status-autopost?cron=hourly",
+      "schedule": "35 * * * *"
+    },
+    {
       "path": "/api/social/facebook-autopost",
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/social/whatsapp-status-autopost",
-      "schedule": "0 4 * * *"
+      "path": "/api/seo/sensor?cron=daily",
+      "schedule": "15 5 * * *"
     },
     {
-      "path": "/api/seo/sensor?cron=daily",
-      "schedule": "0 5 * * *"
+      "path": "/api/social/omnichannel-autopost?cron=omnichannel",
+      "schedule": "18 */2 * * *"
+    },
+    {
+      "path": "/api/cron/auto-backup?source=Vercel_Pro_Hourly",
+      "schedule": "48 * * * *"
     }
   ]
 }

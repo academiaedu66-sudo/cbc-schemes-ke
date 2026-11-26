@@ -556,6 +556,306 @@ export const SEO_TOPIC_PILLARS: SeoTopicPillar[] = [
       },
     ],
   },
+  {
+    slug: 'tsc-tpad-portal',
+    navLabel: 'TSC TPAD 2 & Appraisals',
+    h1Title:
+      'TSC TPAD 2 Portal Kenya (2026) — Self-Appraisal, Lesson Observation, TPAD Calendar & Compliant Teaching Documents',
+    metaTitle:
+      'TSC TPAD 2 Kenya (2026) | Lesson Observation, Appraisals, Schemes & Records of Work',
+    metaDescription:
+      'Complete 2026 Kenya Teachers Service Commission (TSC) TPAD 2 guide and instant downloads of TPAD-compliant 10-column Schemes of Work, Lesson Plans, Teachers Notes, Records of Work Covered & CBC Assessment Rubrics (PP1–Grade 12).',
+    badgeText: 'TSC TPAD 2 COMPLIANCE • LESSON OBSERVATION • APPRAISAL READY',
+    ctaHref: '/?hub=tsc',
+    ctaLabel: 'Open TSC TPAD 2 Portal & Tools →',
+    dbCategoryFilter: 'Schemes of Work',
+    keywords: [
+      'TSC TPAD 2',
+      'tpad2.tsc.go.ke login',
+      'TSC TPAD calendar 2026',
+      'TSC TPAD lesson observation evidence',
+      'TSC TPAD self appraisal teachers Kenya',
+      'TPAD compliant schemes of work and lesson plans',
+      'TSC Teachers Service Commission Kenya portal',
+    ],
+    introParagraphs: [
+      'The Teachers Service Commission (TSC) Teacher Performance Appraisal and Development (TPAD 2) system evaluates Kenyan teachers across Professional Knowledge & Practice, Comprehensive Learning Environment, Teacher Professional Development, and Learner Progress.',
+      'To score maximum TPAD appraisal ratings during Deputy Principal and Principal termly lesson observations, educators need up-to-date KICD-rationalized Schemes of Work (KSh 50), Lesson-by-Lesson Lesson Plans (KSh 70), Chalkboard Teachers’ Notes (KSh 100), and Records of Work Covered (KSh 50)—all downloadable in Editable Microsoft Word (.DOCX) and PDF in 1 second on cbcmaterials.shop.',
+    ],
+    highlights: [
+      'Direct access to TSC TPAD 2, T-Pay & TSC Online Services inside the All TSC Services Hub',
+      'Lesson Observation-ready 10-column Schemes of Work & Lesson Plans citing KICD Orange Book pages',
+      'Pre-filled weekly Records of Work Covered with EE, ME, AE & BE learner rubric tracking',
+      '100% Editable MS Word (.DOCX) so you insert your TSC Number, School Name & Term Dates in seconds',
+    ],
+    faqs: [
+      {
+        q: 'What documents must a Kenyan teacher upload or present for TSC TPAD 2 Lesson Observation?',
+        a: 'During TPAD 2 lesson observation, teachers present a current KICD-rationalized Scheme of Work, detailed Lesson Plan for the observed lesson, Lesson Notes, updated Record of Work Covered, and Assessment Progress Record—all available in editable Word and PDF on cbcmaterials.shop.',
+      },
+      {
+        q: 'How do I quickly open the official TSC TPAD 2 and T-Pay portals?',
+        a: 'Click the All TSC Services button on the cbcmaterials.shop homepage (?hub=tsc) for instant one-tap links to TPAD 2, T-Pay payslips, Wealth Declaration, Teacher Registration, and sick leave/transfer checklists.',
+      },
+    ],
+  },
+  {
+    slug: 'tsc-payslips-tpay',
+    navLabel: 'TSC T-Pay, P9 & Wealth Declaration',
+    h1Title:
+      'TSC T-Pay Payslips Kenya, KRA P9 Tax Forms, Wealth Declaration & Online Teacher Services Guide',
+    metaTitle:
+      'TSC T-Pay Payslips, P9 Tax Forms & Wealth Declaration Guide (2026 Kenya)',
+    metaDescription:
+      'Step-by-step guide to TSC T-Pay portal (tpay.tsc.go.ke) for Kenyan teachers: view and download monthly payslips, P9 forms for KRA iTax returns, check third-party deductions, Wealth Declaration & TSC transfers.',
+    badgeText: 'TSC T-PAY • P9 KRA FORMS • WEALTH DECLARATION • TRANSFERS',
+    ctaHref: '/?hub=tsc',
+    ctaLabel: 'Launch All TSC Online Services Hub →',
+    dbCategoryFilter: 'Records of Work',
+    keywords: [
+      'TSC T-Pay portal login',
+      'tpay.tsc.go.ke payslip download',
+      'TSC P9 form download KRA iTax',
+      'TSC Wealth Declaration Kenya online',
+      'TSC third party deductions T-Pay',
+      'TSC teacher transfers and promotions portal',
+    ],
+    introParagraphs: [
+      'TSC T-Pay (tpay.tsc.go.ke) is the official Teachers Service Commission payroll self-service platform where permanently employed and intern teachers access monthly payslips, annual P9 tax deduction cards for KRA iTax filing, SACCO/loan third-party authorization codes, and salary scale progression.',
+      'Inside the All TSC Services Hub on cbcmaterials.shop, teachers can access T-Pay guidance, biennial Public Officer Wealth Declaration deadlines, TPAD 2 checklists, and instant TPAD-compliant classroom documents across PP1 to Grade 12.',
+    ],
+    highlights: [
+      'Quick access guide for TSC T-Pay login, Payslip PDF download & P9 iTax certificate',
+      'Step-by-step overview of TSC Biennial Wealth Declaration compliance requirements',
+      'Complete checklist of TSC Promotion Interview & Delocalization/Transfer documentation',
+    ],
+    faqs: [
+      {
+        q: 'How can a teacher download a monthly TSC payslip or P9 form on T-Pay?',
+        a: 'Log in to the official T-Pay portal using your TSC Number and password, navigate to Payslips or P9 Reports, choose the month or tax year, and export the PDF. Always log out after accessing shared cyber cafe computers.',
+      },
+    ],
+  },
+  {
+    slug: 'tsc-recruitment-interviews',
+    navLabel: 'TSC Recruitment & Promotions',
+    h1Title:
+      'TSC Teacher Recruitment, Internship Opportunities, Promotions & Interview Preparation Kenya (2026)',
+    metaTitle:
+      'TSC Recruitment, Promotions & Teacher Interview Prep Kenya 2026 | cbcmaterials.shop',
+    metaDescription:
+      'Prepare for TSC teacher recruitment, JSS/Senior School internship verification & C2–D5 promotion interviews. Access TPAD readiness checklists, Schemes of Work, Lesson Plans & Kenya CBC teaching portfolios.',
+    badgeText: 'TSC INTERVIEWS • JSS & SENIOR SCHOOL RECRUITMENT • PROMOTIONS',
+    ctaHref: '/?hub=tsc',
+    ctaLabel: 'Open TSC Services & Teacher Tools →',
+    dbCategoryFilter: 'Lesson Plans',
+    keywords: [
+      'TSC teacher recruitment 2026 Kenya',
+      'TSC promotion interview questions and answers',
+      'TSC JSS intern confirmation and verification',
+      'TSC career progression guidelines Kenya',
+      'TSC online services teachersonline.tsc.go.ke',
+    ],
+    introParagraphs: [
+      'Whether applying for TSC Permanent & Pensionable slots, Junior School (Grades 7–9) or Senior School (Grades 10–12) internships, or appearing before a TSC promotion panel, candidates are assessed on CBC curriculum mastery, KICD rationalized designs, TPAD 2 readiness, and KNEC Competency-Based Assessment rubrics.',
+      'Equip yourself before the interview panel with authentic 10-column Schemes of Work, Lesson Plans, Records of Work, and KJSEA/KPSEA assessment blueprints from cbcmaterials.shop.',
+    ],
+    highlights: [
+      'Covers KICD rationalized curriculum changes, CBA rubrics (EE/ME/AE/BE) & TPAD 2 KPIs',
+      'Sample micro-teaching Lesson Plans and 10-column Schemes ready for verification panels',
+      'Instant Word & PDF downloads via M-Pesa (0728595160) for immediate interview prep',
+    ],
+    faqs: [
+      {
+        q: 'What CBC teaching documents should candidates carry to a TSC recruitment or promotion interview?',
+        a: 'Bring your TSC registration certificate, academic transcripts, TPAD summary, a current sample Scheme of Work, Lesson Plan, and Record of Work aligned to KICD rationalized designs—you can customize and print polished Word/PDF samples directly from cbcmaterials.shop.',
+      },
+    ],
+  },
+  {
+    slug: 'schemes-of-work-free-download',
+    navLabel: 'Schemes of Work (Word & PDF)',
+    h1Title:
+      'Download 2026 CBC Schemes of Work PDF & Word (All Subjects PP1–Grade 12) — Term 1, Term 2 & Term 3',
+    metaTitle:
+      'CBC Schemes of Work 2026 PDF & Word Download (All Grades PP1–Grade 12)',
+    metaDescription:
+      'Download complete 2026 KICD Rationalized CBC Schemes of Work in PDF & Editable MS Word (.DOCX) for PP1, PP2, Grade 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 & 12 (Term 1, 2 & 3) — KSh 50 with free preview.',
+    badgeText: 'FREE SAMPLE PREVIEW • EDITABLE WORD (.DOCX) + PDF • KSH 50',
+    ctaHref: '/?area=schemes',
+    ctaLabel: 'Preview & Download Schemes of Work →',
+    dbCategoryFilter: 'Schemes of Work',
+    keywords: [
+      'schemes of work download',
+      'cbc schemes of work pdf',
+      '2026 schemes of work word',
+      'grade 7 schemes of work 2026',
+      'grade 8 schemes of work 2026',
+      'grade 9 schemes of work 2026',
+      'grade 10 schemes of work 2026',
+      'rationalized schemes of work kenya term 1 term 2 term 3',
+    ],
+    introParagraphs: [
+      'Every Scheme of Work on cbcmaterials.shop follows the exact 2026 KICD Rationalized syllabus and TSC 10-column standard layout, complete with free first-page preview before checkout so you can verify weeks, strands, sub-strands, and approved textbook page references.',
+      'Available across Term 1, Term 2, and Term 3 for Mathematics, English, Kiswahili, Integrated Science, Agriculture & Nutrition, Social Studies, Pre-Technical Studies, Creative Arts & Sports, CRE, IRE, and all 37 Senior School subjects.',
+    ],
+    highlights: [
+      'Free instant preview on every Scheme of Work before paying KSh 50 via M-Pesa',
+      'Both Editable Microsoft Word (.DOCX) and Print-Ready PDF unlocked automatically',
+      'Zero outdated topics — updated for 2026 KICD Rationalized Curriculum Designs',
+    ],
+    faqs: [
+      {
+        q: 'Can I preview a Scheme of Work before downloading or paying?',
+        a: 'Yes! Click Preview on any scheme across PP1 to Grade 12 on cbcmaterials.shop to inspect its columns, sub-strands, and KICD Orange Book textbook references before unlocking the full DOCX + PDF bundle for KSh 50.',
+      },
+    ],
+  },
+  {
+    slug: 'lesson-plans-templates',
+    navLabel: 'Lesson Plans Format & Booklets',
+    h1Title:
+      'CBC Lesson Plans Format, Editable Word Templates & Complete Termly Lesson Plan Booklets (PP1–Grade 12)',
+    metaTitle:
+      'CBC Lesson Plan Format & Ready-to-Teach Booklets (Word DOCX & PDF) | 2026 Kenya',
+    metaDescription:
+      'Get the official 2026 KICD & TSC CBC Lesson Plan format plus complete term-long lesson-by-lesson plans (PP1–Grade 12) covering every strand, core competency, PCI, value, and chalkboard summary (KSh 70).',
+    badgeText: 'OFFICIAL KICD LESSON PLAN FORMAT • 100% READY TO TEACH',
+    ctaHref: '/?area=lesson-plans',
+    ctaLabel: 'Browse All CBC Lesson Plans →',
+    dbCategoryFilter: 'Lesson Plans',
+    keywords: [
+      'cbc lesson plan template word',
+      'how to write a cbc lesson plan in kenya',
+      'tsc lesson plan format 2026',
+      'grade 7 8 9 lesson plans pdf download',
+      'pp1 pp2 lower primary lesson plans',
+      'senior school grade 10 lesson plans',
+    ],
+    introParagraphs: [
+      'Writing individual lesson plans for 35 to 40 lessons every week consumes dozens of hours. cbcmaterials.shop provides complete termly Lesson Plan booklets where every single week and lesson of your Scheme of Work already has its own structured, classroom-ready CBC Lesson Plan.',
+      'Each lesson plan includes Specific Learning Outcomes, Key Inquiry Questions, Core Competencies (Communication, Critical Thinking, Creativity, Citizenship, Digital Literacy, Learning to Learn, Self-Efficacy), Values, PCIs, Lesson Development Stages, Chalkboard Summary, and Learner Reflection.',
+    ],
+    highlights: [
+      'Complete Term 1, Term 2 & Term 3 lesson-by-lesson booklets — not just a 1-page blank template',
+      'Synced 1:1 with our 2026 KICD Schemes of Work and Chalkboard Teachers’ Notes',
+      'Editable Word (.DOCX) + Print PDF for only KSh 70 via instant M-Pesa checkout',
+    ],
+    faqs: [
+      {
+        q: 'What sections are inside each cbcmaterials.shop CBC Lesson Plan?',
+        a: 'Each lesson plan contains Administrative Details, Strand & Sub-strand, Specific Learning Outcomes, Key Inquiry Questions, Learning Resources (Orange Book pages), Core Competencies, Values, PCIs, Introduction, Lesson Development Steps, Conclusion, and Teacher Self-Evaluation.',
+      },
+    ],
+  },
+  {
+    slug: 'cbc-exams-past-papers',
+    navLabel: 'Opener, Mid-Term & End-Term Exams',
+    h1Title:
+      '2026 CBC Exams, Opener, Mid-Term, End-Term Papers, KPSEA, KJSEA & Official Marking Schemes (PP1–Grade 12)',
+    metaTitle:
+      '2026 CBC Exams, Opener, Mid-Term, End-Term & Marking Schemes (PP1–G12)',
+    metaDescription:
+      'Download 2026 Kenyan CBC Opener, Mid-Term & End-Term Examinations, Grade 3 KEYA, Grade 6 KPSEA Trials, Grade 9 KJSEA Mocks & Senior School Assessments with Marking Schemes in Editable Word (.DOCX) & PDF.',
+    badgeText: 'OPENER • MID-TERM • END-TERM • KPSEA • KJSEA + MARKING SCHEMES',
+    ctaHref: '/?area=exams',
+    ctaLabel: 'Download CBC Exams & Marking Schemes →',
+    dbCategoryFilter: 'Revision Papers & Exams',
+    keywords: [
+      'cbc exams with marking schemes pdf',
+      '2026 opener mid term end term exams kenya',
+      'grade 4 5 6 exams pdf download',
+      'grade 7 8 9 jss exams 2026',
+      'kpsea kjsea trial exams with answers',
+      'editable word school exams kenya',
+    ],
+    introParagraphs: [
+      'Assess learners accurately every term with printable and editable CBC examinations across Term 1, Term 2, and Term 3 — covering Opener, Mid-Term, End-Term, Grade 3 KEYA, Grade 6 KPSEA, Grade 9 KJSEA, and Senior School Grade 10–12 pathway exams.',
+      'Because every assessment unlocks both Editable Word (.DOCX) and PDF, Heads of Departments and Exam Officers can customize school badges and print class sets immediately.',
+    ],
+    highlights: [
+      'Includes complete Question Papers + Official Marking Schemes with EE/ME/AE/BE rubrics',
+      'Covers PP1, PP2, Lower/Upper Primary, Junior School (JSS) & Senior School',
+      'Also includes 420 National KJSEA Test papers & separate confidential marking schemes',
+    ],
+    faqs: [
+      {
+        q: 'Can schools edit the exams to add their school name and logo before printing?',
+        a: 'Yes! Every exam pack unlocks both an Editable Microsoft Word (.DOCX) version for adding your school header/logo and a ready-to-print PDF.',
+      },
+    ],
+  },
+  {
+    slug: 'kicd-curriculum-designs',
+    navLabel: 'KICD Designs & Orange Book',
+    h1Title:
+      '2026 KICD Rationalized Curriculum Designs PDF & Approved Orange Book Coursebooks Guide (PP1–Grade 12)',
+    metaTitle:
+      '2026 KICD Rationalized Curriculum Designs PDF & Orange Book Guide Kenya',
+    metaDescription:
+      'Access 2026 KICD Rationalized Curriculum Designs, Strand Matrices, Lesson Allocations & Official Orange Book Approved Textbook Page Guides for PP1–Grade 12 in Word (.DOCX) & PDF.',
+    badgeText: '2026 RATIONALIZED KICD DESIGNS • APPROVED ORANGE BOOK GUIDE',
+    ctaHref: '/?area=holidays',
+    ctaLabel: 'Open KICD Curriculum Designs Hub →',
+    dbCategoryFilter: 'Holiday Assignments & Designs',
+    keywords: [
+      'kicd curriculum designs 2026 pdf download',
+      'rationalized cbc curriculum designs kenya',
+      'kicd orange book approved textbooks list',
+      'kicd senior school curriculum designs grade 10',
+      'jss curriculum designs grade 7 8 9',
+    ],
+    introParagraphs: [
+      'Under KICD’s rationalized CBC framework, learning areas and weekly lesson allocations were streamlined across Primary, Junior School, and Senior School. Our curriculum design packs summarize every subject’s official Strands, Sub-strands, Learning Outcomes, and approved Orange Book page references across Terms 1, 2, and 3.',
+    ],
+    highlights: [
+      'Updated to reflect latest KICD Rationalized Subject Merging & Weekly Lesson Counts',
+      'Maps Strands directly to KLB Top Scholar, Mentor, Moran, Oxford & Longhorn page numbers',
+      'Includes matching April, August & December Holiday Revision Workbooks',
+    ],
+    faqs: [
+      {
+        q: 'What changed in the 2026 KICD Rationalized CBC Curriculum Designs?',
+        a: 'KICD streamlined overlapping strands and adjusted weekly lesson allocations (30 mins for ECDE/Lower Primary, 35 mins for Upper Primary, and 40 mins for JSS & Senior School) — all materials on cbcmaterials.shop are already aligned to these rationalized designs.',
+      },
+    ],
+  },
+  {
+    slug: 'cbc-teacher-career-guides',
+    navLabel: 'Rubrics, IEP & Teacher Guides',
+    h1Title:
+      'CBC Assessment Rubrics (EE, ME, AE, BE), IEP Templates, Classroom Trackers & Teacher Side-Hustles Kenya',
+    metaTitle:
+      'CBC Assessment Rubrics (EE/ME/AE/BE), Records & Teacher Guides Kenya 2026',
+    metaDescription:
+      'Download Kenyan CBC Assessment Rubrics (Exceeding, Meeting, Approaching, Below Expectation), Records of Work, Teacher Professional Guides & Tutor Side-Hustle Blueprints on cbcmaterials.shop.',
+    badgeText: 'EE / ME / AE / BE RUBRICS • TEACHER WORKFLOW • SIDE-HUSTLES',
+    ctaHref: '/?area=records',
+    ctaLabel: 'Browse Rubrics & Teacher Documents →',
+    dbCategoryFilter: 'Records of Work',
+    keywords: [
+      'cbc assessment rubrics ee me ae be kenya',
+      'cbc learner progress record template',
+      'how to grade cbc exams in kenya',
+      'tsc teacher side hustles and tuition kenya',
+      'cbcmaterials teacher portal',
+    ],
+    introParagraphs: [
+      'Kenyan educators use four official CBC performance descriptors: Exceeding Expectations (EE: 80–100%), Meeting Expectations (ME: 50–79%), Approaching Expectations (AE: 30–49%), and Below Expectations (BE: 0–29%).',
+      'Our Records of Work, Exam Marking Schemes, and Assessment Trackers come pre-formatted with CBC scoring rubric tables plus teacher income opportunities including our Holiday & Personal Tuition Tutor queue and AI Subject Gaming.',
+    ],
+    highlights: [
+      'Built-in EE / ME / AE / BE rubric conversion tables across exams and records of work',
+      'Ready-to-customize classroom trackers for HOD & Principal termly sign-off',
+      'Explore Kenyan teacher holiday tuition & education side-hustle guides',
+    ],
+    faqs: [
+      {
+        q: 'What are the percentage ranges for EE, ME, AE, and BE in Kenya CBC assessments?',
+        a: 'Standard CBC conversion rubrics map Exceeding Expectations (EE) to 80–100%, Meeting Expectations (ME) to 50–79%, Approaching Expectations (AE) to 30–49%, and Below Expectations (BE) to 0–29%.',
+      },
+    ],
+  },
 ];
 
 export function getTopicPillarBySlug(slug: string): SeoTopicPillar | undefined {

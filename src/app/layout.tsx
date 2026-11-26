@@ -21,11 +21,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.cbcmaterials.shop"),
   title: {
     default:
-      "CBCMATERIALS.SHOP | 2026 CBC Schemes of Work, Teachers Notes, KNEC KJSEA & KPSEA Examinations, TSC & Tuition Tutors",
+      "CBCMATERIALS.SHOP | 2026 CBC Schemes of Work, Lesson Plans, Teachers Notes, TSC TPAD & KNEC Exams",
     template: "%s | CBCMATERIALS.SHOP",
   },
   description:
-    "Official CBCMATERIALS.SHOP Portal — Download 6,534+ KICD-rationalized 2026 CBC Schemes of Work, Teachers' Notes, Lesson Plans, Records of Work, KNEC KJSEA & KPSEA Examinations + Marking Schemes, Revision Books, All TSC Services, Tutor Peter Classes & Verified Tuition Tutors (PP1–Grade 12).",
+    "Official CBCMATERIALS.SHOP Kenya — Download 6,534+ KICD-rationalized 2026 CBC Schemes of Work, Lesson Plans, Teachers' Notes, Records of Work, TSC TPAD 2 & T-Pay Guides, KNEC KJSEA & KPSEA Exams + Marking Schemes, and Book Verified CBC Tutors (PP1–Grade 12) in Word & PDF.",
   applicationName: "CBCMATERIALS.SHOP",
   category: "education",
   authors: [
@@ -78,8 +78,16 @@ export const metadata: Metadata = {
     "Opener Mid-Term End-Term CBC Exams and Marking Schemes",
     "TSC",
     "Teachers Service Commission Kenya",
-    "TSC TPAD 2 Appraisal Records of Work",
-    "TSC T-Pay Payslips and Wealth Declaration",
+    "TSC TPAD 2 Appraisal portal and calendar 2026",
+    "TSC T-Pay payslips P9 forms and Wealth Declaration",
+    "TSC teacher recruitment promotions and transfers Kenya",
+    "TSC TPAD Lesson Plans and Records of Work Covered",
+    "CBC Lesson Plans Format and Templates Word DOCX PDF",
+    "2026 CBC Lesson Plans Term 1 Term 2 Term 3",
+    "Schemes of work download free preview Kenya",
+    "2026 rationalized schemes of work PP1 to Grade 12",
+    "KICD Approved Orange Book Textbooks and Curriculum Designs",
+    "CBC Assessment Rubrics EE ME AE BE",
     "Tuition",
     "Tutors",
     "CBC Tuition Kenya",
