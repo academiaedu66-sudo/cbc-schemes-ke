@@ -37,13 +37,19 @@ export default function ContestPage() {
   const [participantCount, setParticipantCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Read ?subject= from URL on mount
+  // Read ?subject= and saved participantId on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const subj = params.get('subject');
-    if (subj && CONTEST_SUBJECTS.some((s) => s.name === subj)) {
-      queueMicrotask(() => setSelectedSubject(subj));
-    }
+    const savedPid = window.localStorage.getItem('contest_participant_id');
+    queueMicrotask(() => {
+      if (subj && CONTEST_SUBJECTS.some((s) => s.name === subj)) {
+        setSelectedSubject(subj);
+      }
+      if (savedPid) {
+        setParticipantId(savedPid);
+      }
+    });
   }, []);
 
   // Poll participant payment status every 5s after registration
@@ -99,6 +105,7 @@ export default function ContestPage() {
       const data = await res.json();
       if (data.success) {
         setParticipantId(data.participantId);
+        window.localStorage.setItem('contest_participant_id', data.participantId);
         setPaymentStatus('pending');
         setMessage(`✅ STK push sent for ${selectedSubject} (KSh 500)! Check your phone, enter your M-Pesa PIN, and wait for confirmation.`);
         if (data.whatsappUrl) setWhatsappUrl(data.whatsappUrl);

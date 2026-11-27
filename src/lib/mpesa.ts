@@ -201,7 +201,9 @@ export async function initiateStkPush(params: {
     }
     return {
       ...phData,
-      CheckoutRequestID: phData?.CheckoutRequestID || (phData?.reference ? `PAYHERO_${phData.reference}` : accountReference),
+      CheckoutRequestID: phData?.reference
+        ? `PAYHERO_${phData.reference}`
+        : phData?.CheckoutRequestID || accountReference,
     };
   }
 

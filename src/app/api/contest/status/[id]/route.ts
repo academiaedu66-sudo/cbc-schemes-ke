@@ -1,30 +1,23 @@
 // src/app/api/contest/status/[id]/route.ts
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getContestParticipantById, syncPendingContestPayment } from '@/lib/contest-store';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const id = url.pathname.split('/').pop();
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
-  const { data, error } = await supabaseAdmin
-    .from('contest_participants')
-    .select('status, payment_confirmed_at, marks')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (error) {
-    if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
-      return NextResponse.json({ status: 'pending', paymentConfirmedAt: null, marks: null });
-    }
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  if (!data) {
+  const participant = await getContestParticipantById(id);
+  if (!participant) {
     return NextResponse.json({ status: 'pending', paymentConfirmedAt: null, marks: null });
   }
+
+  // Actively check PayHero status if still pending so confirmation is instant
+  const synced = await syncPendingContestPayment(participant);
+
   return NextResponse.json({
-    status: data.status,
-    paymentConfirmedAt: data.payment_confirmed_at,
-    marks: data.marks,
+    status: synced.status,
+    paymentConfirmedAt: synced.payment_confirmed_at ?? null,
+    marks: synced.marks ?? null,
   });
 }

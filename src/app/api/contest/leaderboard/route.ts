@@ -1,32 +1,24 @@
 // src/app/api/contest/leaderboard/route.ts
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { listContestParticipants } from '@/lib/contest-store';
 
 /**
- * Public leaderboard – returns participants sorted by marks descending.
- * Only participants with a confirmed payment and a score are listed.
+ * Public leaderboard – returns confirmed participants sorted by marks descending.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get('subject');
 
-  let query = supabaseAdmin
-    .from('contest_participants')
-    .select('name, school, subject, marks')
-    .eq('status', 'confirmed')
-    .order('marks', { ascending: false });
+  const participants = await listContestParticipants(subject);
+  const leaderboard = participants
+    .filter((p) => p.status === 'confirmed')
+    .sort((a, b) => (b.marks ?? -1) - (a.marks ?? -1))
+    .map((p) => ({
+      name: p.name,
+      school: p.school,
+      subject: p.subject,
+      marks: p.marks ?? null,
+    }));
 
-  if (subject && subject !== 'ALL') {
-    query = query.eq('subject', subject);
-  }
-
-  const { data, error } = await query;
-  if (error) {
-    // Gracefully return empty leaderboard if contest_participants table is not yet migrated
-    if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
-      return NextResponse.json({ leaderboard: [], setupRequired: true });
-    }
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  return NextResponse.json({ leaderboard: data ?? [] });
+  return NextResponse.json({ leaderboard });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
 import { getWhatsAppPhone, initiateStkPush } from '@/lib/mpesa';
+import { createContestParticipant, updateContestParticipant } from '@/lib/contest-store';
 import { triggerAutomaticBackup } from '@/lib/security';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,26 +16,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'Missing fields' }, { status: 400 });
     }
     const chosenSubject = String(subject || 'Mathematics').trim();
-
     const participantId = uuidv4();
-    const { error: insertErr } = await supabaseAdmin
-      .from('contest_participants')
-      .insert({
-        id: participantId,
-        name,
-        school,
-        phone: phoneNumber,
-        subject: chosenSubject,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      });
-    if (insertErr) {
-      if (insertErr.code === 'PGRST205' || insertErr.message?.includes('schema cache')) {
-        console.warn('contest_participants table not found yet; proceeding with STK push');
-      } else {
-        throw insertErr;
-      }
-    }
+
+    await createContestParticipant({
+      id: participantId,
+      name: String(name).trim(),
+      school: String(school).trim(),
+      phone: String(phoneNumber).trim(),
+      subject: chosenSubject,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    });
 
     // Initiate STK push for Ksh 500
     const stkResult = await initiateStkPush({
@@ -45,13 +36,9 @@ export async function POST(req: Request) {
       transactionDesc: `National Contest: ${chosenSubject}`.slice(0, 24),
     });
 
-    // Update participant with checkout request ID for later verification
     const checkoutId = stkResult?.CheckoutRequestID ?? null;
-    if (checkoutId && !insertErr) {
-      await supabaseAdmin
-        .from('contest_participants')
-        .update({ checkout_request_id: checkoutId })
-        .eq('id', participantId);
+    if (checkoutId) {
+      await updateContestParticipant(participantId, { checkout_request_id: checkoutId });
     }
 
     const whatsappPhone = getWhatsAppPhone();
@@ -66,8 +53,9 @@ export async function POST(req: Request) {
         `I am registered for the National Contest (${chosenSubject}) #${participantId}`
       )}`,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Contest registration error', e);
-    return NextResponse.json({ success: false, message: e?.message || 'Server error' }, { status: 500 });
+    const msg = e instanceof Error ? e.message : 'Server error';
+    return NextResponse.json({ success: false, message: msg }, { status: 500 });
   }
 }
