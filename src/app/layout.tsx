@@ -168,6 +168,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           title="CBCMATERIALS.SHOP Official Social & Video SEO Feed"
           href="/social-feed.xml"
         />
+      <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
       </head>
       <body className="min-h-full flex flex-col">
         <MonetizationProvider>{children}</MonetizationProvider>

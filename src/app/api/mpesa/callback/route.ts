@@ -132,12 +132,15 @@ export async function POST(req: Request) {
               .from('orders')
               .update({ status: 'FAILED', updated_at: new Date().toISOString() })
               .in('checkout_request_id', candidateIds);
+            // Send cart‑recovery notification to admin (buyer phone known as payerPhone)
+            await sendWhatsAppAdminNotification(`⚠️ *M‑Pesa payment failed* for checkout ${candidateIds.join(', ')}. Please contact the buyer (${payerPhone}) to recover the cart or offer an alternative payment method.`);
           }
           if (externalRef) {
             await supabaseAdmin
               .from('orders')
               .update({ status: 'FAILED', updated_at: new Date().toISOString() })
               .eq('mpesa_receipt_number', String(externalRef));
+            await sendWhatsAppAdminNotification(`⚠️ *M‑Pesa payment failed* for external reference ${externalRef}. Prompt the buyer (${payerPhone}) to retry or use another method.`);
           }
         }
       }

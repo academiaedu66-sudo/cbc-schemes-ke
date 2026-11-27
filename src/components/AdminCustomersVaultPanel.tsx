@@ -42,6 +42,8 @@ export default function AdminCustomersVaultPanel({
   const [todayCount, setTodayCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(defaultExpanded);
+  // Determine if we are in the backend (admin) UI
+  const isBackend = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
   const [search, setSearch] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -195,6 +197,23 @@ export default function AdminCustomersVaultPanel({
           >
             {expanded ? 'Hide Customer List' : `Open Saved Customers (${customers.length})`}
           </button>
+{isBackend && (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/seo/sensor?cron=manual');
+                const data = await res.json();
+                alert(`SEO monitor invoked. Status: ${res.status}\n${JSON.stringify(data)}`);
+              } catch (e) {
+                alert('Error invoking SEO monitor');
+              }
+            }}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black cursor-pointer ml-2"
+          >
+            Run SEO Monitor
+          </button>
+        )}
 
           <button
             type="button"

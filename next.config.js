@@ -7,6 +7,9 @@
 module.exports = {
   // Enable Vercel Pro features – already present in vercel.json but required here for local dev.
   output: "standalone",
+  // Enable caching of components for `'use cache'` directives.
+  cacheComponents: true,
+  partialPrefetching: true,
   // Security headers applied to all routes.
   async headers() {
     return [
