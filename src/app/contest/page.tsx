@@ -34,7 +34,6 @@ export default function ContestPage() {
   const [paymentStatus, setPaymentStatus] = useState('');
   const [contestActive, setContestActive] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState('');
-  const [participantCount, setParticipantCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Read ?subject= and saved participantId on mount
@@ -65,14 +64,13 @@ export default function ContestPage() {
     return () => clearInterval(interval);
   }, [participantId]);
 
-  // Poll contest active flag and participant count for selected subject every 5s
+  // Poll contest active flag every 5s
   useEffect(() => {
     const poll = async () => {
       try {
         const res = await fetch(`/api/contest/is-active?subject=${encodeURIComponent(selectedSubject)}`);
         const data = await res.json();
         setContestActive(Boolean(data.active));
-        setParticipantCount(Number(data.participants) || 0);
       } catch {}
     };
     poll();
@@ -181,10 +179,10 @@ export default function ContestPage() {
         ) : (
           <div className="bg-blue-800 bg-opacity-60 rounded-xl py-3 px-4">
             <p className="text-blue-100 font-semibold">
-              <strong>{selectedSubject}</strong> Test opens when <strong>all participants</strong> are set
+              ⏳ The <strong>{selectedSubject}</strong> National Contest test is almost here!
             </p>
             <p className="text-blue-200 text-sm mt-1">
-              {participantCount} participants confirmed for {selectedSubject} so far
+              Register and complete your KSh 500 payment below — the test will open soon.
             </p>
           </div>
         )}
@@ -226,7 +224,7 @@ export default function ContestPage() {
         <h2 className="text-lg font-bold mb-2">📋 Contest Instructions</h2>
         <ul className="list-disc ml-5 space-y-1 text-sm">
           <li>Select any Junior School subject test above and pay <strong>KSh 500</strong> via M-Pesa STK Push to become a participant.</li>
-          <li>Immediately after payment, you will be notified that the test will open soon once all participants are set.</li>
+          <li>Immediately after payment, you will be notified that the test is almost here and will open soon.</li>
           <li>The test is timed at <strong>2 hours</strong> and is worth <strong>100 marks</strong>.</li>
           <li>For structured questions, write your answers clearly in your exercise book, take clear photos, and upload them for auto-marking.</li>
           <li>Public positions and marks scored by each student will be posted on the leaderboard.</li>
@@ -280,7 +278,7 @@ export default function ContestPage() {
         {paymentStatus && (
           <div className="mt-2 p-3 rounded-lg border bg-amber-50 text-sm">
             Payment status: <strong className={paymentStatus === 'confirmed' ? 'text-green-700' : 'text-orange-600'}>{paymentStatus}</strong>
-            {paymentStatus === 'confirmed' && ' ✅ – Payment confirmed! The test will open soon when all participants are set.'}
+            {paymentStatus === 'confirmed' && ' ✅ – Payment confirmed! The test is almost here — stay ready, it will open soon.'}
             {paymentStatus === 'pending' && ' – ⏳ Waiting for M-Pesa confirmation… Please enter your M-Pesa PIN on your phone and wait.'}
             {paymentStatus === 'failed' && ' ❌ – Payment was not completed. Please try again.'}
           </div>
