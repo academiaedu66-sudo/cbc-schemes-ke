@@ -36,8 +36,8 @@ export default function LeaderboardPage() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setLeaderboard(data.leaderboard ?? []);
-      } catch (e: any) {
-        setError(e.message || "Failed to load leaderboard");
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load leaderboard");
       } finally {
         setLoading(false);
       }

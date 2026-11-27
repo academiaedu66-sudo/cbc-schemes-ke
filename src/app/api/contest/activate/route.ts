@@ -1,6 +1,7 @@
 // src/app/api/contest/activate/route.ts
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 
 /**
  * Admin endpoint to activate the contest when 1000+ participants have confirmed payment.
@@ -17,5 +18,6 @@ export async function POST() {
   }
   // Upsert a config row indicating the contest is active
   await supabaseAdmin.from('contest_config').upsert({ id: 'active', active: true }, { onConflict: 'id' });
+  void triggerAutomaticBackup('National Contest activated');
   return NextResponse.json({ success: true, message: 'Contest activated' });
 }

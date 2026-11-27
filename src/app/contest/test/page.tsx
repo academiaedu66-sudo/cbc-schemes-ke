@@ -17,10 +17,10 @@ export default function ContestTestPage() {
 
   // Extract pid query param on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const pid = params.get('pid');
-      if (pid) setParticipantId(pid);
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('pid');
+    if (pid) {
+      queueMicrotask(() => setParticipantId(pid));
     }
   }, []);
 
@@ -54,8 +54,8 @@ export default function ContestTestPage() {
       });
       const data = await res.json();
       setUploadResult(data);
-    } catch (err) {
-      setUploadResult({ success: false, message: (err as any).toString() });
+    } catch (err: unknown) {
+      setUploadResult({ success: false, message: err instanceof Error ? err.message : String(err) });
     }
   };
 

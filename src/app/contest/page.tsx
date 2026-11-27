@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const CONTEST_SUBJECTS = [
   { name: 'Mathematics', icon: '📐' },
@@ -25,6 +26,7 @@ const CONTEST_SUBJECTS = [
  * - Admin buttons: Activate Contest, View Leaderboard
  */
 export default function ContestPage() {
+  const router = useRouter();
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
   const [form, setForm] = useState({ name: '', school: '', phone: '' });
   const [message, setMessage] = useState('');
@@ -36,12 +38,10 @@ export default function ContestPage() {
 
   // Read ?subject= from URL on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const subj = params.get('subject');
-      if (subj && CONTEST_SUBJECTS.some((s) => s.name === subj)) {
-        setSelectedSubject(subj);
-      }
+    const params = new URLSearchParams(window.location.search);
+    const subj = params.get('subject');
+    if (subj && CONTEST_SUBJECTS.some((s) => s.name === subj)) {
+      queueMicrotask(() => setSelectedSubject(subj));
     }
   }, []);
 
@@ -107,7 +107,7 @@ export default function ContestPage() {
     const url = participantId
       ? `/contest/test?pid=${participantId}&subject=${encodeURIComponent(selectedSubject)}`
       : `/contest/test?subject=${encodeURIComponent(selectedSubject)}`;
-    window.location.href = url;
+    router.push(url);
   };
 
   const activateContest = async () => {
@@ -296,7 +296,7 @@ export default function ContestPage() {
             ⚡ Activate Contest (Admin)
           </button>
           <button
-            onClick={() => { window.location.href = '/contest/leaderboard'; }}
+            onClick={() => router.push('/contest/leaderboard')}
             className="bg-gray-800 hover:bg-gray-900 text-white text-sm py-2 px-4 rounded-lg cursor-pointer"
           >
             🏅 View Public Leaderboard

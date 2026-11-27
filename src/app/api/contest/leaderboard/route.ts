@@ -21,6 +21,12 @@ export async function GET(req: Request) {
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ leaderboard: data });
+  if (error) {
+    // Gracefully return empty leaderboard if contest_participants table is not yet migrated
+    if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
+      return NextResponse.json({ leaderboard: [], setupRequired: true });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ leaderboard: data ?? [] });
 }

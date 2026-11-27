@@ -16,7 +16,12 @@ export async function GET(req: Request) {
   }
 
   const { count, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
+      return NextResponse.json({ active: false, participants: 0, subject: subject || 'ALL', setupRequired: true });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   // Also check if admin manually activated contest in contest_config
   const { data: cfg } = await supabaseAdmin

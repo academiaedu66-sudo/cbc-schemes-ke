@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getWhatsAppPhone, initiateStkPush } from '@/lib/mpesa';
+import { triggerAutomaticBackup } from '@/lib/security';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
     }
 
     const whatsappPhone = getWhatsAppPhone();
+    void triggerAutomaticBackup(`Contest registration: ${chosenSubject}`);
     return NextResponse.json({
       success: true,
       message: `STK push sent for ${chosenSubject} (KSh 500) – please complete payment`,

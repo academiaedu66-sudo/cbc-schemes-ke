@@ -1,16 +1,18 @@
 /**
- * Next.js configuration with security headers to block unwanted third‑party scripts (ads).
- * This file ensures the site is served with a strict Content‑Security‑Policy allowing only
- * resources from the same origin and trusted CDNs. Adjust the `script-src` directive if you
- * add legitimate external scripts later.
+ * Next.js configuration with Tailwind Turbopack loader and security headers.
  */
 module.exports = {
-  // Enable Vercel Pro features – already present in vercel.json but required here for local dev.
   output: "standalone",
-  // Enable caching of components for `'use cache'` directives.
   cacheComponents: true,
   partialPrefetching: true,
-  // Security headers applied to all routes.
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
   async headers() {
     return [
       {
@@ -18,7 +20,8 @@ module.exports = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-src 'self'; object-src 'none';",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://scripts.api.disqometer.com; media-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; frame-src 'self'; object-src 'none';",
           },
           {
             key: 'X-Content-Type-Options',
@@ -26,7 +29,7 @@ module.exports = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'Referrer-Policy',
@@ -36,9 +39,13 @@ module.exports = {
       },
     ];
   },
-  // Enable the Image Optimization API (optional) and other Next.js flags.
   images: {
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+    ],
   },
   reactStrictMode: true,
 };

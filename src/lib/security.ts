@@ -703,11 +703,14 @@ export interface FullWebsiteBackupBundle {
     registeredCustomersCount?: number;
     tuitionRegistrationsCount: number;
     gamingPlayersCount: number;
+    contestParticipantsCount?: number;
     storageFilesCount: number;
   };
   database: {
     resources: unknown[];
     orders: unknown[];
+    contestParticipants?: unknown[];
+    contestConfig?: unknown[];
   };
   systemConfigs: Record<string, unknown>;
   storageFilesManifest: Array<{ name: string; updated_at?: string }>;
@@ -740,6 +743,16 @@ export async function compileFullWebsiteBackup(): Promise<{
     .select('*')
     .order('created_at', { ascending: false })
     .limit(5000);
+
+  // 2b. Export National Contest participants & config
+  const [{ data: contestParticipants }, { data: contestConfig }] = await Promise.all([
+    supabaseAdmin
+      .from('contest_participants')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10000),
+    supabaseAdmin.from('contest_config').select('*'),
+  ]);
 
   // 3. Export ALL _system & _videos JSON configs in parallel (including Registered Customer Emails & Phones!)
   const systemPaths = [
@@ -826,11 +839,14 @@ export async function compileFullWebsiteBackup(): Promise<{
       registeredCustomersCount,
       tuitionRegistrationsCount: tuitionList.length,
       gamingPlayersCount: Object.keys(gamingObj.players || {}).length,
+      contestParticipantsCount: (contestParticipants || []).length,
       storageFilesCount: storageFilesManifest.length,
     },
     database: {
       resources: allResources,
       orders: allOrders || [],
+      contestParticipants: contestParticipants || [],
+      contestConfig: contestConfig || [],
     },
     systemConfigs,
     storageFilesManifest,

@@ -1,6 +1,7 @@
 // src/app/api/contest/callback/route.ts
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 
 /**
  * M‑Pesa callback for contest payments.
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
         .from('contest_participants')
         .update({ status: 'confirmed', payment_confirmed_at: new Date().toISOString() })
         .eq('id', participant.id);
+      void triggerAutomaticBackup(`Contest payment confirmed: ${participant.id}`);
     } else {
       // Payment failed – keep pending or mark failed
       await supabaseAdmin

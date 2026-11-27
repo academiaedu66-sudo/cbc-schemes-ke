@@ -1,6 +1,7 @@
 // src/app/api/contest/upload-answer/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { triggerAutomaticBackup } from '@/lib/security';
 import FormData from 'form-data';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
       answer_url: `${process.env.SUPABASE_URL ?? ''}`.replace('https://', 'https://') + `/storage/v1/object/public/${bucket}/${fileName}`,
     }).eq('id', participantId);
 
+    void triggerAutomaticBackup(`Contest answer graded: ${participantId} (${marks}/100)`);
     return NextResponse.json({ success: true, marks, message: 'Answer uploaded and graded' });
   } catch (e: any) {
     console.error('Upload answer error', e);
