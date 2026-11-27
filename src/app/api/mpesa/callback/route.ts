@@ -106,7 +106,7 @@ export async function POST(req: Request) {
 
           // If using PayHero Service Wallet with Auto-Withdraw, disburse immediately to 0728595160
           if (amountNum > 0) {
-            await triggerInstantPayHeroPayout(amountNum, String(receipt));
+            await triggerInstantPayHeroPayout({ amount: amountNum, receipt: String(receipt) });
           }
 
           // Report completed M-Pesa Purchase directly to Facebook Monetization / Conversions API

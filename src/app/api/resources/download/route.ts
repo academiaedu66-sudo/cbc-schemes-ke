@@ -62,7 +62,7 @@ async function verifyPayHeroOrder(
         .eq('checkout_request_id', checkoutRequestId);
 
       if (orderAmount > 0) {
-        await triggerInstantPayHeroPayout(orderAmount, String(receipt));
+        await triggerInstantPayHeroPayout({ amount: orderAmount, receipt: String(receipt) });
       }
 
       void sendWhatsAppAdminNotification(

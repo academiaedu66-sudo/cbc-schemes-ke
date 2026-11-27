@@ -1,24 +1,67 @@
-import React, { useState } from 'react';
+"use client";
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+interface TeacherAsset {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  file_url: string;
+}
+
 /**
- * Marketplace page – lists teacher assets and allows purchase via M‑Pesa STK.
+ * Marketplace page – lists teacher assets and allows purchase via M-Pesa STK.
  */
-export default async function MarketplacePage() {
-  // Server‑side fetch of assets
-  const { data: assets, error } = await supabase
-    .from('teacher_assets')
-    .select('id, title, description, price, file_url')
-    .order('created_at', { ascending: false });
+export default function MarketplacePage() {
+  const [assets, setAssets] = useState<TeacherAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data, error: fetchErr } = await supabase
+          .from('teacher_assets')
+          .select('id, title, description, price, file_url')
+          .order('created_at', { ascending: false });
+        if (!active) return;
+        if (fetchErr) {
+          console.error('Failed to fetch assets', fetchErr);
+          setError('Error loading marketplace.');
+        } else {
+          setAssets((data as TeacherAsset[]) || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch assets', e);
+        if (active) setError('Error loading marketplace.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="max-w-4xl mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6">Teacher Marketplace</h1>
+        <p className="text-gray-600">Loading marketplace...</p>
+      </main>
+    );
+  }
+
   if (error) {
-    console.error('Failed to fetch assets', error);
-    return <div className="p-4 text-red-600">Error loading marketplace.</div>;
+    return <div className="p-4 text-red-600">{error}</div>;
   }
 
   return (
     <main className="max-w-4xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Teacher Marketplace</h1>
-      {assets && assets.length > 0 ? (
+      {assets.length > 0 ? (
         <ul className="space-y-4">
           {assets.map((a) => (
             <li key={a.id} className="border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start">
@@ -30,7 +73,7 @@ export default async function MarketplacePage() {
                   Download
                 </a>
               </div>
-              <PurchaseButton assetId={a.id} price={a.price} title={a.title} />
+              <PurchaseButton assetId={a.id} price={a.price} />
             </li>
           ))}
         </ul>
@@ -41,7 +84,7 @@ export default async function MarketplacePage() {
   );
 }
 
-function PurchaseButton({ assetId, price, title }: { assetId: string; price: number; title: string }) {
+function PurchaseButton({ assetId, price }: { assetId: string; price: number }) {
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const handlePurchase = async () => {
@@ -55,7 +98,7 @@ function PurchaseButton({ assetId, price, title }: { assetId: string; price: num
       const data = await res.json();
       if (data.success) setStatus('STK push sent – check your phone');
       else setStatus(data.message || 'Error');
-    } catch (e) {
+    } catch {
       setStatus('Network error');
     }
   };

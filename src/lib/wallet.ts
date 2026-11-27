@@ -76,11 +76,11 @@ export interface WalletOverview {
   monetagPushSwZoneId: string;
   monetagDirectLinkUrl: string;
   monetagPayoutMethod:
-    | 'PAYPAL_MPESA'
-    | 'SKRILL_MPESA'
-    | 'WEBMONEY'
-    | 'PAYONEER'
-    | 'USDT';
+  | 'PAYPAL_MPESA'
+  | 'SKRILL_MPESA'
+  | 'WEBMONEY'
+  | 'PAYONEER'
+  | 'USDT';
   monetagPayoutAccount: string;
   hasMonetagApiToken: boolean;
   availableMonetizationUsd: number;
@@ -216,16 +216,16 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
 
   const adNetworkConnected = Boolean(
     (monConfig.adNetworkScriptUrl || '').trim() ||
-      (monConfig.adNetworkBannerScriptUrl || '').trim() ||
-      (monConfig.smartlinkUrl || '').trim() ||
-      (monConfig.monetagSiteId || '').trim() ||
-      (monConfig.adsenseClientId || '').trim()
+    (monConfig.adNetworkBannerScriptUrl || '').trim() ||
+    (monConfig.smartlinkUrl || '').trim() ||
+    (monConfig.monetagSiteId || '').trim() ||
+    (monConfig.adsenseClientId || '').trim()
   );
 
   const monetagConnected = Boolean(
     monConfig.adNetworkEnabled &&
-      monConfig.adNetworkProvider === 'monetag' &&
-      (monConfig.monetagSiteId || DEFAULT_MONETAG_SITE_ID)
+    monConfig.adNetworkProvider === 'monetag' &&
+    (monConfig.monetagSiteId || DEFAULT_MONETAG_SITE_ID)
   );
 
   const usdRate = Math.max(100, Number(monConfig.ratesKes?.usdToKesRate) || 129.5);
@@ -247,7 +247,7 @@ export async function computeWalletOverview(): Promise<WalletOverview> {
 
   const defaultMpesaPhone = toLocalKenyanFormat(
     payConfig.recipientMpesa || '254728595160'
-  );
+  ) ?? '0728595160';
 
   return {
     clientPaymentsGrossKes,
@@ -334,13 +334,12 @@ export async function createWalletWithdrawal(params: {
   if (reqAmount > maxAllowed + 0.01) {
     return {
       ok: false,
-      error: `Requested KES ${reqAmount.toLocaleString()} exceeds your available ${
-        params.source === 'CLIENT_PAYMENTS'
+      error: `Requested KES ${reqAmount.toLocaleString()} exceeds your available ${params.source === 'CLIENT_PAYMENTS'
           ? 'Client Payments'
           : params.source === 'MONETIZATION'
-          ? 'Monetization'
-          : 'Combined Wallet'
-      } balance of KES ${maxAllowed.toLocaleString()}.`,
+            ? 'Monetization'
+            : 'Combined Wallet'
+        } balance of KES ${maxAllowed.toLocaleString()}.`,
     };
   }
 
@@ -435,16 +434,14 @@ export async function createWalletWithdrawal(params: {
           status = 'COMPLETED';
           gatewayMessage = `Safaricom M-Pesa B2C Disbursed via PayHero to ${toLocalKenyanFormat(
             intlMpesa
-          )}! Check your phone for the M-Pesa SMS notification (${
-            resJson.reference || refCode
-          }).`;
+          )}! Check your phone for the M-Pesa SMS notification (${resJson.reference || refCode
+            }).`;
         } else {
           status = 'PENDING_SETTLEMENT';
-          gatewayMessage = `PayHero B2C response (${refCode}): ${
-            resJson.error_message ||
+          gatewayMessage = `PayHero B2C response (${refCode}): ${resJson.error_message ||
             resJson.message ||
             'Ensure your PayHero Service Wallet has sufficient KES balance to send M-Pesa.'
-          }`;
+            }`;
         }
       } catch {
         status = 'PENDING_SETTLEMENT';
@@ -513,14 +510,12 @@ export async function createWalletWithdrawal(params: {
             gatewayDisbursed = true;
             status =
               trJson.data?.status === 'otp' ? 'PENDING_SETTLEMENT' : 'COMPLETED';
-            gatewayMessage = `M-Pesa Transfer Sent to ${localMpesa} (${
-              trJson.data?.transfer_code || refCode
-            }).`;
+            gatewayMessage = `M-Pesa Transfer Sent to ${localMpesa} (${trJson.data?.transfer_code || refCode
+              }).`;
           } else {
             status = 'PENDING_SETTLEMENT';
-            gatewayMessage = `Transfer response (${refCode}): ${
-              trJson.message || 'Pending balance settlement.'
-            }`;
+            gatewayMessage = `Transfer response (${refCode}): ${trJson.message || 'Pending balance settlement.'
+              }`;
           }
         }
       } catch {
@@ -554,7 +549,7 @@ export async function createWalletWithdrawal(params: {
     method: params.method,
     destination:
       params.method === 'MPESA' && intlMpesa
-        ? toLocalKenyanFormat(intlMpesa)
+        ? (toLocalKenyanFormat(intlMpesa) ?? cleanDest)
         : cleanDest,
     status,
     gatewayDisbursed,

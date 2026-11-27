@@ -39,8 +39,8 @@ export async function POST(req: Request) {
     const stk = await initiateStkPush({
       phoneNumber,
       amount: asset.price,
-      reference: `ASSET-${order.id}-${Date.now()}`,
-      description: `Purchase of "${asset.title}" from teacher marketplace`,
+      accountReference: `ASSET-${order.id}-${Date.now()}`,
+      transactionDesc: `Purchase of "${asset.title}" from teacher marketplace`,
     });
     // Optionally store checkout request ID if returned
     // await supabaseAdmin.from('orders').update({ checkout_request_id: stk?.CheckoutRequestID }).eq('id', order.id);

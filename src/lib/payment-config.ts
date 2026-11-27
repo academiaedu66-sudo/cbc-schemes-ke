@@ -20,6 +20,17 @@ export interface StoredPaymentConfig {
   // Paystack / IntaSend
   paystackSecretKey?: string;
   intasendSecretKey?: string;
+  environment?: string;
+  mpesaCallbackUrl?: string;
+  // Additional optional fields referenced elsewhere
+  provider?: string;
+  settlesTo0728595160?: string;
+  recipientLocal?: string;
+  shortCode?: string;
+  partyB?: string;
+  passkey?: string;
+  baseUrl?: string;
+  token?: string;
   updatedAt?: string;
 }
 

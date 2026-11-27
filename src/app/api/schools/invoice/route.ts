@@ -36,8 +36,8 @@ export async function POST(req: Request) {
     const stk = await initiateStkPush({
       phoneNumber: '', // client will supply later via front‑end UI
       amount,
-      reference: `SCH-${invoice.id}-${Date.now()}`,
-      description: `School invoice for grades ${grades.join(', ')}`,
+      accountReference: `SCH-${invoice.id}-${Date.now()}`,
+      transactionDesc: `School invoice for grades ${grades.join(', ')}`,
     });
 
     // Optionally store payment intent ID if available on stk result

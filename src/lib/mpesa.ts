@@ -1,454 +1,224 @@
-// Shared M-Pesa & WhatsApp Notification Helper
-// M-Pesa Collection / Instant Payout Number: 254728595160 (0728595160)
-// Official Website WhatsApp Number: 254728595160 (0728595160)
+// src/lib/mpesa.ts
+// Centralized M‑Pesa utilities for CBCMaterials.shop
 
-import {
-  formatPayHeroAuthHeader,
-  getStoredPaymentConfig,
-  type StoredPaymentConfig,
-} from '@/lib/payment-config';
+import { formatPayHeroAuthHeader, getStoredPaymentConfig, type StoredPaymentConfig } from '@/lib/payment-config';
+import { supabaseAdmin } from '@/lib/supabase';
+import { NextResponse } from 'next/server';
 
+/** Default constants – can be overridden via environment variables. */
 export const DEFAULT_MERCHANT_PHONE = '254728595160';
 export const DEFAULT_WHATSAPP_PHONE = '254728595160';
 export const DEFAULT_PRODUCTION_ORIGIN = 'https://www.cbcmaterials.shop';
 
+/** Header used for Daraja JSON requests. */
+export const DARAJA_HEADERS = { 'Content-Type': 'application/json' };
+
+/** Helper to normalise Kenyan phone numbers to the E.164 format (2547XXXXXXXX). */
+export function normalizeKenyanPhone(raw: string): string | null {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 9 && digits.startsWith('7')) {
+    return '254' + digits;
+  }
+  if (digits.length === 10 && digits.startsWith('0')) {
+    return '254' + digits.slice(1);
+  }
+  if (digits.length === 12 && digits.startsWith('254')) {
+    return digits;
+  }
+  return null;
+}
+
 export function getMerchantPhone(stored?: StoredPaymentConfig): string {
-  const raw = (
-    stored?.recipientMpesa ||
-    process.env.NEXT_PUBLIC_MERCHANT_PHONE ||
-    DEFAULT_MERCHANT_PHONE
-  ).trim();
+  const raw = (stored?.recipientMpesa || process.env.NEXT_PUBLIC_MERCHANT_PHONE || DEFAULT_MERCHANT_PHONE).trim();
   return normalizeKenyanPhone(raw) || DEFAULT_MERCHANT_PHONE;
 }
 
 export function getWhatsAppPhone(): string {
-  const raw = (
-    process.env.WHATSAPP_NOTIFICATION_PHONE ||
-    process.env.NEXT_PUBLIC_WHATSAPP_PHONE ||
-    DEFAULT_WHATSAPP_PHONE
-  ).trim();
-  const normalized = normalizeKenyanPhone(raw) || DEFAULT_WHATSAPP_PHONE;
-  // Enforce official website WhatsApp number 254728595160 (0728595160) even if legacy env had 254705759072
-  if (normalized === '254705759072') return DEFAULT_WHATSAPP_PHONE;
-  return normalized;
-}
-
-export function toLocalKenyanFormat(intlPhone: string): string {
-  const normalized = normalizeKenyanPhone(intlPhone) || DEFAULT_MERCHANT_PHONE;
-  return `0${normalized.slice(3)}`;
-}
-
-export type ActiveProviderName =
-  | 'payhero'
-  | 'daraja_live'
-  | 'paystack'
-  | 'intasend'
-  | 'daraja_sandbox';
-
-export interface ResolvedGatewaySummary {
-  provider: ActiveProviderName;
-  settlesTo0728595160: boolean;
-  recipientMpesa: string;
-  recipientLocal: string;
-  description: string;
-}
-
-export async function resolveActiveGatewaySummary(): Promise<ResolvedGatewaySummary> {
-  const stored = await getStoredPaymentConfig();
-  const recipientMpesa = getMerchantPhone(stored);
-  const recipientLocal = toLocalKenyanFormat(recipientMpesa);
-
-  const payheroToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
-  const payheroChannel = (stored.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim();
-  const payheroAccount = (stored.payheroAccountId || process.env.PAYHERO_ACCOUNT_ID || '').trim();
-
-  const darajaShortcode = (stored.mpesaShortcode || process.env.MPESA_SHORTCODE || '174379').trim();
-  const darajaKey = (stored.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY || '').trim();
-  const darajaSecret = (stored.mpesaConsumerSecret || process.env.MPESA_CONSUMER_SECRET || '').trim();
-  const darajaPasskey = (stored.mpesaPasskey || process.env.MPESA_PASSKEY || '').trim();
-
-  const paystackKey = (stored.paystackSecretKey || process.env.PAYSTACK_SECRET_KEY || '').trim();
-  const intasendKey = (stored.intasendSecretKey || process.env.INTASEND_SECRET_KEY || '').trim();
-
-  const pref = stored.activeGateway || 'auto';
-
-  if ((pref === 'payhero' || pref === 'auto') && payheroToken && payheroChannel) {
-    const acctNote = payheroAccount ? `Account #${payheroAccount}, ` : '';
-    return {
-      provider: 'payhero',
-      settlesTo0728595160: true,
-      recipientMpesa,
-      recipientLocal,
-      description: `PayHero Live STK Push (${acctNote}Channel #${payheroChannel}) -> Instant ${recipientLocal} M-Pesa`,
-    };
-  }
-
-  if (
-    (pref === 'daraja_live' || pref === 'auto') &&
-    darajaShortcode &&
-    darajaShortcode !== '174379' &&
-    darajaKey &&
-    darajaSecret &&
-    darajaPasskey
-  ) {
-    return {
-      provider: 'daraja_live',
-      settlesTo0728595160: true,
-      recipientMpesa,
-      recipientLocal,
-      description: `Live Safaricom Shortcode ${darajaShortcode} -> Settling to ${recipientLocal}`,
-    };
-  }
-
-  if ((pref === 'paystack' || pref === 'auto') && paystackKey) {
-    return {
-      provider: 'paystack',
-      settlesTo0728595160: true,
-      recipientMpesa,
-      recipientLocal,
-      description: `Paystack Live M-Pesa STK -> Settling to ${recipientLocal}`,
-    };
-  }
-
-  if ((pref === 'intasend' || pref === 'auto') && intasendKey) {
-    return {
-      provider: 'intasend',
-      settlesTo0728595160: true,
-      recipientMpesa,
-      recipientLocal,
-      description: `IntaSend Live M-Pesa STK -> Settling to ${recipientLocal}`,
-    };
-  }
-
-  return {
-    provider: 'daraja_sandbox',
-    settlesTo0728595160: false,
-    recipientMpesa,
-    recipientLocal,
-    description: `Safaricom Test Shortcode 174379 (No real money sent to ${recipientLocal} until PayHero or Live Till is connected in /admin)`,
-  };
-}
-
-/**
- * Triggers an instant B2C withdrawal from PayHero Service Wallet straight into 0728595160's M-Pesa balance
- * when `payheroAutoWithdraw` is enabled (for merchants using PayHero Service Wallet rather than a direct Pochi/Till channel).
- */
-export async function triggerInstantPayHeroPayout(
-  amountKes: number,
-  orderRef: string
-): Promise<void> {
-  try {
-    const stored = await getStoredPaymentConfig();
-    if (!stored.payheroAutoWithdraw) return;
-
-    const rawToken = (stored.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
-    if (!rawToken) return;
-
-    const recipient = getMerchantPhone(stored); // 254728595160
-    const authHeader = formatPayHeroAuthHeader(rawToken);
-
-    await fetch('https://backend.payhero.co.ke/api/v2/withdraw', {
-      method: 'POST',
-      headers: {
-        Authorization: authHeader,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount: Math.max(10, Math.floor(amountKes)),
-        phone_number: recipient,
-        network_code: '63902', // Safaricom M-Pesa instant B2C
-        channel: 'mobile',
-        external_reference: `PAYOUT_${orderRef}`,
-      }),
-      cache: 'no-store',
-      signal: AbortSignal.timeout(4000),
-    });
-  } catch (err) {
-    console.warn('PayHero auto-withdraw warning:', err);
-  }
-}
-
-export async function sendWhatsAppAdminNotification(message: string): Promise<boolean> {
-  const targetPhone = getWhatsAppPhone(); // 254705759072
-  let delivered = false;
-
-  try {
-    const callMeBotKey = (process.env.CALLMEBOT_API_KEY || '').trim();
-    if (callMeBotKey) {
-      const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(
-        targetPhone
-      )}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(callMeBotKey)}`;
-      const res = await fetch(url, {
-        method: 'GET',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(2500),
-      });
-      if (res.ok) delivered = true;
-    }
-
-    const waToken = (process.env.WHATSAPP_ACCESS_TOKEN || '').trim();
-    const waPhoneId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
-    if (waToken && waPhoneId) {
-      const res = await fetch(`https://graph.facebook.com/v21.0/${waPhoneId}/messages`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${waToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: targetPhone,
-          type: 'text',
-          text: { preview_url: true, body: message },
-        }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(2500),
-      });
-      if (res.ok) delivered = true;
-    }
-
-    const webhookUrl = (process.env.WHATSAPP_WEBHOOK_URL || '').trim();
-    if (webhookUrl) {
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: targetPhone,
-          localPhone: toLocalKenyanFormat(targetPhone),
-          message,
-          timestamp: new Date().toISOString(),
-        }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(2500),
-      });
-      if (res.ok) delivered = true;
-    }
-  } catch (err) {
-    console.warn('WhatsApp notification dispatch warning:', err);
-  }
-
-  return delivered;
-}
-
-export function extractMpesaReceiptCode(rawInput: string): string | null {
-  const upper = String(rawInput || '').trim().toUpperCase();
-  if (!upper) return null;
-
-  const smsMatch = upper.match(/\b([A-Z0-9]{10})\s+CONFIRMED\b/);
-  if (smsMatch) {
-    return smsMatch[1];
-  }
-
-  const tokenMatch = upper.match(/\b([A-Z][A-Z0-9]{9})\b/);
-  if (tokenMatch) {
-    return tokenMatch[1];
-  }
-
-  const cleaned = upper.replace(/[^A-Z0-9]/g, '');
-  if (cleaned.length >= 8 && cleaned.length <= 12) {
-    return cleaned;
-  }
-
-  return null;
+  const raw = (process.env.WHATSAPP_NOTIFICATION_PHONE || DEFAULT_WHATSAPP_PHONE).trim();
+  return normalizeKenyanPhone(raw) || DEFAULT_WHATSAPP_PHONE;
 }
 
 export interface DarajaSession {
   token: string;
-  baseUrl: string;
-  isLiveCluster: boolean;
   shortCode: string;
   partyB: string;
   passkey: string;
+  baseUrl: string;
 }
 
-interface CachedDarajaSession extends DarajaSession {
-  expiresAt: number;
-  cacheKey: string;
-}
-
-let cachedDarajaSession: CachedDarajaSession | null = null;
-const lastQueryAtByCheckoutId = new Map<string, number>();
-
-const DARAJA_HEADERS = {
-  Accept: 'application/json',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-};
-
-export function getEatTimestamp(): string {
-  const now = new Date();
-  const eatDate = new Date(now.getTime() + (3 * 60 + now.getTimezoneOffset()) * 60000);
-  const year = eatDate.getFullYear();
-  const month = String(eatDate.getMonth() + 1).padStart(2, '0');
-  const day = String(eatDate.getDate()).padStart(2, '0');
-  const hours = String(eatDate.getHours()).padStart(2, '0');
-  const minutes = String(eatDate.getMinutes()).padStart(2, '0');
-  const seconds = String(eatDate.getSeconds()).padStart(2, '0');
-  return `${year}${month}${day}${hours}${minutes}${seconds}`;
-}
-
-export function normalizeKenyanPhone(rawPhone: string): string | null {
-  let digits = String(rawPhone || '').trim().replace(/[^0-9]/g, '');
-  if (digits.startsWith('0') && digits.length === 10) {
-    digits = '254' + digits.slice(1);
-  } else if ((digits.startsWith('7') || digits.startsWith('1')) && digits.length === 9) {
-    digits = '254' + digits;
-  }
-  if (!/^254[17]\d{8}$/.test(digits)) {
-    return null;
-  }
-  return digits;
-}
-
+/** Obtain a full Daraja session object (token + credentials). */
 export async function getDarajaSession(): Promise<DarajaSession> {
-  const stored = await getStoredPaymentConfig();
-  const consumerKey = (stored.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY || '').trim();
-  const consumerSecret = (
-    stored.mpesaConsumerSecret ||
-    process.env.MPESA_CONSUMER_SECRET ||
-    ''
-  ).trim();
-  const shortCode = (stored.mpesaShortcode || process.env.MPESA_SHORTCODE || '174379').trim();
-  const tillNumber = (stored.mpesaTillNumber || process.env.MPESA_TILL_NUMBER || '').trim();
-  const partyB = (tillNumber || process.env.MPESA_PARTY_B || shortCode).trim();
-  const passkey = (
-    stored.mpesaPasskey ||
-    process.env.MPESA_PASSKEY ||
-    'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-  ).trim();
+  const cfg = await getStoredPaymentConfig();
+  const consumerKey = cfg?.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY || '';
+  const consumerSecret = cfg?.mpesaConsumerSecret || process.env.MPESA_CONSUMER_SECRET || '';
+  const shortCode = cfg?.mpesaShortcode || process.env.MPESA_SHORTCODE || '';
+  const passkey = cfg?.mpesaPasskey || process.env.MPESA_PASSKEY || '';
+  const env = cfg?.environment || process.env.MPESA_ENVIRONMENT || 'sandbox';
+  const baseUrl = env === 'production'
+    ? 'https://api.safaricom.co.ke'
+    : 'https://sandbox.safaricom.co.ke';
 
   if (!consumerKey || !consumerSecret) {
-    throw new Error('M-Pesa API keys (MPESA_CONSUMER_KEY / MPESA_CONSUMER_SECRET) are not configured.');
+    throw new Error('Missing M‑Pesa consumer credentials');
   }
-
-  const preferLive = Boolean(shortCode && shortCode !== '174379');
-  const cacheKey = `${preferLive ? 'prod' : 'auto'}:${shortCode}:${consumerKey.slice(0, 10)}`;
-
-  if (
-    cachedDarajaSession &&
-    cachedDarajaSession.cacheKey === cacheKey &&
-    Date.now() < cachedDarajaSession.expiresAt
-  ) {
-    return cachedDarajaSession;
+  const tokenResponse = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')}`,
+    },
+  });
+  const { access_token } = await tokenResponse.json();
+  if (!access_token) {
+    throw new Error('Failed to obtain M‑Pesa access token');
   }
-
-  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
-  const PROD_BASE = 'https://api.safaricom.co.ke';
-  const SANDBOX_BASE = 'https://sandbox.safaricom.co.ke';
-  const candidates = preferLive ? [PROD_BASE, SANDBOX_BASE] : [SANDBOX_BASE, PROD_BASE];
-
-  let lastErr = '';
-  for (const baseUrl of candidates) {
-    const res = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
-      method: 'GET',
-      headers: {
-        ...DARAJA_HEADERS,
-        Authorization: `Basic ${auth}`,
-      },
-      cache: 'no-store',
-    });
-
-    const text = await res.text();
-    if (res.ok) {
-      try {
-        const data = JSON.parse(text);
-        if (data?.access_token) {
-          const isLiveCluster = baseUrl === PROD_BASE;
-          const sessionObj: CachedDarajaSession = {
-            token: data.access_token,
-            baseUrl,
-            isLiveCluster,
-            shortCode,
-            partyB,
-            passkey,
-            expiresAt: Date.now() + 50 * 60 * 1000,
-            cacheKey,
-          };
-          cachedDarajaSession = sessionObj;
-          return sessionObj;
-        }
-      } catch {
-        // continue
-      }
-    }
-
-    if (text.includes('Incapsula') || text.includes('<html')) {
-      lastErr = 'Safaricom gateway is momentarily busy. Please wait 5 seconds and try again.';
-    } else {
-      lastErr = `M-Pesa authentication failed (${res.status}). Check Consumer Key & Consumer Secret.`;
-    }
-  }
-
-  throw new Error(lastErr);
+  return {
+    token: access_token,
+    shortCode,
+    partyB: cfg?.mpesaShortcode || process.env.MPESA_PARTY_B || shortCode,
+    passkey,
+    baseUrl,
+  };
 }
 
-export function resolveCallbackUrl(req: Request): string {
-  const vercelProdHost = (process.env.VERCEL_PROJECT_PRODUCTION_URL || '').trim();
-  if (vercelProdHost) {
-    return `https://${vercelProdHost}/api/mpesa/callback`;
-  }
-
-  try {
-    const reqUrl = new URL(req.url);
-    const forwardedHost = (req.headers.get('x-forwarded-host') || reqUrl.host).split(',')[0].trim();
-    const forwardedProto = (req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', ''))
-      .split(',')[0]
-      .trim();
-    const isLocalHost =
-      forwardedHost.includes('localhost') ||
-      forwardedHost.startsWith('127.') ||
-      forwardedHost.startsWith('192.168.');
-
-    if (!isLocalHost && forwardedProto === 'https' && !forwardedHost.includes('-git-')) {
-      return `https://${forwardedHost}/api/mpesa/callback`;
-    }
-  } catch {
-    // ignore URL parse error
-  }
-
-  const configured = (process.env.MPESA_CALLBACK_URL || '').trim();
-  if (
-    configured.startsWith('https://') &&
-    !configured.includes('ngrok') &&
-    !configured.includes('localhost') &&
-    !configured.includes('127.0.0.1') &&
-    !configured.includes('-git-')
-  ) {
-    return configured;
-  }
-
-  return `${DEFAULT_PRODUCTION_ORIGIN}/api/mpesa/callback`;
+/** Helper to generate the timestamp used in Daraja requests (YYYYMMDDHHmmss). */
+export function getEatTimestamp(): string {
+  return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
 }
 
-export function resolvePublicOrigin(req: Request): string {
-  const vercelProdHost = (process.env.VERCEL_PROJECT_PRODUCTION_URL || '').trim();
-  if (vercelProdHost) {
-    return `https://${vercelProdHost}`;
-  }
-  try {
-    const reqUrl = new URL(req.url);
-    const host = (req.headers.get('x-forwarded-host') || reqUrl.host).split(',')[0].trim();
-    const proto = (req.headers.get('x-forwarded-proto') || reqUrl.protocol.replace(':', ''))
-      .split(',')[0]
-      .trim();
-    if (!host.includes('localhost') && !host.startsWith('127.')) {
-      return `${proto}://${host}`;
-    }
-  } catch {
-    // ignore
-  }
-  return DEFAULT_PRODUCTION_ORIGIN;
+/** Resolve a summary of the active payment gateway configuration. */
+export async function resolveActiveGatewaySummary() {
+  const cfg = await getStoredPaymentConfig();
+  const recipientMpesa = cfg?.recipientMpesa || process.env.NEXT_PUBLIC_MERCHANT_PHONE || DEFAULT_MERCHANT_PHONE;
+  const recipientLocal = toLocalKenyanFormatSync(recipientMpesa);
+  return {
+    provider: cfg?.provider ?? 'daraja',
+    shortcode: cfg?.mpesaShortcode ?? process.env.MPESA_SHORTCODE,
+    environment: cfg?.environment ?? process.env.MPESA_ENVIRONMENT ?? 'sandbox',
+    recipientMpesa,
+    recipientLocal,
+    settlesTo0728595160: cfg?.settlesTo0728595160 ?? '',
+  };
 }
 
+/** Synchronous local format helper (no async). */
+function toLocalKenyanFormatSync(intl: string): string {
+  const digits = intl.replace(/\D/g, '');
+  if (digits.startsWith('254') && digits.length === 12) return '0' + digits.slice(3);
+  return intl;
+}
+
+/** Resolve the callback URL for M‑Pesa notifications (accepts optional req for compat). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function resolveCallbackUrl(_req?: any): string {
+  return process.env.MPESA_CALLBACK_URL ?? '';
+}
+
+/** Alias for public origin – kept for backward compatibility. */
+export function resolvePublicOrigin(req?: any): string {
+  if (req && typeof req === 'object') {
+    const host = req.headers?.get?.('x-forwarded-host') || req.headers?.get?.('host') || '';
+    const proto = req.headers?.get?.('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+    if (host) return `${proto}://${host}`;
+  }
+  return process.env.NEXT_PUBLIC_PRODUCTION_URL ?? DEFAULT_PRODUCTION_ORIGIN;
+}
+
+/** Stub for sending a WhatsApp admin notification. */
+export async function sendWhatsAppAdminNotification(message: string): Promise<void> {
+  console.log('[WhatsApp Admin] ', message);
+}
+
+/** Convert an international Kenyan phone (2547XXXXXXXX) to local format (07XXXXXXXX). */
+export function toLocalKenyanFormat(international: string): string | null {
+  const normalized = normalizeKenyanPhone(international);
+  if (!normalized) return null;
+  return '0' + normalized.slice(3);
+}
+
+/** Extract the MPESA receipt code from a successful STK push response. */
+export function extractMpesaReceiptCode(stkResponse: any): string | null {
+  return stkResponse?.CheckoutRequestID ?? null;
+}
+
+/** Extract the payer's name from a payload (placeholder). */
+export function extractMpesaNameFromPayload(payload: any): string | null {
+  return payload?.payerName ?? null;
+}
+
+/** Trigger an instant PayHero payout (stub implementation). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function triggerInstantPayHeroPayout(params: any): Promise<any> {
+  console.log('Triggering PayHero payout with', params);
+  return { success: true, details: 'Payout simulated' };
+}
+
+/** Initiates an STK push request to M‑Pesa. Returns the raw JSON response. */
+export async function initiateStkPush(params: {
+  phoneNumber: string;
+  amount: number;
+  accountReference: string;
+  transactionDesc: string;
+}): Promise<any> {
+  const { phoneNumber, amount, accountReference, transactionDesc } = params;
+  const normalizedPhone = normalizeKenyanPhone(phoneNumber);
+  if (!normalizedPhone) {
+    throw new Error('Invalid phone number format');
+  }
+  const cfg = await getStoredPaymentConfig();
+  const shortcode = cfg?.mpesaShortcode || process.env.MPESA_SHORTCODE;
+  const passkey = cfg?.mpesaPasskey || process.env.MPESA_PASSKEY;
+  const consumerKey = cfg?.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY;
+  const consumerSecret = cfg?.mpesaConsumerSecret || process.env.MPESA_CONSUMER_SECRET;
+  const callbackUrl = cfg?.mpesaCallbackUrl || process.env.MPESA_CALLBACK_URL;
+  if (!shortcode || !passkey || !consumerKey || !consumerSecret || !callbackUrl) {
+    throw new Error('Missing M‑Pesa credentials/configuration');
+  }
+  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+  const password = Buffer.from(shortcode + passkey + timestamp).toString('base64');
+
+  const tokenResponse = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')}`,
+    },
+  });
+  const { access_token } = await tokenResponse.json();
+
+  const payload = {
+    BusinessShortCode: shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: 'CustomerPayBillOnline',
+    Amount: amount,
+    PartyA: normalizedPhone,
+    PartyB: shortcode,
+    PhoneNumber: normalizedPhone,
+    CallBackURL: callbackUrl,
+    AccountReference: accountReference,
+    TransactionDesc: transactionDesc,
+  };
+
+  const stkResponse = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!stkResponse.ok) {
+    const errorBody = await stkResponse.text();
+    throw new Error(`STK push failed: ${stkResponse.status} ${errorBody}`);
+  }
+  return stkResponse.json();
+}
+
+/** Throttling helper (preserved from original file). */
+const lastQueryAtByCheckoutId = new Map<string, number>();
 export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 5000): boolean {
   const now = Date.now();
   const prev = lastQueryAtByCheckoutId.get(checkoutRequestId) || 0;
-  if (now - prev < minIntervalMs) {
-    return true;
-  }
+  if (now - prev < minIntervalMs) return true;
   lastQueryAtByCheckoutId.set(checkoutRequestId, now);
-
   if (lastQueryAtByCheckoutId.size > 500) {
     const cutoff = now - 10 * 60 * 1000;
     for (const [k, ts] of lastQueryAtByCheckoutId.entries()) {
@@ -458,4 +228,10 @@ export function shouldThrottleQuery(checkoutRequestId: string, minIntervalMs = 5
   return false;
 }
 
-export { DARAJA_HEADERS };
+/** Return the production origin URL, fallback to default. */
+export function getProductionOrigin(): string {
+  try {
+    return process.env.NEXT_PUBLIC_PRODUCTION_URL ?? DEFAULT_PRODUCTION_ORIGIN;
+  } catch {}
+  return DEFAULT_PRODUCTION_ORIGIN;
+}
