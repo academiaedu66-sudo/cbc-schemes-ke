@@ -35,6 +35,7 @@ export default function ContestPage() {
   const [contestActive, setContestActive] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [participantCount, setParticipantCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Read ?subject= from URL on mount
   useEffect(() => {
@@ -78,28 +79,36 @@ export default function ContestPage() {
   };
 
   const register = async () => {
+    if (!form.name.trim() || !form.school.trim() || !form.phone.trim()) {
+      setMessage('❌ Please enter your full name, school name, and M-Pesa phone number.');
+      return;
+    }
+    setIsSubmitting(true);
     setMessage('');
     try {
       const res = await fetch('/api/contest/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          school: form.school,
-          phoneNumber: form.phone,
+          name: form.name.trim(),
+          school: form.school.trim(),
+          phoneNumber: form.phone.trim(),
           subject: selectedSubject,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setParticipantId(data.participantId);
-        setMessage(`✅ STK push sent for ${selectedSubject} (KSh 500)! Check your phone and enter your M-Pesa PIN.`);
+        setPaymentStatus('pending');
+        setMessage(`✅ STK push sent for ${selectedSubject} (KSh 500)! Check your phone, enter your M-Pesa PIN, and wait for confirmation.`);
         if (data.whatsappUrl) setWhatsappUrl(data.whatsappUrl);
       } else {
         setMessage(`❌ ${data.message || 'Registration failed. Please try again.'}`);
       }
     } catch {
       setMessage('❌ Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -165,17 +174,11 @@ export default function ContestPage() {
         ) : (
           <div className="bg-blue-800 bg-opacity-60 rounded-xl py-3 px-4">
             <p className="text-blue-100 font-semibold">
-              <strong>{selectedSubject}</strong> Test opens when <strong>1,000 participants</strong> have paid &amp; confirmed
+              <strong>{selectedSubject}</strong> Test opens when <strong>all participants</strong> are set
             </p>
             <p className="text-blue-200 text-sm mt-1">
-              {participantCount} / 1,000 participants confirmed for {selectedSubject}
+              {participantCount} participants confirmed for {selectedSubject} so far
             </p>
-            <div className="w-full bg-blue-900 rounded-full h-3 mt-2">
-              <div
-                className="bg-green-400 h-3 rounded-full transition-all"
-                style={{ width: `${Math.min(100, (participantCount / 1000) * 100)}%` }}
-              />
-            </div>
           </div>
         )}
       </div>
@@ -216,7 +219,6 @@ export default function ContestPage() {
         <h2 className="text-lg font-bold mb-2">📋 Contest Instructions</h2>
         <ul className="list-disc ml-5 space-y-1 text-sm">
           <li>Select any Junior School subject test above and pay <strong>KSh 500</strong> via M-Pesa STK Push to become a participant.</li>
-          <li>The quiz opens once at least <strong>1,000 participants</strong> have confirmed payment.</li>
           <li>Immediately after payment, you will be notified that the test will open soon once all participants are set.</li>
           <li>The test is timed at <strong>2 hours</strong> and is worth <strong>100 marks</strong>.</li>
           <li>For structured questions, write your answers clearly in your exercise book, take clear photos, and upload them for auto-marking.</li>
@@ -253,9 +255,12 @@ export default function ContestPage() {
           />
           <button
             onClick={register}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg text-lg cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white font-bold py-3 rounded-lg text-lg cursor-pointer"
           >
-            💳 Register for {selectedSubject} &amp; Pay KSh 500 via M-Pesa
+            {isSubmitting
+              ? `⏳ Sending M-Pesa STK Push for ${selectedSubject}...`
+              : `💳 Register for ${selectedSubject} & Pay KSh 500 via M-Pesa`}
           </button>
         </div>
 
@@ -266,11 +271,12 @@ export default function ContestPage() {
         )}
 
         {paymentStatus && (
-          <p className="mt-2 text-sm">
+          <div className="mt-2 p-3 rounded-lg border bg-amber-50 text-sm">
             Payment status: <strong className={paymentStatus === 'confirmed' ? 'text-green-700' : 'text-orange-600'}>{paymentStatus}</strong>
-            {paymentStatus === 'confirmed' && ' ✅ – Payment confirmed! The test will open soon once 1,000 participants are set.'}
-            {paymentStatus === 'pending' && ' – Waiting for M-Pesa confirmation…'}
-          </p>
+            {paymentStatus === 'confirmed' && ' ✅ – Payment confirmed! The test will open soon when all participants are set.'}
+            {paymentStatus === 'pending' && ' – ⏳ Waiting for M-Pesa confirmation… Please enter your M-Pesa PIN on your phone and wait.'}
+            {paymentStatus === 'failed' && ' ❌ – Payment was not completed. Please try again.'}
+          </div>
         )}
 
         {whatsappUrl && (

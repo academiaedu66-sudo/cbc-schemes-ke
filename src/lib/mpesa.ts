@@ -151,31 +151,75 @@ export async function triggerInstantPayHeroPayout(params: any): Promise<any> {
   return { success: true, details: 'Payout simulated' };
 }
 
-/** Initiates an STK push request to M‑Pesa. Returns the raw JSON response. */
+/** Initiates an STK push request via PayHero (if configured) or Safaricom Daraja. */
 export async function initiateStkPush(params: {
   phoneNumber: string;
   amount: number;
   accountReference: string;
   transactionDesc: string;
+  callbackUrl?: string;
 }): Promise<any> {
   const { phoneNumber, amount, accountReference, transactionDesc } = params;
   const normalizedPhone = normalizeKenyanPhone(phoneNumber);
   if (!normalizedPhone) {
-    throw new Error('Invalid phone number format');
+    throw new Error('Enter a valid Safaricom number (e.g. 0712345678 or 254712345678).');
   }
+
   const cfg = await getStoredPaymentConfig();
+  const origin = resolvePublicOrigin();
+  const effectiveCallbackUrl =
+    params.callbackUrl ||
+    cfg?.mpesaCallbackUrl ||
+    process.env.MPESA_CALLBACK_URL ||
+    `${origin}/api/contest/callback`;
+
+  // 1. Try PayHero Kenya if configured (primary live gateway on cbcmaterials.shop)
+  const rawPayheroToken = (cfg?.payheroAuthToken || process.env.PAYHERO_AUTH_TOKEN || '').trim();
+  const payheroChannelId = Number((cfg?.payheroChannelId || process.env.PAYHERO_CHANNEL_ID || '').trim());
+  if (rawPayheroToken && payheroChannelId) {
+    const authHeader = formatPayHeroAuthHeader(rawPayheroToken);
+    const phRes = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
+      method: 'POST',
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: Math.max(1, Math.round(amount)),
+        phone_number: normalizedPhone,
+        channel_id: payheroChannelId,
+        provider: 'm-pesa',
+        external_reference: accountReference,
+        customer_name: transactionDesc.slice(0, 40),
+        callback_url: effectiveCallbackUrl,
+      }),
+      cache: 'no-store',
+    });
+    const phData = await phRes.json();
+    if (!phRes.ok || phData?.success === false) {
+      throw new Error(phData?.error_message || phData?.message || 'PayHero STK push failed');
+    }
+    return {
+      ...phData,
+      CheckoutRequestID: phData?.CheckoutRequestID || (phData?.reference ? `PAYHERO_${phData.reference}` : accountReference),
+    };
+  }
+
+  // 2. Fallback to Safaricom Daraja
   const shortcode = cfg?.mpesaShortcode || process.env.MPESA_SHORTCODE;
   const passkey = cfg?.mpesaPasskey || process.env.MPESA_PASSKEY;
   const consumerKey = cfg?.mpesaConsumerKey || process.env.MPESA_CONSUMER_KEY;
   const consumerSecret = cfg?.mpesaConsumerSecret || process.env.MPESA_CONSUMER_SECRET;
-  const callbackUrl = cfg?.mpesaCallbackUrl || process.env.MPESA_CALLBACK_URL;
-  if (!shortcode || !passkey || !consumerKey || !consumerSecret || !callbackUrl) {
-    throw new Error('Missing M‑Pesa credentials/configuration');
+  const env = cfg?.environment || process.env.MPESA_ENVIRONMENT || 'sandbox';
+  const baseUrl = env === 'production' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
+
+  if (!shortcode || !passkey || !consumerKey || !consumerSecret || !effectiveCallbackUrl) {
+    throw new Error('Missing M-Pesa credentials/configuration');
   }
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
   const password = Buffer.from(shortcode + passkey + timestamp).toString('base64');
 
-  const tokenResponse = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
+  const tokenResponse = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
     headers: {
       Authorization: `Basic ${Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')}`,
     },
@@ -187,16 +231,16 @@ export async function initiateStkPush(params: {
     Password: password,
     Timestamp: timestamp,
     TransactionType: 'CustomerPayBillOnline',
-    Amount: amount,
+    Amount: Math.max(1, Math.round(amount)),
     PartyA: normalizedPhone,
     PartyB: shortcode,
     PhoneNumber: normalizedPhone,
-    CallBackURL: callbackUrl,
+    CallBackURL: effectiveCallbackUrl,
     AccountReference: accountReference,
     TransactionDesc: transactionDesc,
   };
 
-  const stkResponse = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+  const stkResponse = await fetch(`${baseUrl}/mpesa/stkpush/v1/processrequest`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${access_token}`,

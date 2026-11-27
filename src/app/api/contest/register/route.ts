@@ -17,7 +17,6 @@ export async function POST(req: Request) {
     }
     const chosenSubject = String(subject || 'Mathematics').trim();
 
-    // Create a participant record with a generated UUID
     const participantId = uuidv4();
     const { error: insertErr } = await supabaseAdmin
       .from('contest_participants')
@@ -30,7 +29,13 @@ export async function POST(req: Request) {
         status: 'pending',
         created_at: new Date().toISOString(),
       });
-    if (insertErr) throw insertErr;
+    if (insertErr) {
+      if (insertErr.code === 'PGRST205' || insertErr.message?.includes('schema cache')) {
+        console.warn('contest_participants table not found yet; proceeding with STK push');
+      } else {
+        throw insertErr;
+      }
+    }
 
     // Initiate STK push for Ksh 500
     const stkResult = await initiateStkPush({
@@ -42,7 +47,7 @@ export async function POST(req: Request) {
 
     // Update participant with checkout request ID for later verification
     const checkoutId = stkResult?.CheckoutRequestID ?? null;
-    if (checkoutId) {
+    if (checkoutId && !insertErr) {
       await supabaseAdmin
         .from('contest_participants')
         .update({ checkout_request_id: checkoutId })

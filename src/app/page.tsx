@@ -711,7 +711,7 @@ export default function HomePage() {
                     JUNIOR SCHOOL • 2 HOURS • 100 MARKS
                   </span>
                   <span className="text-xs font-bold text-amber-200">
-                    All Subjects National Contest Tests • KSh 500 per Subject (Opens at 1,000 Learners)
+                    All Subjects National Contest Tests • KSh 500 per Subject (Opens when all participants are set)
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-white font-semibold leading-snug">
