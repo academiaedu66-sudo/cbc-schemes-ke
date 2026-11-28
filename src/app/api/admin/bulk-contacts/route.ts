@@ -6,6 +6,7 @@ import { triggerAutomaticBackup } from '@/lib/security';
 
 const BUCKET_NAME = 'cbc-materials';
 const BULK_CONTACTS_PATH = '_system/admin-bulk-contacts.json';
+const BULK_CONFIG_PATH = '_system/bulk-messaging-config.json';
 
 export interface BulkContactRecord {
   id: string;
@@ -15,6 +16,38 @@ export interface BulkContactRecord {
   label: string;
   addedAt: string;
   lastMessagedAt?: string;
+}
+
+export interface BulkMessagingConfig {
+  whapiToken?: string;
+  metaAccessToken?: string;
+  metaPhoneNumberId?: string;
+  whatsappWebhookUrl?: string;
+  atUsername?: string;
+  atApiKey?: string;
+  twilioSid?: string;
+  twilioToken?: string;
+  twilioFrom?: string;
+  smsWebhookUrl?: string;
+  updatedAt?: string;
+}
+
+async function readMessagingConfig(): Promise<BulkMessagingConfig> {
+  try {
+    const { data, error } = await supabaseAdmin.storage.from(BUCKET_NAME).download(BULK_CONFIG_PATH);
+    if (error || !data) return {};
+    return JSON.parse(await data.text()) as BulkMessagingConfig;
+  } catch {
+    return {};
+  }
+}
+
+async function writeMessagingConfig(cfg: BulkMessagingConfig): Promise<void> {
+  const bytes = Buffer.from(JSON.stringify({ ...cfg, updatedAt: new Date().toISOString() }, null, 2), 'utf-8');
+  await supabaseAdmin.storage.from(BUCKET_NAME).upload(BULK_CONFIG_PATH, bytes, {
+    contentType: 'application/json',
+    upsert: true,
+  });
 }
 
 async function readContacts(): Promise<BulkContactRecord[]> {
@@ -36,11 +69,13 @@ async function writeContacts(contacts: BulkContactRecord[]): Promise<void> {
   });
 }
 
-function parseContactsText(raw: string, defaultLabel: string): Array<{ name: string; phoneIntl: string; phoneLocal: string; label: string }> {
+function parseContactsText(
+  raw: string,
+  defaultLabel: string
+): Array<{ name: string; phoneIntl: string; phoneLocal: string; label: string }> {
   const results: Array<{ name: string; phoneIntl: string; phoneLocal: string; label: string }> = [];
   const seen = new Set<string>();
 
-  // Handle vCard (.vcf) contact exports
   if (raw.includes('BEGIN:VCARD')) {
     const cards = raw.split(/BEGIN:VCARD/i).slice(1);
     for (const card of cards) {
@@ -63,7 +98,6 @@ function parseContactsText(raw: string, defaultLabel: string): Array<{ name: str
     return results;
   }
 
-  // Handle CSV / TXT / pasted lines: "Name, Phone, Label" or "Phone"
   const lines = raw.split(/\r?\n/);
   for (const line of lines) {
     const trimmed = line.trim();
@@ -85,7 +119,6 @@ function parseContactsText(raw: string, defaultLabel: string): Array<{ name: str
     }
 
     if (!phoneIntl) {
-      // Try extracting any phone token from the line
       const tokens = trimmed.match(/(?:\+?254|0)[17]\d{8}/g) || [];
       for (const tok of tokens) {
         const intl = normalizeKenyanPhone(tok);
@@ -116,9 +149,13 @@ function parseContactsText(raw: string, defaultLabel: string): Array<{ name: str
   return results;
 }
 
-async function sendViaWhatsAppApi(phoneIntl: string, text: string): Promise<{ ok: boolean; channel: string; error?: string }> {
-  const metaToken = (process.env.WHATSAPP_ACCESS_TOKEN || '').trim();
-  const metaPhoneId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
+async function sendViaWhatsAppApi(
+  phoneIntl: string,
+  text: string,
+  cfg: BulkMessagingConfig
+): Promise<{ ok: boolean; channel: string; error?: string }> {
+  const metaToken = (cfg.metaAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || '').trim();
+  const metaPhoneId = (cfg.metaPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
   if (metaToken && metaPhoneId) {
     try {
       const res = await fetch(`https://graph.facebook.com/v21.0/${encodeURIComponent(metaPhoneId)}/messages`, {
@@ -142,7 +179,7 @@ async function sendViaWhatsAppApi(phoneIntl: string, text: string): Promise<{ ok
     }
   }
 
-  const whapiToken = (process.env.WHAPI_API_TOKEN || '').trim();
+  const whapiToken = (cfg.whapiToken || process.env.WHAPI_API_TOKEN || '').trim();
   if (whapiToken) {
     try {
       const res = await fetch('https://gate.whapi.cloud/messages/text', {
@@ -161,7 +198,7 @@ async function sendViaWhatsAppApi(phoneIntl: string, text: string): Promise<{ ok
     }
   }
 
-  const webhook = (process.env.WHATSAPP_AUTOREPLY_WEBHOOK_URL || '').trim();
+  const webhook = (cfg.whatsappWebhookUrl || process.env.WHATSAPP_AUTOREPLY_WEBHOOK_URL || '').trim();
   if (webhook) {
     try {
       const res = await fetch(webhook, {
@@ -170,15 +207,22 @@ async function sendViaWhatsAppApi(phoneIntl: string, text: string): Promise<{ ok
         body: JSON.stringify({ to: phoneIntl, text }),
       });
       if (res.ok) return { ok: true, channel: 'WhatsApp Webhook' };
-    } catch {}
+      return { ok: false, channel: 'WhatsApp Webhook', error: `HTTP ${res.status}` };
+    } catch (e: unknown) {
+      return { ok: false, channel: 'WhatsApp Webhook', error: e instanceof Error ? e.message : 'Network error' };
+    }
   }
 
-  return { ok: false, channel: 'Manual wa.me Link (No Cloud API Key)' };
+  return { ok: false, channel: 'Manual wa.me Link (Configure API above)' };
 }
 
-async function sendViaSmsInboxApi(phoneIntl: string, text: string): Promise<{ ok: boolean; channel: string; error?: string }> {
-  const atKey = (process.env.AFRICASTALKING_API_KEY || '').trim();
-  const atUser = (process.env.AFRICASTALKING_USERNAME || '').trim();
+async function sendViaSmsInboxApi(
+  phoneIntl: string,
+  text: string,
+  cfg: BulkMessagingConfig
+): Promise<{ ok: boolean; channel: string; error?: string }> {
+  const atKey = (cfg.atApiKey || process.env.AFRICASTALKING_API_KEY || '').trim();
+  const atUser = (cfg.atUsername || process.env.AFRICASTALKING_USERNAME || '').trim();
   if (atKey && atUser) {
     try {
       const params = new URLSearchParams({
@@ -203,7 +247,33 @@ async function sendViaSmsInboxApi(phoneIntl: string, text: string): Promise<{ ok
     }
   }
 
-  const smsWebhook = (process.env.SMS_WEBHOOK_URL || '').trim();
+  const twSid = (cfg.twilioSid || process.env.TWILIO_ACCOUNT_SID || '').trim();
+  const twToken = (cfg.twilioToken || process.env.TWILIO_AUTH_TOKEN || '').trim();
+  const twFrom = (cfg.twilioFrom || process.env.TWILIO_PHONE_NUMBER || '').trim();
+  if (twSid && twToken && twFrom) {
+    try {
+      const params = new URLSearchParams({
+        To: `+${phoneIntl}`,
+        From: twFrom,
+        Body: text,
+      });
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(twSid)}/Messages.json`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${twSid}:${twToken}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+      });
+      if (res.ok) return { ok: true, channel: 'Twilio SMS' };
+      const errTxt = await res.text();
+      return { ok: false, channel: 'Twilio SMS', error: errTxt.slice(0, 120) };
+    } catch (e: unknown) {
+      return { ok: false, channel: 'Twilio SMS', error: e instanceof Error ? e.message : 'Network error' };
+    }
+  }
+
+  const smsWebhook = (cfg.smsWebhookUrl || process.env.SMS_WEBHOOK_URL || '').trim();
   if (smsWebhook) {
     try {
       const res = await fetch(smsWebhook, {
@@ -212,32 +282,56 @@ async function sendViaSmsInboxApi(phoneIntl: string, text: string): Promise<{ ok
         body: JSON.stringify({ to: `+${phoneIntl}`, message: text }),
       });
       if (res.ok) return { ok: true, channel: 'SMS Webhook' };
-    } catch {}
+      return { ok: false, channel: 'SMS Webhook', error: `HTTP ${res.status}` };
+    } catch (e: unknown) {
+      return { ok: false, channel: 'SMS Webhook', error: e instanceof Error ? e.message : 'Network error' };
+    }
   }
 
-  return { ok: false, channel: 'Manual sms: Link (No SMS API Key)' };
+  return { ok: false, channel: 'Manual sms: Link (Configure API above)' };
+}
+
+function summarizeGatewayFlags(cfg: BulkMessagingConfig) {
+  const hasWhatsAppApi = Boolean(
+    ((cfg.metaAccessToken || process.env.WHATSAPP_ACCESS_TOKEN) &&
+      (cfg.metaPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID)) ||
+      cfg.whapiToken ||
+      process.env.WHAPI_API_TOKEN ||
+      cfg.whatsappWebhookUrl ||
+      process.env.WHATSAPP_AUTOREPLY_WEBHOOK_URL
+  );
+  const hasSmsApi = Boolean(
+    ((cfg.atApiKey || process.env.AFRICASTALKING_API_KEY) &&
+      (cfg.atUsername || process.env.AFRICASTALKING_USERNAME)) ||
+      ((cfg.twilioSid || process.env.TWILIO_ACCOUNT_SID) &&
+        (cfg.twilioToken || process.env.TWILIO_AUTH_TOKEN) &&
+        (cfg.twilioFrom || process.env.TWILIO_PHONE_NUMBER)) ||
+      cfg.smsWebhookUrl ||
+      process.env.SMS_WEBHOOK_URL
+  );
+  return { hasWhatsAppApi, hasSmsApi };
 }
 
 export async function GET(req: NextRequest) {
   if (!isAdminAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const contacts = await readContacts();
-  const hasWhatsAppApi = Boolean(
-    (process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) ||
-      process.env.WHAPI_API_TOKEN ||
-      process.env.WHATSAPP_AUTOREPLY_WEBHOOK_URL
-  );
-  const hasSmsApi = Boolean(
-    (process.env.AFRICASTALKING_API_KEY && process.env.AFRICASTALKING_USERNAME) ||
-      process.env.SMS_WEBHOOK_URL
-  );
+  const [contacts, cfg] = await Promise.all([readContacts(), readMessagingConfig()]);
+  const { hasWhatsAppApi, hasSmsApi } = summarizeGatewayFlags(cfg);
   return NextResponse.json({
     ok: true,
     contacts,
     totalCount: contacts.length,
     hasWhatsAppApi,
     hasSmsApi,
+    configSummary: {
+      hasWhapi: Boolean(cfg.whapiToken || process.env.WHAPI_API_TOKEN),
+      hasMeta: Boolean((cfg.metaAccessToken || process.env.WHATSAPP_ACCESS_TOKEN) && (cfg.metaPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID)),
+      hasWaWebhook: Boolean(cfg.whatsappWebhookUrl || process.env.WHATSAPP_AUTOREPLY_WEBHOOK_URL),
+      hasAfricasTalking: Boolean((cfg.atApiKey || process.env.AFRICASTALKING_API_KEY) && (cfg.atUsername || process.env.AFRICASTALKING_USERNAME)),
+      hasTwilio: Boolean(cfg.twilioSid || process.env.TWILIO_ACCOUNT_SID),
+      hasSmsWebhook: Boolean(cfg.smsWebhookUrl || process.env.SMS_WEBHOOK_URL),
+    },
   });
 }
 
@@ -249,6 +343,26 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const action = String(body.action || '');
+
+    if (action === 'save_config') {
+      const current = await readMessagingConfig();
+      const next: BulkMessagingConfig = {
+        ...current,
+        whapiToken: body.whapiToken !== undefined ? String(body.whapiToken).trim() || current.whapiToken : current.whapiToken,
+        metaAccessToken: body.metaAccessToken !== undefined ? String(body.metaAccessToken).trim() || current.metaAccessToken : current.metaAccessToken,
+        metaPhoneNumberId: body.metaPhoneNumberId !== undefined ? String(body.metaPhoneNumberId).trim() || current.metaPhoneNumberId : current.metaPhoneNumberId,
+        whatsappWebhookUrl: body.whatsappWebhookUrl !== undefined ? String(body.whatsappWebhookUrl).trim() || current.whatsappWebhookUrl : current.whatsappWebhookUrl,
+        atUsername: body.atUsername !== undefined ? String(body.atUsername).trim() || current.atUsername : current.atUsername,
+        atApiKey: body.atApiKey !== undefined ? String(body.atApiKey).trim() || current.atApiKey : current.atApiKey,
+        twilioSid: body.twilioSid !== undefined ? String(body.twilioSid).trim() || current.twilioSid : current.twilioSid,
+        twilioToken: body.twilioToken !== undefined ? String(body.twilioToken).trim() || current.twilioToken : current.twilioToken,
+        twilioFrom: body.twilioFrom !== undefined ? String(body.twilioFrom).trim() || current.twilioFrom : current.twilioFrom,
+        smsWebhookUrl: body.smsWebhookUrl !== undefined ? String(body.smsWebhookUrl).trim() || current.smsWebhookUrl : current.smsWebhookUrl,
+      };
+      await writeMessagingConfig(next);
+      const flags = summarizeGatewayFlags(next);
+      return NextResponse.json({ ok: true, ...flags, message: 'WhatsApp & SMS Inbox API settings saved!' });
+    }
 
     if (action === 'import') {
       const rawText = String(body.rawText || '');
@@ -303,7 +417,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Message text is required.' }, { status: 400 });
       }
 
-      const contacts = await readContacts();
+      const [contacts, cfg] = await Promise.all([readContacts(), readMessagingConfig()]);
       const targets =
         contactIds.length > 0
           ? contacts.filter((c) => contactIds.includes(c.id))
@@ -333,12 +447,12 @@ export async function POST(req: NextRequest) {
           const notes: string[] = [];
 
           if (channel === 'whatsapp' || channel === 'both') {
-            const r = await sendViaWhatsAppApi(c.phoneIntl, personalized);
+            const r = await sendViaWhatsAppApi(c.phoneIntl, personalized, cfg);
             waOk = r.ok;
             notes.push(`WA: ${r.ok ? `Sent (${r.channel})` : r.error || r.channel}`);
           }
           if (channel === 'inbox' || channel === 'both') {
-            const r = await sendViaSmsInboxApi(c.phoneIntl, personalized);
+            const r = await sendViaSmsInboxApi(c.phoneIntl, personalized, cfg);
             smsOk = r.ok;
             notes.push(`Inbox: ${r.ok ? `Sent (${r.channel})` : r.error || r.channel}`);
           }

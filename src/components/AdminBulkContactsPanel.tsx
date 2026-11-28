@@ -41,6 +41,19 @@ export default function AdminBulkContactsPanel({ password }: { password: string 
   const [statusMsg, setStatusMsg] = useState('');
   const [busy, setBusy] = useState(false);
   const [sendResults, setSendResults] = useState<BulkSendResult[]>([]);
+  const [showApiSetup, setShowApiSetup] = useState(false);
+  const [apiForm, setApiForm] = useState({
+    whapiToken: '',
+    metaAccessToken: '',
+    metaPhoneNumberId: '',
+    whatsappWebhookUrl: '',
+    atUsername: '',
+    atApiKey: '',
+    twilioSid: '',
+    twilioToken: '',
+    twilioFrom: '',
+    smsWebhookUrl: '',
+  });
 
   const loadContacts = async () => {
     try {
@@ -187,6 +200,37 @@ export default function AdminBulkContactsPanel({ password }: { password: string 
     }
   };
 
+  const handleSaveApiConfig = async () => {
+    setBusy(true);
+    setStatusMsg('');
+    try {
+      const res = await fetch('/api/admin/bulk-contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({
+          action: 'save_config',
+          ...apiForm,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setHasWhatsAppApi(Boolean(data.hasWhatsAppApi));
+        setHasSmsApi(Boolean(data.hasSmsApi));
+        setShowApiSetup(false);
+        setStatusMsg(`✅ ${data.message}`);
+      } else {
+        setStatusMsg(`❌ ${data.error || 'Failed to save API settings'}`);
+      }
+    } catch {
+      setStatusMsg('❌ Network error saving API settings.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     const res = await fetch('/api/admin/bulk-contacts', {
       method: 'POST',
@@ -228,15 +272,102 @@ export default function AdminBulkContactsPanel({ password }: { password: string 
 
       {isOpen && (
         <div className="pt-4 border-t border-slate-200 space-y-6">
-          {/* API Readiness Badges */}
-          <div className="flex flex-wrap gap-2 text-xs">
+          {/* API Readiness Badges + Setup Toggle */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className={`px-3 py-1 rounded-full font-bold ${hasWhatsAppApi ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}`}>
-              {hasWhatsAppApi ? '✅ WhatsApp Cloud/Whapi Connected' : '⚠️ WhatsApp Cloud API not set (generates 1-click wa.me links)'}
+              {hasWhatsAppApi ? '✅ WhatsApp API Connected' : '⚠️ WhatsApp API Not Connected'}
             </span>
             <span className={`px-3 py-1 rounded-full font-bold ${hasSmsApi ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}`}>
-              {hasSmsApi ? '✅ SMS Inbox API Connected' : '⚠️ SMS Inbox API not set (generates 1-click sms: links)'}
+              {hasSmsApi ? '✅ SMS Inbox API Connected' : '⚠️ SMS Inbox API Not Connected'}
             </span>
+            <button
+              type="button"
+              onClick={() => setShowApiSetup((v) => !v)}
+              className="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full font-bold cursor-pointer"
+            >
+              {showApiSetup ? 'Close API Setup' : '⚙️ Connect WhatsApp & SMS APIs'}
+            </button>
           </div>
+
+          {showApiSetup && (
+            <div className="bg-slate-900 text-white rounded-xl p-4 space-y-3 text-xs">
+              <div className="font-bold text-sm text-emerald-300">
+                ⚙️ Connect Automated Bulk WhatsApp &amp; SMS Inbox APIs (Saved Securely in Cloud Vault)
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2 bg-slate-800 p-3 rounded-lg">
+                  <div className="font-bold text-emerald-300">WhatsApp API (Whapi.cloud, Meta Cloud, or Webhook)</div>
+                  <input
+                    type="password"
+                    placeholder="Whapi.cloud API Token (recommended)"
+                    value={apiForm.whapiToken}
+                    onChange={(e) => setApiForm({ ...apiForm, whapiToken: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Meta WhatsApp Access Token (optional)"
+                    value={apiForm.metaAccessToken}
+                    onChange={(e) => setApiForm({ ...apiForm, metaAccessToken: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Meta Phone Number ID (optional)"
+                    value={apiForm.metaPhoneNumberId}
+                    onChange={(e) => setApiForm({ ...apiForm, metaPhoneNumberId: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Custom WhatsApp Webhook URL (optional)"
+                    value={apiForm.whatsappWebhookUrl}
+                    onChange={(e) => setApiForm({ ...apiForm, whatsappWebhookUrl: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+                <div className="space-y-2 bg-slate-800 p-3 rounded-lg">
+                  <div className="font-bold text-sky-300">SMS Inbox API (Africa&apos;s Talking, Twilio, or Webhook)</div>
+                  <input
+                    type="text"
+                    placeholder="Africa's Talking Username (e.g. cbcmaterials)"
+                    value={apiForm.atUsername}
+                    onChange={(e) => setApiForm({ ...apiForm, atUsername: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Africa's Talking API Key"
+                    value={apiForm.atApiKey}
+                    onChange={(e) => setApiForm({ ...apiForm, atApiKey: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Twilio Account SID (optional)"
+                    value={apiForm.twilioSid}
+                    onChange={(e) => setApiForm({ ...apiForm, twilioSid: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Custom SMS Webhook URL (optional)"
+                    value={apiForm.smsWebhookUrl}
+                    onChange={(e) => setApiForm({ ...apiForm, smsWebhookUrl: e.target.value })}
+                    className="w-full rounded px-2.5 py-1.5 bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveApiConfig}
+                disabled={busy}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-lg cursor-pointer"
+              >
+                {busy ? 'Saving…' : '💾 Save & Activate WhatsApp + SMS APIs'}
+              </button>
+            </div>
+          )}
 
           {/* Step 1: Upload / Paste Contacts */}
           <div className="bg-slate-50 border rounded-xl p-4 space-y-3">
