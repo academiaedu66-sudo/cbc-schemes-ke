@@ -21,7 +21,7 @@ module.exports = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://scripts.api.disqometer.com; media-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; frame-src 'self'; object-src 'none';",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.youtube.com https://s.ytimg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://scripts.api.disqometer.com https://www.youtube.com; media-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none';",
           },
           {
             key: 'X-Content-Type-Options',
