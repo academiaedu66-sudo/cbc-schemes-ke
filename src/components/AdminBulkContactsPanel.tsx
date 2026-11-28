@@ -57,6 +57,12 @@ export default function AdminBulkContactsPanel({ password }: { password: string 
   };
 
   useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener('open-bulk-contacts', handler);
+    return () => window.removeEventListener('open-bulk-contacts', handler);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen || !password) return;
     let active = true;
     fetch('/api/admin/bulk-contacts', {
@@ -195,7 +201,7 @@ export default function AdminBulkContactsPanel({ password }: { password: string 
   };
 
   return (
-    <section className="bg-white border-2 border-emerald-500 rounded-2xl p-6 shadow-sm space-y-4">
+    <section id="bulk-contacts-panel" className="bg-white border-2 border-emerald-500 rounded-2xl p-6 shadow-sm space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">

@@ -541,6 +541,17 @@ export default function AdminDashboardPage() {
             </Link>
             <button
               type="button"
+              onClick={() => {
+                window.dispatchEvent(new Event('open-bulk-contacts'));
+                document.getElementById('bulk-contacts-panel')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="bg-sky-500 hover:bg-sky-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <UploadCloud className="w-3.5 h-3.5" />
+              Bulk Contacts (100+ WA &amp; Inbox)
+            </button>
+            <button
+              type="button"
               onClick={() =>
                 document
                   .getElementById('registered-customers-vault')
@@ -575,14 +586,14 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* BULK CONTACTS UPLOAD & MESSAGING (100+ NUMBERS: WHATSAPP & INBOX) */}
+        <AdminBulkContactsPanel password={password} />
+
         {/* BACKEND ANTI-HACKER SHIELD, 2-STEP VERIFICATION & WEBSITE BACKUP */}
         <AdminSecurityBackupPanel password={password} />
 
         {/* BACKEND VAULT FOR FRONTEND CUSTOMER SIGN-UPS (EMAILS & PHONE NUMBERS) */}
         <AdminCustomersVaultPanel password={password} />
-
-        {/* BULK CONTACTS UPLOAD & MESSAGING (100+ NUMBERS: WHATSAPP & INBOX) */}
-        <AdminBulkContactsPanel password={password} />
 
         {/* LIVE STK -> 0728595160 INSTANT PAYOUT CONFIGURATION */}
         <section
