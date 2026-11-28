@@ -3,12 +3,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Volume2, VolumeX, Play, Pause, SkipForward, RotateCcw } from 'lucide-react';
 
-const KENYA_YOUTUBE_VIDEO_ID = 'F2Ik_VqpObM';
-const EAC_ANTHEM_SRC = '/audio/east-africa-anthem.ogg';
+const KENYA_YOUTUBE_ID = 'F2Ik_VqpObM';
+const EAC_YOUTUBE_ID = 'pPi0V-Kw8ZA';
 
 interface YTPlayerInstance {
   playVideo: () => void;
   pauseVideo: () => void;
+  loadVideoById: (videoId: string) => void;
+  getPlayerState: () => number;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   mute: () => void;
   unMute: () => void;
@@ -29,7 +31,6 @@ declare global {
           };
         }
       ) => YTPlayerInstance;
-      PlayerState?: { ENDED: number; PLAYING: number; PAUSED: number };
     };
     onYouTubeIframeAPIReady?: () => void;
   }
@@ -42,7 +43,6 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
 
   const ytContainerRef = useRef<HTMLDivElement | null>(null);
   const ytPlayerRef = useRef<YTPlayerInstance | null>(null);
-  const eacAudioRef = useRef<HTMLAudioElement | null>(null);
   const trackIndexRef = useRef<0 | 1>(0);
 
   useEffect(() => {
@@ -50,27 +50,18 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
   }, [trackIndex]);
 
   const startEastAfricaAnthem = useCallback(() => {
-    try {
-      ytPlayerRef.current?.pauseVideo();
-    } catch {}
     setTrackIndex(1);
-    const el = eacAudioRef.current;
-    if (!el) return;
-    el.currentTime = 0;
-    el.play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
+    try {
+      ytPlayerRef.current?.loadVideoById(EAC_YOUTUBE_ID);
+      ytPlayerRef.current?.playVideo();
+      setIsPlaying(true);
+    } catch {}
   }, []);
 
   const startKenyaAnthem = useCallback(() => {
-    const el = eacAudioRef.current;
-    if (el) {
-      el.pause();
-      el.currentTime = 0;
-    }
     setTrackIndex(0);
     try {
-      ytPlayerRef.current?.seekTo(0, true);
+      ytPlayerRef.current?.loadVideoById(KENYA_YOUTUBE_ID);
       ytPlayerRef.current?.playVideo();
       setIsPlaying(true);
     } catch {}
@@ -78,11 +69,12 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
 
   useEffect(() => {
     let destroyed = false;
+    let fallbackTimer: number | null = null;
 
     const initPlayer = () => {
       if (destroyed || !ytContainerRef.current || !window.YT?.Player) return;
       ytPlayerRef.current = new window.YT.Player(ytContainerRef.current, {
-        videoId: KENYA_YOUTUBE_VIDEO_ID,
+        videoId: KENYA_YOUTUBE_ID,
         playerVars: {
           autoplay: autoStart ? 1 : 0,
           rel: 0,
@@ -91,27 +83,53 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
         },
         events: {
           onReady: (e) => {
-            if (autoStart) {
-              try {
-                e.target.playVideo();
-                setIsPlaying(true);
-              } catch {}
-            }
+            if (!autoStart) return;
+            try {
+              e.target.playVideo();
+              setIsPlaying(true);
+              // If browser blocks unmuted autoplay, start muted and unmute on first user interaction
+              fallbackTimer = window.setTimeout(() => {
+                if (destroyed) return;
+                try {
+                  if (e.target.getPlayerState() !== 1) {
+                    e.target.mute();
+                    setMuted(true);
+                    e.target.playVideo();
+                  }
+                } catch {}
+              }, 700);
+            } catch {}
           },
           onStateChange: (e) => {
             // YT.PlayerState: 1 = PLAYING, 2 = PAUSED, 0 = ENDED
             if (e.data === 1) {
               setIsPlaying(true);
             } else if (e.data === 2) {
-              if (trackIndexRef.current === 0) setIsPlaying(false);
+              setIsPlaying(false);
             } else if (e.data === 0) {
-              // Kenya National Anthem ended -> immediately start East African Community Anthem
-              startEastAfricaAnthem();
+              if (trackIndexRef.current === 0) {
+                // Kenya National Anthem ended -> immediately autoplay East African Community Anthem
+                startEastAfricaAnthem();
+              } else {
+                setIsPlaying(false);
+              }
             }
           },
         },
       });
     };
+
+    const unmuteOnGesture = () => {
+      try {
+        ytPlayerRef.current?.unMute();
+        setMuted(false);
+        if (autoStart && ytPlayerRef.current?.getPlayerState() !== 1) {
+          ytPlayerRef.current?.playVideo();
+        }
+      } catch {}
+    };
+    window.addEventListener('pointerdown', unmuteOnGesture, { once: true });
+    window.addEventListener('keydown', unmuteOnGesture, { once: true });
 
     if (window.YT?.Player) {
       initPlayer();
@@ -126,6 +144,9 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
 
     return () => {
       destroyed = true;
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      window.removeEventListener('pointerdown', unmuteOnGesture);
+      window.removeEventListener('keydown', unmuteOnGesture);
       try {
         ytPlayerRef.current?.destroy();
       } catch {}
@@ -137,67 +158,32 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
       if (muted) ytPlayerRef.current?.mute();
       else ytPlayerRef.current?.unMute();
     } catch {}
-    if (eacAudioRef.current) {
-      eacAudioRef.current.muted = muted;
-    }
   }, [muted]);
 
   const togglePlayPause = () => {
-    if (trackIndex === 0) {
-      try {
-        if (isPlaying) {
-          ytPlayerRef.current?.pauseVideo();
-          setIsPlaying(false);
-        } else {
-          ytPlayerRef.current?.playVideo();
-          setIsPlaying(true);
-        }
-      } catch {}
-    } else {
-      const el = eacAudioRef.current;
-      if (!el) return;
-      if (el.paused) {
-        el.play().then(() => setIsPlaying(true)).catch(() => {});
-      } else {
-        el.pause();
+    try {
+      if (isPlaying) {
+        ytPlayerRef.current?.pauseVideo();
         setIsPlaying(false);
+      } else {
+        ytPlayerRef.current?.playVideo();
+        setIsPlaying(true);
       }
-    }
+    } catch {}
   };
 
   return (
     <div className="mb-5 rounded-2xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-950 via-slate-900 to-blue-950 text-white p-4 shadow-md">
-      <audio
-        ref={eacAudioRef}
-        src={EAC_ANTHEM_SRC}
-        preload="auto"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => {
-          if (trackIndexRef.current === 1) setIsPlaying(false);
-        }}
-        onEnded={() => setIsPlaying(false)}
-      />
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="w-full md:w-56 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black">
-          <div className={trackIndex === 0 ? 'block aspect-video w-full' : 'hidden'}>
-            <div ref={ytContainerRef} className="w-full h-full" />
-          </div>
-          {trackIndex === 1 && (
-            <div className="aspect-video w-full flex flex-col items-center justify-center bg-blue-950 text-center p-2">
-              <div className="text-2xl">🌍</div>
-              <div className="text-xs font-extrabold text-emerald-300 mt-1">
-                East African Community Anthem
-              </div>
-            </div>
-          )}
+        <div className="w-full md:w-56 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black aspect-video">
+          <div ref={ytContainerRef} className="w-full h-full" />
         </div>
 
         <div className="flex-1 space-y-2">
           <div>
             <div className="text-[11px] font-black uppercase tracking-wider text-emerald-300">
               {isPlaying
-                ? `🎵 Now Playing (${trackIndex + 1}/2)`
+                ? `🎵 Now Playing (${trackIndex + 1}/2)${muted ? ' • Tap anywhere for sound' : ''}`
                 : '🎼 Contest Ceremonial Anthems (1. Kenya → 2. East Africa)'}
             </div>
             <div className="text-sm sm:text-base font-extrabold text-white mt-0.5">
