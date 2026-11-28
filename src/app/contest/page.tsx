@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ContestAnthemPlayer from '@/components/ContestAnthemPlayer';
 
 const CONTEST_GRADES = ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9'] as const;
 
@@ -146,6 +147,9 @@ export default function ContestPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+
+      {/* ── CEREMONIAL ANTHEM PLAYER: 1. Kenya National Anthem -> 2. East Africa Anthem ── */}
+      <ContestAnthemPlayer autoStart={true} />
 
       {/* ── TOP HERO: Always visible contest button + rewards ── */}
       <div

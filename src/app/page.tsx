@@ -711,7 +711,7 @@ export default function HomePage() {
                     GRADES 6, 7, 8 &amp; 9 • 2 HOURS • 100 MARKS
                   </span>
                   <span className="text-xs font-bold text-amber-200">
-                    All Subjects National Contest Tests • KSh 500 per Subject (Test is almost here!)
+                    All Subjects National Contest Tests • KSh 500 per Subject (🇰🇪 Kenya &amp; 🌍 East Africa Anthems Included)
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-white font-semibold leading-snug">
