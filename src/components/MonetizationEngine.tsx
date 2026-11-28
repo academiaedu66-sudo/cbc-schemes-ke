@@ -169,7 +169,8 @@ export function MonetizationProvider({ children }: { children: React.ReactNode }
   const isProtectedAdminRoute =
     pathname.startsWith('/admin') ||
     pathname.startsWith('/mobile-admin') ||
-    pathname.startsWith('/monetization');
+    pathname.startsWith('/monetization') ||
+    pathname.startsWith('/contest');
 
   const [config, setConfig] = useState<PublicMonetizationConfig>(DEFAULT_PUBLIC_CONFIG);
   const viewRecordedRef = useRef(false);

@@ -416,7 +416,7 @@ export default function LuxuryWelcomeSong({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const path = window.location.pathname || '';
-    if (path.startsWith('/admin') || path.startsWith('/mobile-admin')) {
+    if (path.startsWith('/admin') || path.startsWith('/mobile-admin') || path.startsWith('/contest')) {
       setIsAdminRoute(true);
       return;
     }

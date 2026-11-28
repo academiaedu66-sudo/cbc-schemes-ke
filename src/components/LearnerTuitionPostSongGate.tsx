@@ -109,6 +109,7 @@ export default function LearnerTuitionPostSongGate() {
       path.startsWith('/admin') ||
       path.startsWith('/mobile-admin') ||
       path.startsWith('/monetization') ||
+      path.startsWith('/contest') ||
       isSearchCrawlerBot()
     ) {
       setIsBlockedRoute(true);
