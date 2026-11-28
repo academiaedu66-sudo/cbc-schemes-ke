@@ -42,6 +42,7 @@ import WhatsAppStatusAutoPanel from '@/components/WhatsAppStatusAutoPanel';
 import OmnichannelSocialSeoPanel from '@/components/OmnichannelSocialSeoPanel';
 import CustomerSensorAdminBanner from '@/components/CustomerSensorAdminBanner';
 import AdminCustomersVaultPanel from '@/components/AdminCustomersVaultPanel';
+import AdminBulkContactsPanel from '@/components/AdminBulkContactsPanel';
 import AdminDonationsPanel from '@/components/AdminDonationsPanel';
 import AdminTuitionPanel from '@/components/AdminTuitionPanel';
 import AdminGamingPanel from '@/components/AdminGamingPanel';
@@ -579,6 +580,9 @@ export default function AdminDashboardPage() {
 
         {/* BACKEND VAULT FOR FRONTEND CUSTOMER SIGN-UPS (EMAILS & PHONE NUMBERS) */}
         <AdminCustomersVaultPanel password={password} />
+
+        {/* BULK CONTACTS UPLOAD & MESSAGING (100+ NUMBERS: WHATSAPP & INBOX) */}
+        <AdminBulkContactsPanel password={password} />
 
         {/* LIVE STK -> 0728595160 INSTANT PAYOUT CONFIGURATION */}
         <section
