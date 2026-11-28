@@ -751,6 +751,28 @@ export default function HomePage() {
                   {subj} (KSh 500)
                 </Link>
               ))}
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  '🏆 NATIONAL CONTEST (Grades 6, 7, 8 & 9) on CBCMaterials.shop! Win a Brand New Laptop, KSh 20,000 School Fee & School Uniforms! Register here: https://www.cbcmaterials.shop/contest'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackInteraction('national_contest_whatsapp_share_click')}
+                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-300/60 text-[11px] font-black transition"
+              >
+                📣 Invite on WhatsApp
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                  'https://www.cbcmaterials.shop/contest'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackInteraction('national_contest_fb_share_click')}
+                className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white border border-blue-300/60 text-[11px] font-black transition"
+              >
+                📘 Share on Facebook
+              </a>
             </div>
           </div>
 

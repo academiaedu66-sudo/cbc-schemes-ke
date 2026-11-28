@@ -60,6 +60,13 @@ export async function GET() {
     <description>Daily 2026 KICD Rationalized CBC Schemes of Work, Teachers Notes, KNEC KJSEA &amp; KPSEA Examinations, TSC Services &amp; Verified Tuition Tutors in Kenya — Optimized for TikTok, YouTube Shorts, Facebook Reels &amp; X (Twitter).</description>
     <language>en-ke</language>
     <lastBuildDate>${nowRfc822}</lastBuildDate>
+    <item>
+      <title>${escapeXml('NATIONAL CONTEST (Grades 6, 7, 8 & 9) — Win Brand New Laptop, KSh 20,000 School Fee & School Uniforms | cbcmaterials.shop')}</title>
+      <link>${SITE_ORIGIN}/contest</link>
+      <guid isPermaLink="false">${escapeXml(`cbcmaterials-${dateEat}-national-contest`)}</guid>
+      <pubDate>${nowRfc822}</pubDate>
+      <description>${escapeXml('Join the National CBC Contest for Grades 6, 7, 8 & 9 across all subjects (KSh 500 per subject test, 100 marks, 2 hours). 1st Place: Brand New Laptop + KSh 20,000 School Fee + New School Uniform. 2nd: KSh 10,000 + School Uniform. 3rd: KSh 5,000 + School Uniform. Register now at https://www.cbcmaterials.shop/contest')}</description>
+    </item>
 ${buttonItemsXml}
 ${topicItemsXml}
   </channel>

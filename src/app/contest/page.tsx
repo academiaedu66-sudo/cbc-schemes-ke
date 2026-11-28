@@ -37,6 +37,10 @@ export default function ContestPage() {
   const [contestActive, setContestActive] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  const shareText = `🏆 NATIONAL CONTEST (Grades 6, 7, 8 & 9) on CBCMaterials.shop!\n🥇 1st: Brand New Laptop + KSh 20,000 School Fee + Uniform\n🥈 2nd: KSh 10,000 + Uniform\n🥉 3rd: KSh 5,000 + Uniform\nRegister for ${selectedGrade} ${selectedSubject} (KSh 500) here:`;
+  const shareUrl = 'https://www.cbcmaterials.shop/contest';
 
   // Read ?subject=, ?grade=, and saved participantId on mount
   useEffect(() => {
@@ -365,6 +369,53 @@ export default function ContestPage() {
             className="bg-gray-800 hover:bg-gray-900 text-white text-sm py-2 px-4 rounded-lg cursor-pointer"
           >
             🏅 View Public Leaderboard
+          </button>
+        </div>
+      </section>
+
+      {/* ── VIRAL INVITE & SHARE SECTION (ALL PLATFORMS) ── */}
+      <section className="mb-6 p-4 border-2 border-emerald-500 rounded-xl bg-emerald-50">
+        <h2 className="text-lg font-bold text-emerald-950 mb-1">
+          📣 Invite Classmates, Friends &amp; School Groups!
+        </h2>
+        <p className="text-sm text-emerald-900 mb-3">
+          Share the National Contest across WhatsApp, Facebook, X, TikTok &amp; Instagram so learners everywhere can join!
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-lg"
+          >
+            💬 Share on WhatsApp
+          </a>
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-lg"
+          >
+            📘 Share on Facebook
+          </a>
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-black hover:bg-gray-800 text-white text-sm font-bold py-2 px-4 rounded-lg"
+          >
+            𝕏 Share on X
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(shareUrl);
+              setCopiedInvite(true);
+              setTimeout(() => setCopiedInvite(false), 3000);
+            }}
+            className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold py-2 px-4 rounded-lg cursor-pointer"
+          >
+            {copiedInvite ? '✅ Invite Link Copied!' : '🔗 Copy Invite Link'}
           </button>
         </div>
       </section>
