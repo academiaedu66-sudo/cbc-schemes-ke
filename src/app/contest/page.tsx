@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+const CONTEST_GRADES = ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9'] as const;
+
 const CONTEST_SUBJECTS = [
   { name: 'Mathematics', icon: '📐' },
   { name: 'English', icon: '📖' },
@@ -19,14 +21,14 @@ const CONTEST_SUBJECTS = [
 
 /**
  * National Contest landing page for cbcmaterials.shop
- * - Shows rewards + START TEST button at the very top
- * - Lists all Junior School Subject National Contest Tests (KSh 500 each)
- * - Registration form with M-Pesa STK push (Ksh 500)
- * - WhatsApp registration link after payment
- * - Admin buttons: Activate Contest, View Leaderboard
+ * - Supports Grade 6, 7, 8, and 9 across every subject (KSh 500 each)
+ * - Shows rewards + START TEST button at the very top when active
+ * - Registration form requires Grade so learners are placed in the right test
+ * - Enforces silent threshold gate ("the test is almost here")
  */
 export default function ContestPage() {
   const router = useRouter();
+  const [selectedGrade, setSelectedGrade] = useState<string>('Grade 7');
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
   const [form, setForm] = useState({ name: '', school: '', phone: '' });
   const [message, setMessage] = useState('');
@@ -36,14 +38,18 @@ export default function ContestPage() {
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Read ?subject= and saved participantId on mount
+  // Read ?subject=, ?grade=, and saved participantId on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const subj = params.get('subject');
+    const grd = params.get('grade');
     const savedPid = window.localStorage.getItem('contest_participant_id');
     queueMicrotask(() => {
       if (subj && CONTEST_SUBJECTS.some((s) => s.name === subj)) {
         setSelectedSubject(subj);
+      }
+      if (grd && CONTEST_GRADES.includes(grd as (typeof CONTEST_GRADES)[number])) {
+        setSelectedGrade(grd);
       }
       if (savedPid) {
         setParticipantId(savedPid);
@@ -68,7 +74,9 @@ export default function ContestPage() {
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await fetch(`/api/contest/is-active?subject=${encodeURIComponent(selectedSubject)}`);
+        const res = await fetch(
+          `/api/contest/is-active?subject=${encodeURIComponent(selectedSubject)}&grade=${encodeURIComponent(selectedGrade)}`
+        );
         const data = await res.json();
         setContestActive(Boolean(data.active));
       } catch {}
@@ -76,15 +84,15 @@ export default function ContestPage() {
     poll();
     const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
-  }, [selectedSubject]);
+  }, [selectedSubject, selectedGrade]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const register = async () => {
-    if (!form.name.trim() || !form.school.trim() || !form.phone.trim()) {
-      setMessage('❌ Please enter your full name, school name, and M-Pesa phone number.');
+    if (!form.name.trim() || !form.school.trim() || !form.phone.trim() || !selectedGrade) {
+      setMessage('❌ Please enter your full name, school name, grade (6–9), and M-Pesa phone number.');
       return;
     }
     setIsSubmitting(true);
@@ -97,6 +105,7 @@ export default function ContestPage() {
           name: form.name.trim(),
           school: form.school.trim(),
           phoneNumber: form.phone.trim(),
+          grade: selectedGrade,
           subject: selectedSubject,
         }),
       });
@@ -105,7 +114,9 @@ export default function ContestPage() {
         setParticipantId(data.participantId);
         window.localStorage.setItem('contest_participant_id', data.participantId);
         setPaymentStatus('pending');
-        setMessage(`✅ STK push sent for ${selectedSubject} (KSh 500)! Check your phone, enter your M-Pesa PIN, and wait for confirmation.`);
+        setMessage(
+          `✅ STK push sent for ${selectedGrade} ${selectedSubject} (KSh 500)! Check your phone, enter your M-Pesa PIN, and wait for confirmation.`
+        );
         if (data.whatsappUrl) setWhatsappUrl(data.whatsappUrl);
       } else {
         setMessage(`❌ ${data.message || 'Registration failed. Please try again.'}`);
@@ -118,9 +129,8 @@ export default function ContestPage() {
   };
 
   const startContest = () => {
-    const url = participantId
-      ? `/contest/test?pid=${participantId}&subject=${encodeURIComponent(selectedSubject)}`
-      : `/contest/test?subject=${encodeURIComponent(selectedSubject)}`;
+    const query = `subject=${encodeURIComponent(selectedSubject)}&grade=${encodeURIComponent(selectedGrade)}`;
+    const url = participantId ? `/contest/test?pid=${participantId}&${query}` : `/contest/test?${query}`;
     router.push(url);
   };
 
@@ -139,9 +149,9 @@ export default function ContestPage() {
         style={{ background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%)' }}
       >
         <div className="text-4xl mb-2">🏆</div>
-        <h1 className="text-3xl font-extrabold mb-1 tracking-tight">NATIONAL CONTEST – JUNIOR SCHOOL</h1>
+        <h1 className="text-3xl font-extrabold mb-1 tracking-tight">NATIONAL CONTEST – GRADES 6, 7, 8 &amp; 9</h1>
         <p className="text-blue-200 mb-4 text-sm">
-          All Junior School Subjects · <strong>KSh 500 per Subject Test</strong> · 100 Marks · 2 Hours
+          All Subjects (Grade 6, 7, 8 &amp; 9 Levels) · <strong>KSh 500 per Subject Test</strong> · 100 Marks · 2 Hours
         </p>
 
         {/* Rewards */}
@@ -174,12 +184,12 @@ export default function ContestPage() {
             className="w-full text-xl font-extrabold py-4 px-8 rounded-xl cursor-pointer"
             style={{ background: '#00e676', color: '#000' }}
           >
-            🚀 NATIONAL CONTEST – START {selectedSubject.toUpperCase()} TEST NOW
+            🚀 NATIONAL CONTEST – START {selectedGrade.toUpperCase()} {selectedSubject.toUpperCase()} TEST NOW
           </button>
         ) : (
           <div className="bg-blue-800 bg-opacity-60 rounded-xl py-3 px-4">
             <p className="text-blue-100 font-semibold">
-              ⏳ The <strong>{selectedSubject}</strong> National Contest test is almost here!
+              ⏳ The <strong>{selectedGrade} {selectedSubject}</strong> National Contest test is almost here!
             </p>
             <p className="text-blue-200 text-sm mt-1">
               Register and complete your KSh 500 payment below — the test will open soon.
@@ -188,34 +198,66 @@ export default function ContestPage() {
         )}
       </div>
 
-      {/* ── ALL SUBJECTS NATIONAL CONTEST TESTS (KSh 500 EACH) ── */}
-      <section className="mb-6 p-4 border rounded-xl bg-white shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-          <h2 className="text-lg font-bold">📚 Select Your Subject National Contest Test</h2>
-          <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-            Each Subject Test: KSh 500
-          </span>
+      {/* ── GRADE & SUBJECT SELECTION (GRADES 6, 7, 8, 9 FOR EVERY SUBJECT) ── */}
+      <section className="mb-6 p-4 border rounded-xl bg-white shadow-sm space-y-4">
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <h2 className="text-lg font-bold">🎓 Step 1: Select Your Grade Level</h2>
+            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+              Grades 6, 7, 8 &amp; 9 Supported
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {CONTEST_GRADES.map((g) => {
+              const active = selectedGrade === g;
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setSelectedGrade(g)}
+                  className={`py-2.5 px-3 rounded-xl border font-bold text-sm transition cursor-pointer ${
+                    active
+                      ? 'border-blue-700 bg-blue-700 text-white shadow-sm'
+                      : 'border-gray-200 bg-gray-50 text-gray-800 hover:border-blue-400'
+                  }`}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-          {CONTEST_SUBJECTS.map((subj) => {
-            const isSelected = selectedSubject === subj.name;
-            return (
-              <button
-                key={subj.name}
-                type="button"
-                onClick={() => setSelectedSubject(subj.name)}
-                className={`p-3 rounded-xl border text-left transition cursor-pointer ${
-                  isSelected
-                    ? 'border-blue-700 bg-blue-50 ring-2 ring-blue-600'
-                    : 'border-gray-200 hover:border-blue-400 bg-gray-50'
-                }`}
-              >
-                <div className="text-xl mb-1">{subj.icon}</div>
-                <div className="font-bold text-xs sm:text-sm leading-tight text-gray-900">{subj.name}</div>
-                <div className="text-[11px] font-semibold text-emerald-700 mt-1">KSh 500</div>
-              </button>
-            );
-          })}
+
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <h2 className="text-lg font-bold">📚 Step 2: Select Subject National Contest Test ({selectedGrade})</h2>
+            <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+              Each Subject Test: KSh 500
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+            {CONTEST_SUBJECTS.map((subj) => {
+              const isSelected = selectedSubject === subj.name;
+              return (
+                <button
+                  key={subj.name}
+                  type="button"
+                  onClick={() => setSelectedSubject(subj.name)}
+                  className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                    isSelected
+                      ? 'border-blue-700 bg-blue-50 ring-2 ring-blue-600'
+                      : 'border-gray-200 hover:border-blue-400 bg-gray-50'
+                  }`}
+                >
+                  <div className="text-xl mb-1">{subj.icon}</div>
+                  <div className="font-bold text-xs sm:text-sm leading-tight text-gray-900">{subj.name}</div>
+                  <div className="text-[11px] font-semibold text-emerald-700 mt-1">
+                    {selectedGrade} • KSh 500
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -223,7 +265,7 @@ export default function ContestPage() {
       <section className="mb-6 p-4 border rounded-xl bg-gray-50">
         <h2 className="text-lg font-bold mb-2">📋 Contest Instructions</h2>
         <ul className="list-disc ml-5 space-y-1 text-sm">
-          <li>Select any Junior School subject test above and pay <strong>KSh 500</strong> via M-Pesa STK Push to become a participant.</li>
+          <li>Select your <strong>Grade (6, 7, 8, or 9)</strong> and subject test above and pay <strong>KSh 500</strong> via M-Pesa STK Push to be placed into the right test.</li>
           <li>Immediately after payment, you will be notified that the test is almost here and will open soon.</li>
           <li>The test is timed at <strong>2 hours</strong> and is worth <strong>100 marks</strong>.</li>
           <li>For structured questions, write your answers clearly in your exercise book, take clear photos, and upload them for auto-marking.</li>
@@ -234,7 +276,7 @@ export default function ContestPage() {
       {/* ── Registration Form ── */}
       <section className="mb-6 p-4 border rounded-xl bg-white">
         <h2 className="text-lg font-bold mb-3">
-          📝 Register &amp; Pay — <span className="text-blue-700">{selectedSubject} (KSh 500)</span>
+          📝 Register &amp; Pay — <span className="text-blue-700">{selectedGrade} {selectedSubject} (KSh 500)</span>
         </h2>
         <div className="grid gap-3">
           <input
@@ -251,6 +293,18 @@ export default function ContestPage() {
             value={form.school}
             onChange={handleChange}
           />
+          <select
+            name="grade"
+            value={selectedGrade}
+            onChange={(e) => setSelectedGrade(e.target.value)}
+            className="border p-3 rounded-lg w-full bg-white"
+          >
+            {CONTEST_GRADES.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
           <input
             name="phone"
             placeholder="M-Pesa Phone (e.g. 0712345678)"
@@ -264,8 +318,8 @@ export default function ContestPage() {
             className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white font-bold py-3 rounded-lg text-lg cursor-pointer"
           >
             {isSubmitting
-              ? `⏳ Sending M-Pesa STK Push for ${selectedSubject}...`
-              : `💳 Register for ${selectedSubject} & Pay KSh 500 via M-Pesa`}
+              ? `⏳ Sending M-Pesa STK Push for ${selectedGrade} ${selectedSubject}...`
+              : `💳 Register for ${selectedGrade} ${selectedSubject} & Pay KSh 500 via M-Pesa`}
           </button>
         </div>
 
@@ -278,7 +332,7 @@ export default function ContestPage() {
         {paymentStatus && (
           <div className="mt-2 p-3 rounded-lg border bg-amber-50 text-sm">
             Payment status: <strong className={paymentStatus === 'confirmed' ? 'text-green-700' : 'text-orange-600'}>{paymentStatus}</strong>
-            {paymentStatus === 'confirmed' && ' ✅ – Payment confirmed! The test is almost here — stay ready, it will open soon.'}
+            {paymentStatus === 'confirmed' && ` ✅ – Payment confirmed for ${selectedGrade} ${selectedSubject}! The test is almost here — stay ready, it will open soon.`}
             {paymentStatus === 'pending' && ' – ⏳ Waiting for M-Pesa confirmation… Please enter your M-Pesa PIN on your phone and wait.'}
             {paymentStatus === 'failed' && ' ❌ – Payment was not completed. Please try again.'}
           </div>

@@ -13,6 +13,7 @@ export interface ContestParticipant {
   name: string;
   school: string;
   phone: string;
+  grade: string;
   subject: string;
   status: 'pending' | 'confirmed' | 'failed';
   checkout_request_id?: string | null;
@@ -157,7 +158,10 @@ export async function findContestParticipantByCheckoutOrRef(
   return null;
 }
 
-export async function listContestParticipants(subject?: string | null): Promise<ContestParticipant[]> {
+export async function listContestParticipants(
+  subject?: string | null,
+  grade?: string | null
+): Promise<ContestParticipant[]> {
   let query = supabaseAdmin
     .from('contest_participants')
     .select('*')
@@ -166,15 +170,21 @@ export async function listContestParticipants(subject?: string | null): Promise<
   if (subject && subject !== 'ALL') {
     query = query.eq('subject', subject);
   }
+  if (grade && grade !== 'ALL') {
+    query = query.eq('grade', grade);
+  }
 
   const { data, error } = await query;
   if (!error && Array.isArray(data)) {
     return data as ContestParticipant[];
   }
 
-  const list = await readParticipantsFromStorage();
+  let list = await readParticipantsFromStorage();
   if (subject && subject !== 'ALL') {
-    return list.filter((p) => p.subject === subject);
+    list = list.filter((p) => p.subject === subject);
+  }
+  if (grade && grade !== 'ALL') {
+    list = list.filter((p) => (p.grade || 'Grade 7') === grade);
   }
   return list;
 }

@@ -708,7 +708,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-300 text-slate-950 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider">
                     <Award className="w-3.5 h-3.5" />
-                    JUNIOR SCHOOL • 2 HOURS • 100 MARKS
+                    GRADES 6, 7, 8 &amp; 9 • 2 HOURS • 100 MARKS
                   </span>
                   <span className="text-xs font-bold text-amber-200">
                     All Subjects National Contest Tests • KSh 500 per Subject (Test is almost here!)

@@ -17,6 +17,8 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     status: synced.status,
+    grade: synced.grade,
+    subject: synced.subject,
     paymentConfirmedAt: synced.payment_confirmed_at ?? null,
     marks: synced.marks ?? null,
   });

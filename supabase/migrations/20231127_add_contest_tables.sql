@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.contest_participants (
   name TEXT NOT NULL,
   school TEXT NOT NULL,
   phone TEXT NOT NULL,
+  grade TEXT NOT NULL DEFAULT 'Grade 7',
   subject TEXT NOT NULL DEFAULT 'Mathematics',
   status TEXT NOT NULL CHECK (status IN ('pending','confirmed','failed')) DEFAULT 'pending',
   checkout_request_id TEXT,
