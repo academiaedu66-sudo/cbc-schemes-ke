@@ -40,10 +40,12 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
   const [trackIndex, setTrackIndex] = useState<0 | 1>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [waitingForWelcomeSong, setWaitingForWelcomeSong] = useState(false);
 
   const ytContainerRef = useRef<HTMLDivElement | null>(null);
   const ytPlayerRef = useRef<YTPlayerInstance | null>(null);
   const trackIndexRef = useRef<0 | 1>(0);
+  const welcomeDoneRef = useRef(false);
 
   useEffect(() => {
     trackIndexRef.current = trackIndex;
@@ -71,34 +73,54 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
     let destroyed = false;
     let fallbackTimer: number | null = null;
 
+    const alreadyCompleted = Boolean(
+      (window as unknown as { __cbcWelcomeSongCompletedAt?: number }).__cbcWelcomeSongCompletedAt
+    );
+    const hasWelcomeDialog = Boolean(document.querySelector('dialog[aria-label*="Welcome" i], [data-welcome-song-active="true"]'));
+    const shouldWaitForWelcome = !alreadyCompleted && hasWelcomeDialog;
+    welcomeDoneRef.current = !shouldWaitForWelcome;
+    queueMicrotask(() => setWaitingForWelcomeSong(shouldWaitForWelcome));
+
+    const triggerKenyaStart = () => {
+      if (destroyed || !ytPlayerRef.current) return;
+      try {
+        ytPlayerRef.current.playVideo();
+        setIsPlaying(true);
+        fallbackTimer = window.setTimeout(() => {
+          if (destroyed) return;
+          try {
+            if (ytPlayerRef.current && ytPlayerRef.current.getPlayerState() !== 1) {
+              ytPlayerRef.current.mute();
+              setMuted(true);
+              ytPlayerRef.current.playVideo();
+            }
+          } catch {}
+        }, 700);
+      } catch {}
+    };
+
+    const onWelcomeCompleted = () => {
+      welcomeDoneRef.current = true;
+      setWaitingForWelcomeSong(false);
+      if (autoStart) triggerKenyaStart();
+    };
+    window.addEventListener('cbc-compulsory-song-completed', onWelcomeCompleted);
+
     const initPlayer = () => {
       if (destroyed || !ytContainerRef.current || !window.YT?.Player) return;
       ytPlayerRef.current = new window.YT.Player(ytContainerRef.current, {
         videoId: KENYA_YOUTUBE_ID,
         playerVars: {
-          autoplay: autoStart ? 1 : 0,
+          autoplay: autoStart && welcomeDoneRef.current ? 1 : 0,
           rel: 0,
           modestbranding: 1,
           playsinline: 1,
         },
         events: {
-          onReady: (e) => {
-            if (!autoStart) return;
-            try {
-              e.target.playVideo();
-              setIsPlaying(true);
-              // If browser blocks unmuted autoplay, start muted and unmute on first user interaction
-              fallbackTimer = window.setTimeout(() => {
-                if (destroyed) return;
-                try {
-                  if (e.target.getPlayerState() !== 1) {
-                    e.target.mute();
-                    setMuted(true);
-                    e.target.playVideo();
-                  }
-                } catch {}
-              }, 700);
-            } catch {}
+          onReady: () => {
+            if (autoStart && welcomeDoneRef.current) {
+              triggerKenyaStart();
+            }
           },
           onStateChange: (e) => {
             // YT.PlayerState: 1 = PLAYING, 2 = PAUSED, 0 = ENDED
@@ -123,7 +145,7 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
       try {
         ytPlayerRef.current?.unMute();
         setMuted(false);
-        if (autoStart && ytPlayerRef.current?.getPlayerState() !== 1) {
+        if (autoStart && welcomeDoneRef.current && ytPlayerRef.current?.getPlayerState() !== 1) {
           ytPlayerRef.current?.playVideo();
         }
       } catch {}
@@ -145,6 +167,7 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
     return () => {
       destroyed = true;
       if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      window.removeEventListener('cbc-compulsory-song-completed', onWelcomeCompleted);
       window.removeEventListener('pointerdown', unmuteOnGesture);
       window.removeEventListener('keydown', unmuteOnGesture);
       try {
@@ -182,9 +205,11 @@ export default function ContestAnthemPlayer({ autoStart = true }: { autoStart?: 
         <div className="flex-1 space-y-2">
           <div>
             <div className="text-[11px] font-black uppercase tracking-wider text-emerald-300">
-              {isPlaying
-                ? `🎵 Now Playing (${trackIndex + 1}/2)${muted ? ' • Tap anywhere for sound' : ''}`
-                : '🎼 Contest Ceremonial Anthems (1. Kenya → 2. East Africa)'}
+              {waitingForWelcomeSong
+                ? '🎶 Waiting for 5-Star Welcome Song to finish, then Kenya & East Africa Anthems will autoplay…'
+                : isPlaying
+                  ? `🎵 Now Playing (${trackIndex + 1}/2)${muted ? ' • Tap anywhere for sound' : ''}`
+                  : '🎼 Contest Ceremonial Anthems (1. Kenya → 2. East Africa)'}
             </div>
             <div className="text-sm sm:text-base font-extrabold text-white mt-0.5">
               {trackIndex === 0
